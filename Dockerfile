@@ -4,7 +4,7 @@ WORKDIR /app
 COPY pom.xml .
 COPY src ./src
 
-RUN mvnw package -DskipTests
+RUN mvn package -DskipTests
 
 # Use Eclipse Temurin for base image.
 # https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds

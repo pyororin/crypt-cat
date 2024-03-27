@@ -3,13 +3,17 @@ package pyororin.cryptcat;
 import com.google.cloud.secretmanager.v1.AccessSecretVersionRequest;
 import com.google.cloud.secretmanager.v1.SecretManagerServiceClient;
 import com.google.cloud.secretmanager.v1.SecretPayload;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import static net.logstash.logback.argument.StructuredArguments.value;
+
 @SpringBootApplication
+@Slf4j
 public class CryptCatApplication {
 
     @Value("${NAME:World}")
@@ -33,15 +37,16 @@ public class CryptCatApplication {
             String secretValue = payload.getData().toStringUtf8();
 
             // シークレットの値を表示します
-            System.out.println("Secret value: " + secretValue);
+            log.debug("Secret value: " + secretValue);
             return secretValue;
         }
     }
 
     @RestController
-    class HelloworldController {
+    class HelloWorldController {
         @GetMapping("/")
         String hello() {
+            log.info("hello {} {}", value("params1", "value1"), value("params2", "value2"));
             return "Hello " + name + "!";
         }
 

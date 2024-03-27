@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <springProfile name="production">
+        <property name="logLevel" value="INFO" />
+    </springProfile>
+
+    <springProfile name="!production">
+        <property name="logLevel" value="INFO" />
+    </springProfile>
+
+    <!-- コンソール出力 -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <!-- Customizing Timestamp　-->
+            <timeZone>Asia/Tokyo</timeZone>
+            <timestampPattern>yyyy-MM-dd'T'HH:mm:ss.SSS</timestampPattern>
+            <!-- Customizing Standard Field Names -->
+            <fieldNames>
+                <timestamp>datetime</timestamp>
+                <version>version</version>
+            </fieldNames>
+            <!-- Separator -->
+            <lineSeparator>UNIX</lineSeparator>
+        </encoder>
+    </appender>
+
+    <!-- ルート -->
+    <root level="INFO">
+        <appender-ref ref="STDOUT" />
+    </root>
+
+</configuration>

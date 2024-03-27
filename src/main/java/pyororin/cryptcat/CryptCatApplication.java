@@ -64,20 +64,16 @@ public class CryptCatApplication {
                     value("order_type", "sell"),
                     value("amount", "0.004"),
                     value("price", "4000000"));
-            log.info("{} {} {} {} {} {}",
+            log.info("{} {} {} {}",
                     value("kind", "exchange"),
                     value("pair", "btc_jpy"),
                     value("order_type", "market_buy"),
-                    value("rate", "1000000"),
-                    value("amount", "0.001"),
                     value("market_buy_amount", "10000"));
-            log.info("{} {} {} {} {} {}",
+            log.info("{} {} {} {}",
                     value("kind", "exchange"),
                     value("pair", "btc_jpy"),
                     value("order_type", "market_sell"),
-                    value("rate", "2000000"),
-                    value("amount", "0.002"),
-                    value("market_buy_amount", "20000"));
+                    value("amount", "0.002"));
             return "Hello " + name + "!";
         }
 

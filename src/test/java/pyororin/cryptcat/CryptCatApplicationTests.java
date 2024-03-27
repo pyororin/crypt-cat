@@ -16,10 +16,18 @@ class CryptCatApplicationTests {
     MockMvc mockMvc;
 
     @Test
-    void test_response() throws Exception {
+    void test_hello_response() throws Exception {
         String response = this.mockMvc
                 .perform(get("/"))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
         assertEquals(response,"Hello World!");
+    }
+
+    @Test
+    void test_secret_response() throws Exception {
+        String response = this.mockMvc
+                .perform(get("/secret"))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        assertEquals(response,"this is token tests.");
     }
 }

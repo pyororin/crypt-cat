@@ -1,5 +1,8 @@
 FROM maven:3-eclipse-temurin-17-alpine as builder
 
+ARG _IS_ACTUALLY_SELL_BUY
+ENV IS_ACTUALLY_SELL_BUY ${_IS_ACTUALLY_SELL_BUY}
+
 WORKDIR /app
 COPY pom.xml .
 COPY src ./src

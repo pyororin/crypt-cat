@@ -46,7 +46,34 @@ public class CryptCatApplication {
     class HelloWorldController {
         @GetMapping("/")
         String hello() {
-            log.info("hello {} {}", value("params1", "value1"), value("params2", "value2"));
+            log.info("{} {}",
+                    value("kind", "alert"),
+                    value("alert_type", "buy"));
+            log.info("{} {}",
+                    value("kind", "alert"),
+                    value("alert_type", "sell"));
+            log.info("{} {} {} {} {}",
+                    value("kind", "rate"),
+                    value("pair", "btc_jpy"),
+                    value("order_type", "buy"),
+                    value("amount", "0.003"),
+                    value("price", "3000000"));
+            log.info("{} {} {} {} {}",
+                    value("kind", "rate"),
+                    value("pair", "btc_jpy"),
+                    value("order_type", "sell"),
+                    value("amount", "0.004"),
+                    value("price", "4000000"));
+            log.info("{} {} {} {}",
+                    value("kind", "exchange"),
+                    value("pair", "btc_jpy"),
+                    value("order_type", "market_buy"),
+                    value("market_buy_amount", "10000"));
+            log.info("{} {} {} {}",
+                    value("kind", "exchange"),
+                    value("pair", "btc_jpy"),
+                    value("order_type", "market_sell"),
+                    value("amount", "0.002"));
             return "Hello " + name + "!";
         }
 

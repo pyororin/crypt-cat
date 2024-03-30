@@ -13,20 +13,22 @@ import static net.logstash.logback.argument.StructuredArguments.value;
 @Slf4j
 public class OrderController {
 
-    @PostMapping("/order/sell")
-    public ResponseEntity<String> sell(@RequestBody OrderRequest orderRequest) {
-        log.info("{} {}",
-                value("kind", "access"),
-                value("Request", orderRequest.toString()));
+    @PostMapping("/order/buy")
+    public ResponseEntity<String> buy(@RequestBody OrderRequest orderRequest) {
+        log.info("{} {} {}",
+                value("kind", "alert"),
+                value("alert_type", "buy"),
+                value("reason", orderRequest.getReason()));
         // TODO: 売買処理を行う
         return ResponseEntity.ok("OK");
     }
 
-    @PostMapping("/order/buy")
-    public ResponseEntity<String> buy(@RequestBody OrderRequest orderRequest) {
-        log.info("{} {}",
-                value("kind", "access"),
-                value("Request", orderRequest.toString()));
+    @PostMapping("/order/sell")
+    public ResponseEntity<String> sell(@RequestBody OrderRequest orderRequest) {
+        log.info("{} {} {}",
+                value("kind", "alert"),
+                value("alert_type", "sell"),
+                value("reason", orderRequest.getReason()));
         // TODO: 売買処理を行う
         return ResponseEntity.ok("OK");
     }

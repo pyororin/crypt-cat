@@ -36,8 +36,8 @@ public class CoinCheckRestClientConfiguration {
     @Profile("test")
     CoinCheckRequestConfig skipCoinCheckRequestConfig() {
         return CoinCheckRequestConfig.builder()
-                .accessKey("hoge")
-                .secret("piyo")
+                .accessKey("test")
+                .secret("test")
                 .build();
     }
 }

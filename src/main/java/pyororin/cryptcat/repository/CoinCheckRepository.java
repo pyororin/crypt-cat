@@ -11,33 +11,30 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
+import java.util.Map;
 
 @RequiredArgsConstructor
 @Repository
 public class CoinCheckRepository {
     private final RestClient restClient;
 
-    public static String HMAC_SHA256Encode(String secretKey, String message) {
-
-        SecretKeySpec keySpec = new SecretKeySpec(
-                secretKey.getBytes(),
-                "hmacSHA256");
-
+    private static String HMAC_SHA256Encode(String secretKey, String message) {
         Mac mac = null;
         try {
             mac = Mac.getInstance("hmacSHA256");
-            mac.init(keySpec);
+            mac.init(new SecretKeySpec(
+                    secretKey.getBytes(),
+                    "hmacSHA256"));
         } catch (NoSuchAlgorithmException | InvalidKeyException e) {
-            // can't recover
             throw new RuntimeException(e);
         }
-        byte[] rawHmac = mac.doFinal(message.getBytes());
-        return Hex.encodeHexString(rawHmac);
+        return Hex.encodeHexString(mac.doFinal(message.getBytes()));
     }
 
     public CoinCheckTickerResponse retrieveTicker(CoinCheckRequest request) {
         return restClient.get()
-                .uri("/api/ticker/pair={rate}", request.getPair().getValue())
+                .uri("/api/ticker/?pair={rate}", request.getPair().getValue())
                 .retrieve()
                 .toEntity(CoinCheckTickerResponse.class).getBody();
     }
@@ -47,7 +44,7 @@ public class CoinCheckRepository {
 //    }
 //
 //    private Map<String, String> createHeader(String url) {
-//        Map<String, String> map = new HashMap<String, String>();
+//        Map<String, String> map = new HashMap<>();
 //        String nonce = createNonce();
 //        map.put("ACCESS-KEY", apiKey);
 //        map.put("ACCESS-NONCE", nonce);

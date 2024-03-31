@@ -8,6 +8,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestClient;
+import pyororin.cryptcat.config.CoinCheckRequestConfig;
 import pyororin.cryptcat.repository.model.CoinCheckRequest;
 import pyororin.cryptcat.repository.model.Pair;
 
@@ -20,6 +21,9 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 class CoinCheckRepositoryTest {
     @Autowired
     CoinCheckRepository repository;
+
+    @Autowired
+    CoinCheckRequestConfig config;
 
     @Disabled
     @Test
@@ -47,8 +51,7 @@ class CoinCheckRepositoryTest {
                         """, MediaType.APPLICATION_JSON));
 
         var restClient = restClientBuilder.build();
-        var repository = new CoinCheckRepository(restClient);
-
+        var repository = new CoinCheckRepository(restClient, config);
         var actual = repository.retrieveTicker(CoinCheckRequest.builder().pair(Pair.BTC_JPY).build());
         mockServer.verify();
         assertEquals(actual.getLast(), 27390);

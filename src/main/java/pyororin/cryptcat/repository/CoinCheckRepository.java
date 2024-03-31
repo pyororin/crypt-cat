@@ -1,36 +1,39 @@
 package pyororin.cryptcat.repository;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.codec.binary.Hex;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.client.RestClient;
 import pyororin.cryptcat.repository.model.CoinCheckRequest;
 import pyororin.cryptcat.repository.model.CoinCheckTickerResponse;
+
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 
 @RequiredArgsConstructor
 @Repository
 public class CoinCheckRepository {
     private final RestClient restClient;
 
-//    public static String HMAC_SHA256Encode(String secretKey, String message) {
+    public static String HMAC_SHA256Encode(String secretKey, String message) {
 
-//        SecretKeySpec keySpec = new SecretKeySpec(
-//                secretKey.getBytes(),
-//                "hmacSHA256");
-//
-//        Mac mac = null;
-//        try {
-//            mac = Mac.getInstance("hmacSHA256");
-//            mac.init(keySpec);
-//        } catch (NoSuchAlgorithmException e) {
-//            // can't recover
-//            throw new RuntimeException(e);
-//        } catch (InvalidKeyException e) {
-//            // can't recover
-//            throw new RuntimeException(e);
-//        }
-//        byte[] rawHmac = mac.doFinal(message.getBytes());
-//        return Hex.encodeHexString(rawHmac);
-//    }
+        SecretKeySpec keySpec = new SecretKeySpec(
+                secretKey.getBytes(),
+                "hmacSHA256");
+
+        Mac mac = null;
+        try {
+            mac = Mac.getInstance("hmacSHA256");
+            mac.init(keySpec);
+        } catch (NoSuchAlgorithmException | InvalidKeyException e) {
+            // can't recover
+            throw new RuntimeException(e);
+        }
+        byte[] rawHmac = mac.doFinal(message.getBytes());
+        return Hex.encodeHexString(rawHmac);
+    }
 
     public CoinCheckTickerResponse retrieveTicker(CoinCheckRequest request) {
         return restClient.get()

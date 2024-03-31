@@ -11,6 +11,7 @@ import pyororin.cryptcat.repository.model.Pair;
 import pyororin.cryptcat.service.TradeService;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import static net.logstash.logback.argument.StructuredArguments.value;
 
@@ -27,22 +28,29 @@ public class SkipTradeServiceImpl implements TradeService {
     public BigDecimal buy(Pair pair) {
         var tickerResponse = repository.retrieveTicker(CoinCheckRequest.builder().pair(pair).build());
         var marketBuyAmount = BigDecimal.valueOf(tickerResponse.getLast()).multiply(apiConfig.getAmount());
-        log.info("{} {} {} {}",
+        // Skipするため現在の最終レートで確定とする
+        var orderRate = BigDecimal.valueOf(tickerResponse.getLast()).divide(marketBuyAmount, RoundingMode.HALF_EVEN);
+        log.info("{} {} {} {} {}",
                 value("kind", "exchange-skip"),
                 value("pair", "btc_jpy"),
                 value("order_type", "market_buy"),
-                value("market_buy_amount", marketBuyAmount));
+                value("market_buy_amount", marketBuyAmount),
+                value("order_rate", orderRate));
         return marketBuyAmount;
     }
 
     @Override
     public BigDecimal sell(Pair pair) {
+        var tickerResponse = repository.retrieveTicker(CoinCheckRequest.builder().pair(pair).build());
         var amount = apiConfig.getAmount();
-        log.info("{} {} {} {}",
+        // Skipするため現在の最終レートで確定とする
+        var orderRate = BigDecimal.valueOf(tickerResponse.getLast()).divide(amount, RoundingMode.HALF_EVEN);
+        log.info("{} {} {} {} {}",
                 value("kind", "exchange-skip"),
                 value("pair", "btc_jpy"),
                 value("order_type", "market_sell"),
-                value("amount", amount));
+                value("amount", amount),
+                value("order_rate", orderRate));
         return amount;
     }
 }

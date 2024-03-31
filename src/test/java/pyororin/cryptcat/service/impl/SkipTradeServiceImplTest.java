@@ -31,6 +31,8 @@ class SkipTradeServiceImplTest {
 
     @Test
     void sell() {
+        Mockito.when(repository.retrieveTicker(any()))
+                .thenReturn(CoinCheckTickerResponse.builder().last(123456).build());
         assertEquals(skipTradeService.sell(Pair.BTC_JPY), BigDecimal.valueOf(1, 6));
     }
 }

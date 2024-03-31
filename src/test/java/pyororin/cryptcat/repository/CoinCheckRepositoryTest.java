@@ -56,4 +56,9 @@ class CoinCheckRepositoryTest {
         mockServer.verify();
         assertEquals(actual.getLast(), 27390);
     }
+
+    @Test
+    void getBalance() {
+        repository.getBalance();
+    }
 }

@@ -9,7 +9,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestClient;
 import pyororin.cryptcat.repository.model.CoinCheckRequest;
-import pyororin.cryptcat.repository.model.CoinCheckResponse;
 import pyororin.cryptcat.repository.model.Pair;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -24,26 +23,34 @@ class CoinCheckRepositoryTest {
 
     @Disabled
     @Test
-    void retrieveRate() {
-        var response = repository.retrieveRate(CoinCheckRequest.builder().pair(Pair.BTC_JPY).build());
+    void retrieveTicker() {
+        var response = repository.retrieveTicker(CoinCheckRequest.builder().pair(Pair.BTC_JPY).build());
         System.out.println(response);
     }
 
     @Test
-    void retrieveRateMock() {
+    void retrieveTickerMock() {
         var restClientBuilder = RestClient.builder();
         MockRestServiceServer mockServer = MockRestServiceServer.bindTo(restClientBuilder).build();
-        mockServer.expect(requestTo("/api/rate/btc_jpy"))
+        mockServer.expect(requestTo("/api/ticker"))
                 .andExpect(method(HttpMethod.GET))
                 .andRespond(withSuccess("""
-                        {"rate":"123456"}
+                        {
+                          "last": 27390,
+                          "bid": 26900,
+                          "ask": 27390,
+                          "high": 27659,
+                          "low": 26400,
+                          "volume": "50.29627103",
+                          "timestamp": 1423377841
+                        }
                         """, MediaType.APPLICATION_JSON));
 
         var restClient = restClientBuilder.build();
         var repository = new CoinCheckRepository(restClient);
 
-        CoinCheckResponse actual = repository.retrieveRate(CoinCheckRequest.builder().pair(Pair.BTC_JPY).build());
+        var actual = repository.retrieveTicker(CoinCheckRequest.builder().pair(Pair.BTC_JPY).build());
         mockServer.verify();
-        assertEquals(actual.getRate(), "123456");
+        assertEquals(actual.getLast(), 27390);
     }
 }

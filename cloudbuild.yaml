@@ -1,8 +1,11 @@
 steps:
   # Dockerイメージの作成
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'gcr.io/$PROJECT_ID/crypt-cat:$COMMIT_SHA',
-           "--build-arg", "_IS_ACTUALLY_SELL_BUY=$_IS_ACTUALLY_SELL_BUY", '.']
+    args: ['build',
+           '-t', 'gcr.io/$PROJECT_ID/crypt-cat:$COMMIT_SHA',
+           "--build-arg","_IS_ACTUALLY_SELL_BUY=$_IS_ACTUALLY_SELL_BUY",
+           "--build-arg","_SELL_BUY_AMOUNT=$_SELL_BUY_AMOUNT",
+           '.']
   # DockerイメージをContainer RegistryへPush
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', 'gcr.io/$PROJECT_ID/crypt-cat:$COMMIT_SHA']

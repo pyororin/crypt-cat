@@ -74,6 +74,16 @@ public class CryptCatApplication {
                     value("pair", "btc_jpy"),
                     value("order_type", "market_sell"),
                     value("amount", "0.002"));
+            log.info("{} {} {} {}",
+                    value("kind", "exchange-skip"),
+                    value("pair", "btc_jpy"),
+                    value("order_type", "market_buy"),
+                    value("market_buy_amount", "10000"));
+            log.info("{} {} {} {}",
+                    value("kind", "exchange-skip"),
+                    value("pair", "btc_jpy"),
+                    value("order_type", "market_sell"),
+                    value("amount", "0.002"));
             return "Hello " + name + "!";
         }
 

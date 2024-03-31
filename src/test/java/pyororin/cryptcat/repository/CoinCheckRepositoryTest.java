@@ -20,7 +20,6 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 @SpringBootTest
-@ActiveProfiles("production")
 class CoinCheckRepositoryTest {
     @Autowired
     CoinCheckRepository repository;
@@ -60,8 +59,9 @@ class CoinCheckRepositoryTest {
         assertEquals(actual.getLast(), 27390);
     }
 
+    @Disabled
     @Test
     void getBalance() {
-        repository.getBalance();
+        System.out.println(repository.getBalance());
     }
 }

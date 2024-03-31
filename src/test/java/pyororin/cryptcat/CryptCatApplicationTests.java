@@ -20,7 +20,7 @@ class CryptCatApplicationTests {
         String response = this.mockMvc
                 .perform(get("/"))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
-        assertEquals(response,"Hello World!");
+        assertEquals(response, "Hello World!");
     }
 
     @Test
@@ -28,6 +28,6 @@ class CryptCatApplicationTests {
         String response = this.mockMvc
                 .perform(get("/secret"))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
-        assertEquals(response,"this is token tests.");
+        assertEquals(response, "this is token tests.");
     }
 }

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
     <springProfile name="production">
-        <property name="logLevel" value="INFO" />
+        <property name="logLevel" value="INFO"/>
     </springProfile>
 
     <springProfile name="!production">
-        <property name="logLevel" value="INFO" />
+        <property name="logLevel" value="INFO"/>
     </springProfile>
 
     <!-- コンソール出力 -->
@@ -33,7 +33,7 @@
 
     <!-- ルート -->
     <root level="INFO">
-        <appender-ref ref="STDOUT" />
+        <appender-ref ref="STDOUT"/>
     </root>
 
 </configuration>

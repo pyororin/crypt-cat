@@ -32,7 +32,7 @@ class CoinCheckRepositoryTest {
     void retrieveTickerMock() {
         var restClientBuilder = RestClient.builder();
         MockRestServiceServer mockServer = MockRestServiceServer.bindTo(restClientBuilder).build();
-        mockServer.expect(requestTo("/api/ticker"))
+        mockServer.expect(requestTo("/api/ticker/pair=btc_jpy"))
                 .andExpect(method(HttpMethod.GET))
                 .andRespond(withSuccess("""
                         {

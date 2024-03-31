@@ -26,31 +26,28 @@ public class SkipTradeServiceImpl implements TradeService {
 
     @Override
     public BigDecimal buy(Pair pair) {
+        /* 市場最終価格(ticker.last) * 注文量(amount) = 注文価格 */
         var tickerResponse = repository.retrieveTicker(CoinCheckRequest.builder().pair(pair).build());
         var marketBuyAmount = BigDecimal.valueOf(tickerResponse.getLast()).multiply(apiConfig.getAmount());
-        // Skipするため現在の最終レートで確定とする
-        var orderRate = BigDecimal.valueOf(tickerResponse.getLast()).divide(marketBuyAmount, RoundingMode.HALF_EVEN);
         log.info("{} {} {} {} {}",
                 value("kind", "exchange-skip"),
                 value("pair", "btc_jpy"),
                 value("order_type", "market_buy"),
                 value("market_buy_amount", marketBuyAmount),
-                value("order_rate", orderRate));
+                value("order_rate", tickerResponse.getLast()));
         return marketBuyAmount;
     }
 
     @Override
     public BigDecimal sell(Pair pair) {
         var tickerResponse = repository.retrieveTicker(CoinCheckRequest.builder().pair(pair).build());
-        var amount = apiConfig.getAmount();
-        // Skipするため現在の最終レートで確定とする
-        var orderRate = BigDecimal.valueOf(tickerResponse.getLast()).divide(amount, RoundingMode.HALF_EVEN);
+        var marketSellAmount = BigDecimal.valueOf(tickerResponse.getLast()).multiply(apiConfig.getAmount());
         log.info("{} {} {} {} {}",
                 value("kind", "exchange-skip"),
                 value("pair", "btc_jpy"),
                 value("order_type", "market_sell"),
-                value("amount", amount),
-                value("order_rate", orderRate));
-        return amount;
+                value("market_sell_amount", marketSellAmount),
+                value("order_rate", tickerResponse.getLast()));
+        return marketSellAmount;
     }
 }

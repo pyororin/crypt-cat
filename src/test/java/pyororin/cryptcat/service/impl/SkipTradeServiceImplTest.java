@@ -10,6 +10,7 @@ import pyororin.cryptcat.repository.model.CoinCheckTickerResponse;
 import pyororin.cryptcat.repository.model.Pair;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -25,14 +26,14 @@ class SkipTradeServiceImplTest {
     @Test
     void buy() {
         Mockito.when(repository.retrieveTicker(any()))
-                .thenReturn(CoinCheckTickerResponse.builder().last(123456).build());
-        assertEquals(skipTradeService.buy(Pair.BTC_JPY), BigDecimal.valueOf(0.123456));
+                .thenReturn(CoinCheckTickerResponse.builder().last(10665058).build());
+        assertEquals(skipTradeService.buy(Pair.BTC_JPY), BigDecimal.valueOf(26662.645).setScale(4, RoundingMode.HALF_EVEN));
     }
 
     @Test
     void sell() {
         Mockito.when(repository.retrieveTicker(any()))
-                .thenReturn(CoinCheckTickerResponse.builder().last(123456).build());
-        assertEquals(skipTradeService.sell(Pair.BTC_JPY), BigDecimal.valueOf(1, 6));
+                .thenReturn(CoinCheckTickerResponse.builder().last(10665058).build());
+        assertEquals(skipTradeService.sell(Pair.BTC_JPY), BigDecimal.valueOf(26662.645).setScale(4, RoundingMode.HALF_EVEN));
     }
 }

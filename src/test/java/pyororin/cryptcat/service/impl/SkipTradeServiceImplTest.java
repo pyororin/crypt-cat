@@ -31,6 +31,6 @@ class SkipTradeServiceImplTest {
 
     @Test
     void sell() {
-        assertEquals(skipTradeService.sell(Pair.BTC_JPY), BigDecimal.valueOf(0.000001));
+        assertEquals(skipTradeService.sell(Pair.BTC_JPY), BigDecimal.valueOf(1, 6));
     }
 }

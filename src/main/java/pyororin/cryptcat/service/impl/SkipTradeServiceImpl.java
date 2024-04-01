@@ -11,7 +11,6 @@ import pyororin.cryptcat.repository.model.Pair;
 import pyororin.cryptcat.service.TradeService;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 import static net.logstash.logback.argument.StructuredArguments.value;
 

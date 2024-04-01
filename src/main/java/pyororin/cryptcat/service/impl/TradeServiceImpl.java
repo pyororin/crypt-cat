@@ -25,29 +25,30 @@ public class TradeServiceImpl implements TradeService {
 
     @Override
     public BigDecimal buy(Pair pair) {
-        /* 市場最終価格(ticker.last) * 注文量(amount) = 注文価格 */
+        /* 市場最終価格(ticker.last or ticker.ask) * 注文量(amount) = 注文価格 */
         var tickerResponse = repository.retrieveTicker(CoinCheckRequest.builder().pair(pair).build());
-        var marketBuyAmount = BigDecimal.valueOf(tickerResponse.getLast()).multiply(apiConfig.getAmount());
+        var marketBuyAmount = BigDecimal.valueOf(tickerResponse.getFairBuyPrice()).multiply(apiConfig.getAmount());
         log.info("{} {} {} {} {}",
                 value("kind", "exchange"),
                 value("pair", "btc_jpy"),
                 value("order_type", "market_buy"),
                 value("market_buy_amount", marketBuyAmount),
-                value("order_rate", tickerResponse.getLast()));
+                value("order_rate", tickerResponse.getFairBuyPrice()));
         repository.exchangeBuy(Pair.BTC_JPY, marketBuyAmount);
         return marketBuyAmount;
     }
 
     @Override
     public BigDecimal sell(Pair pair) {
+        /* 市場最終価格(ticker.last or ticker.ask) * 注文量(amount) = 注文価格 */
         var tickerResponse = repository.retrieveTicker(CoinCheckRequest.builder().pair(pair).build());
-        var marketSellAmount = BigDecimal.valueOf(tickerResponse.getLast()).divide(apiConfig.getAmount(), RoundingMode.HALF_EVEN);
+        var marketSellAmount = BigDecimal.valueOf(tickerResponse.getFairSellPrice()).divide(apiConfig.getAmount(), RoundingMode.HALF_EVEN);
         log.info("{} {} {} {} {}",
                 value("kind", "exchange"),
                 value("pair", "btc_jpy"),
                 value("order_type", "market_sell"),
                 value("market_sell_amount", marketSellAmount),
-                value("order_rate", tickerResponse.getLast()));
+                value("order_rate", tickerResponse.getFairSellPrice()));
         repository.exchangeSell(Pair.BTC_JPY, apiConfig.getAmount());
         return marketSellAmount;
     }

@@ -15,4 +15,12 @@ public class CoinCheckTickerResponse {
     private int low;
     private String volume;
     private long timestamp;
+
+    public int getFairBuyPrice() {
+        return Math.min(last, ask);
+    }
+
+    public int getFairSellPrice() {
+        return Math.max(last, bid);
+    }
 }

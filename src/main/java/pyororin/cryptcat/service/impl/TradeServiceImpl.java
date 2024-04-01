@@ -11,7 +11,6 @@ import pyororin.cryptcat.repository.model.Pair;
 import pyororin.cryptcat.service.TradeService;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 import static net.logstash.logback.argument.StructuredArguments.value;
 
@@ -42,7 +41,7 @@ public class TradeServiceImpl implements TradeService {
     public BigDecimal sell(Pair pair) {
         /* 市場最終価格(ticker.last or ticker.ask) * 注文量(amount) = 注文価格 */
         var tickerResponse = repository.retrieveTicker(CoinCheckRequest.builder().pair(pair).build());
-        var marketSellAmount = BigDecimal.valueOf(tickerResponse.getFairSellPrice()).divide(apiConfig.getAmount(), RoundingMode.HALF_EVEN);
+        var marketSellAmount = BigDecimal.valueOf(tickerResponse.getFairSellPrice()).multiply(apiConfig.getAmount());
         log.info("{} {} {} {} {}",
                 value("kind", "exchange"),
                 value("pair", "btc_jpy"),

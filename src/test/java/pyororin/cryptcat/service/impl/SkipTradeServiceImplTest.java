@@ -26,14 +26,14 @@ class SkipTradeServiceImplTest {
     @Test
     void buy() {
         Mockito.when(repository.retrieveTicker(any()))
-                .thenReturn(CoinCheckTickerResponse.builder().last(10665058).build());
-        assertEquals(skipTradeService.buy(Pair.BTC_JPY), BigDecimal.valueOf(26662.645).setScale(4, RoundingMode.HALF_EVEN));
+                .thenReturn(CoinCheckTickerResponse.builder().last(10665058).bid(10665059).ask(10665057).build());
+        assertEquals(BigDecimal.valueOf(26662.6425).setScale(4, RoundingMode.HALF_EVEN), skipTradeService.buy(Pair.BTC_JPY));
     }
 
     @Test
     void sell() {
         Mockito.when(repository.retrieveTicker(any()))
-                .thenReturn(CoinCheckTickerResponse.builder().last(10665058).build());
-        assertEquals(skipTradeService.sell(Pair.BTC_JPY), BigDecimal.valueOf(26662.645).setScale(4, RoundingMode.HALF_EVEN));
+                .thenReturn(CoinCheckTickerResponse.builder().last(10665058).bid(10665059).ask(10665057).build());
+        assertEquals(BigDecimal.valueOf(26662.6475).setScale(4, RoundingMode.HALF_EVEN), skipTradeService.sell(Pair.BTC_JPY));
     }
 }

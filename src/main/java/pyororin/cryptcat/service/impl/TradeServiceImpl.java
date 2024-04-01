@@ -29,7 +29,7 @@ public class TradeServiceImpl implements TradeService {
         var tickerResponse = repository.retrieveTicker(CoinCheckRequest.builder().pair(pair).build());
         var marketBuyAmount = BigDecimal.valueOf(tickerResponse.getLast()).multiply(apiConfig.getAmount());
         log.info("{} {} {} {} {}",
-                value("kind", "exchange-skip"),
+                value("kind", "exchange"),
                 value("pair", "btc_jpy"),
                 value("order_type", "market_buy"),
                 value("market_buy_amount", marketBuyAmount),
@@ -43,7 +43,7 @@ public class TradeServiceImpl implements TradeService {
         var tickerResponse = repository.retrieveTicker(CoinCheckRequest.builder().pair(pair).build());
         var marketSellAmount = BigDecimal.valueOf(tickerResponse.getLast()).divide(apiConfig.getAmount(), RoundingMode.HALF_EVEN);
         log.info("{} {} {} {} {}",
-                value("kind", "exchange-skip"),
+                value("kind", "exchange"),
                 value("pair", "btc_jpy"),
                 value("order_type", "market_sell"),
                 value("market_sell_amount", marketSellAmount),

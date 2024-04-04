@@ -27,7 +27,7 @@ class OrderControllerTest {
                         post("/order/buy/{id}", Pair.BTC_JPY.getValue())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
-                                            {"reason": "test-reason"}
+                                            {"reason": "test-reason", "group":  "test-group"}
                                         """)
                 )
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
@@ -35,6 +35,15 @@ class OrderControllerTest {
     }
 
     @Test
-    void sell() {
+    void sell() throws Exception {
+        String response = this.mockMvc.perform(
+                        post("/order/sell/{id}", Pair.BTC_JPY.getValue())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                            {"reason": "test-reason", "group":  "test-group"}
+                                        """)
+                )
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        assertEquals(response, "OK");
     }
 }

@@ -7,4 +7,5 @@ import lombok.ToString;
 @ToString
 public class OrderRequest {
     private String reason;
+    private String group;
 }

@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import pyororin.cryptcat.config.CoinCheckApiConfig;
+import pyororin.cryptcat.controller.model.OrderRequest;
 import pyororin.cryptcat.repository.CoinCheckRepository;
 import pyororin.cryptcat.repository.model.CoinCheckRequest;
 import pyororin.cryptcat.repository.model.Pair;
@@ -24,30 +25,32 @@ public class SkipTradeServiceImpl implements TradeService {
     private final CoinCheckApiConfig apiConfig;
 
     @Override
-    public BigDecimal buy(Pair pair) {
+    public BigDecimal buy(Pair pair, OrderRequest orderRequest) {
         /* 市場最終価格(ticker.last or ticker.ask) * 注文量(amount) = 注文価格 */
         var tickerResponse = repository.retrieveTicker(CoinCheckRequest.builder().pair(pair).build());
         var marketBuyAmount = BigDecimal.valueOf(tickerResponse.getFairBuyPrice()).multiply(apiConfig.getAmount());
-        log.info("{} {} {} {} {}",
+        log.info("{} {} {} {} {} {}",
                 value("kind", "exchange-skip"),
                 value("pair", "btc_jpy"),
                 value("order_type", "market_buy"),
                 value("market_buy_amount", marketBuyAmount),
-                value("order_rate", tickerResponse.getFairBuyPrice()));
+                value("order_rate", tickerResponse.getFairBuyPrice()),
+                value("group", orderRequest.getGroup()));
         return marketBuyAmount;
     }
 
     @Override
-    public BigDecimal sell(Pair pair) {
+    public BigDecimal sell(Pair pair, OrderRequest orderRequest) {
         /* 市場最終価格(ticker.last or ticker.ask) * 注文量(amount) = 注文価格 */
         var tickerResponse = repository.retrieveTicker(CoinCheckRequest.builder().pair(pair).build());
         var marketSellAmount = BigDecimal.valueOf(tickerResponse.getFairSellPrice()).multiply(apiConfig.getAmount());
-        log.info("{} {} {} {} {}",
+        log.info("{} {} {} {} {} {}",
                 value("kind", "exchange-skip"),
                 value("pair", "btc_jpy"),
                 value("order_type", "market_sell"),
                 value("market_sell_amount", marketSellAmount),
-                value("order_rate", tickerResponse.getFairSellPrice()));
+                value("order_rate", tickerResponse.getFairSellPrice()),
+                value("group", orderRequest.getGroup()));
         return marketSellAmount;
     }
 }

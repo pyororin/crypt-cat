@@ -11,8 +11,6 @@ import pyororin.cryptcat.controller.model.OrderRequest;
 import pyororin.cryptcat.repository.model.Pair;
 import pyororin.cryptcat.service.TradeService;
 
-import static net.logstash.logback.argument.StructuredArguments.value;
-
 @RestController
 @Slf4j
 @RequiredArgsConstructor
@@ -21,23 +19,13 @@ public class OrderController {
 
     @PostMapping("/order/buy/{pair}")
     public ResponseEntity<String> buy(@PathVariable String pair, @RequestBody OrderRequest orderRequest) {
-        log.info("{} {} {} {}",
-                value("kind", "alert"),
-                value("alert_type", "buy"),
-                value("pair", pair),
-                value("reason", orderRequest.getReason()));
-        tradeService.buy(Pair.fromValue(pair));
+        tradeService.buy(Pair.fromValue(pair), orderRequest);
         return ResponseEntity.ok("OK");
     }
 
     @PostMapping("/order/sell/{pair}")
     public ResponseEntity<String> sell(@PathVariable String pair, @RequestBody OrderRequest orderRequest) {
-        log.info("{} {} {} {}",
-                value("kind", "alert"),
-                value("alert_type", "sell"),
-                value("pair", pair),
-                value("reason", orderRequest.getReason()));
-        tradeService.sell(Pair.fromValue(pair));
+        tradeService.sell(Pair.fromValue(pair), orderRequest);
         return ResponseEntity.ok("OK");
     }
 }

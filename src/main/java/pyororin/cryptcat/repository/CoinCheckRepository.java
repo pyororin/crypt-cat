@@ -80,7 +80,7 @@ public class CoinCheckRepository {
                 .body(jsonBody.toString())
                 .retrieve()
                 .onStatus(HttpStatusCode::is2xxSuccessful, (req, res) -> log.info("{} {}", value("kind", "api"), value("status", "ok")))
-                .onStatus(HttpStatusCode::isError, (req, res) -> log.info("{} {}", value("kind", "api"), value("status", res.getStatusText())))
+                .onStatus(HttpStatusCode::isError, (req, res) -> log.error("{} {}", value("kind", "api"), value("status", res.getStatusText())))
                 .toEntity(String.class).getBody();
     }
 

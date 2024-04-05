@@ -27,11 +27,31 @@ class OrderControllerTest {
                         post("/order/buy/{id}", Pair.BTC_JPY.getValue())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
-                                            {"reason": "test-reason", "group":  "test-group"}
+                                            {"reason": "test-reason", "group": "test-group"}
                                         """)
                 )
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
         assertEquals(response, "OK");
+    }
+
+    @Test
+    void short_interval() throws Exception {
+        this.mockMvc.perform(
+                post("/order/buy/{id}", Pair.LSK_JPY.getValue())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                    {"reason": "test-reason", "group": "test-group"}
+                                """)
+        );
+        String response = this.mockMvc.perform(
+                        post("/order/buy/{id}", Pair.LSK_JPY.getValue())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                            {"reason": "test-reason", "group": "test-group"}
+                                        """)
+                )
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        assertEquals(response, "Request interval too short. Please try again later.");
     }
 
     @Test
@@ -40,7 +60,7 @@ class OrderControllerTest {
                         post("/order/sell/{id}", Pair.BTC_JPY.getValue())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
-                                            {"reason": "test-reason", "group":  "test-group"}
+                                            {"reason": "test-reason", "group": "test-group"}
                                         """)
                 )
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();

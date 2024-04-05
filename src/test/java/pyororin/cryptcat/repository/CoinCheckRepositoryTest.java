@@ -64,7 +64,7 @@ class CoinCheckRepositoryTest {
     }
 
     @Test
-    void exchangeMock() {
+    void exchangeMock_ok() {
         var restClientBuilder = RestClient.builder();
         MockRestServiceServer mockServer = MockRestServiceServer.bindTo(restClientBuilder).build();
         mockServer.expect(requestTo("/api/exchange/orders"))
@@ -79,6 +79,26 @@ class CoinCheckRepositoryTest {
                           "time_in_force": "good_til_cancelled",
                           "stop_loss_rate": null,
                           "pair": "btc_jpy",
+                          "created_at": "2015-01-10T05:55:38.000Z"
+                        }
+                        """, MediaType.APPLICATION_JSON));
+
+        var restClient = restClientBuilder.build();
+        var repository = new CoinCheckRepository(restClient, config, apiConfig);
+        repository.exchangeBuy(Pair.BTC_JPY, BigDecimal.valueOf(1.3));
+        mockServer.verify();
+    }
+
+    @Test
+    void exchangeMock_ng() {
+        var restClientBuilder = RestClient.builder();
+        MockRestServiceServer mockServer = MockRestServiceServer.bindTo(restClientBuilder).build();
+        mockServer.expect(requestTo("/api/exchange/orders"))
+                .andExpect(method(HttpMethod.POST))
+                .andRespond(withSuccess("""
+                        {
+                          "success": false,
+                          "id": 12345,
                           "created_at": "2015-01-10T05:55:38.000Z"
                         }
                         """, MediaType.APPLICATION_JSON));

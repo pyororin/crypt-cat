@@ -14,13 +14,13 @@ public class CoinCheckResponse {
     private final int id;
     private final String rate;
     private final String amount;
-    @JsonProperty("order-type")
+    @JsonProperty("order_type")
     private final String orderType;
-    @JsonProperty("time-in-force")
+    @JsonProperty("time_in_force")
     private final String timeInForce;
-    @JsonProperty("stop-loss-rate")
+    @JsonProperty("stop_loss_rate")
     private final String stopLossRate;
     private final String pair;
-    @JsonProperty("created-at")
+    @JsonProperty("created_at")
     private final String createdAt;
 }

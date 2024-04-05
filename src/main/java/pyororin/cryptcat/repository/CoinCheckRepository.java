@@ -10,6 +10,7 @@ import org.springframework.web.client.RestClient;
 import pyororin.cryptcat.config.CoinCheckApiConfig;
 import pyororin.cryptcat.config.CoinCheckRequestConfig;
 import pyororin.cryptcat.repository.model.CoinCheckRequest;
+import pyororin.cryptcat.repository.model.CoinCheckResponse;
 import pyororin.cryptcat.repository.model.CoinCheckTickerResponse;
 import pyororin.cryptcat.repository.model.Pair;
 
@@ -18,6 +19,7 @@ import javax.crypto.spec.SecretKeySpec;
 import java.math.BigDecimal;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Objects;
 
 import static net.logstash.logback.argument.StructuredArguments.value;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -68,7 +70,7 @@ public class CoinCheckRepository {
 
     private void exchange(JSONObject jsonBody) {
         String nonce = String.valueOf(System.currentTimeMillis() / 1000L);
-        restClient.post()
+        var response = restClient.post()
                 .uri("/api/exchange/orders")
                 .contentType(APPLICATION_JSON)
                 .headers(httpHeaders -> {
@@ -81,7 +83,15 @@ public class CoinCheckRepository {
                 .retrieve()
                 .onStatus(HttpStatusCode::is2xxSuccessful, (req, res) -> log.info("{} {}", value("kind", "api"), value("status", "ok")))
                 .onStatus(HttpStatusCode::isError, (req, res) -> log.error("{} {}", value("kind", "api"), value("status", res.getStatusText())))
-                .toEntity(String.class).getBody();
+                .toEntity(CoinCheckResponse.class).getBody();
+        if (Boolean.parseBoolean(Objects.requireNonNull(response).getSuccess())) {
+            log.info("{} {} {} {} {}",
+                    value("kind", "response"),
+                    value("pair", Objects.requireNonNull(response).getPair()),
+                    value("order_type", response.getOrderType()),
+                    value("market_amount", (new BigDecimal(response.getAmount())).multiply(new BigDecimal(response.getRate()))),
+                    value("order_rate", response.getRate()));
+        }
     }
 
     private static String HMAC_SHA256Encode(String secretKey, String message) {

@@ -41,7 +41,7 @@ public class RequestIntervalFilter extends OncePerRequestFilter {
             filterChain.doFilter(requestWrapper, response);
         } else {
             // 前回のリクエストからの経過時間が1分未満の場合、処理をスキップ
-            log.info("{}", value("kind", "request-skip"));
+            log.info("{} {}", value("kind", "request-skip"), value("key", key));
             response.setStatus(HttpServletResponse.SC_OK);
             response.getWriter().write("Request interval too short. Please try again later.");
         }

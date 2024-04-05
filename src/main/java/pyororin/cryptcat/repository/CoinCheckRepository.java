@@ -68,7 +68,7 @@ public class CoinCheckRepository {
 
     private void exchange(JSONObject jsonBody) {
         String nonce = String.valueOf(System.currentTimeMillis() / 1000L);
-        var response = restClient.post()
+        restClient.post()
                 .uri("/api/exchange/orders")
                 .contentType(APPLICATION_JSON)
                 .headers(httpHeaders -> {
@@ -80,16 +80,7 @@ public class CoinCheckRepository {
                 .retrieve()
                 .onStatus(HttpStatusCode::is2xxSuccessful, (req, res) -> log.info("{} {}", value("kind", "api"), value("status", "ok")))
                 .onStatus(HttpStatusCode::isError, (req, res) -> log.error("{} {}", value("kind", "api"), value("status", res.getStatusText())))
-                .toEntity(String.class).getBody();
-        log.info(response);
-//        if (Boolean.parseBoolean(Objects.requireNonNull(response).getSuccess())) {
-//            log.info("{} {} {} {} {}",
-//                    value("kind", "response"),
-//                    value("pair", Objects.requireNonNull(response).getPair()),
-//                    value("order_type", response.getOrderType()),
-//                    value("market_amount", (new BigDecimal(response.getAmount())).multiply(new BigDecimal(response.getRate()))),
-//                    value("order_rate", response.getRate()));
-//        }
+                .toBodilessEntity();
     }
 
     private static String HMAC_SHA256Encode(String secretKey, String message) {

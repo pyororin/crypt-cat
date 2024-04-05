@@ -14,6 +14,8 @@ public class CoinCheckResponse {
     private String error;
     private int id;
     private String rate;
+    @JsonProperty("market_buy_amount")
+    private String market_buy_amount;
     private String amount;
     @JsonProperty("order_type")
     private String orderType;

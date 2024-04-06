@@ -5,6 +5,7 @@ steps:
            '-t', "gcr.io/$PROJECT_ID/crypt-cat$_STAGING:$COMMIT_SHA",
            "--build-arg","_IS_ACTUALLY_SELL_BUY=$_IS_ACTUALLY_SELL_BUY",
            "--build-arg","_SELL_BUY_AMOUNT=$_SELL_BUY_AMOUNT",
+           "--build-arg","_SKIP_RANGE_CHART=$_SKIP_RANGE_CHART",
            '.']
   # DockerイメージをContainer RegistryへPush
   - name: 'gcr.io/cloud-builders/docker'

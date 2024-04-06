@@ -27,7 +27,7 @@ class OrderControllerTest {
                         post("/order/buy/{id}", Pair.BTC_JPY.getValue())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
-                                            {"reason": "test-reason", "group": "test-group"}
+                                            {"reason": "test-reason", "group": "test-group", "range": 3}
                                         """)
                 )
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
@@ -40,14 +40,14 @@ class OrderControllerTest {
                 post("/order/buy/{id}", Pair.LSK_JPY.getValue())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                    {"reason": "test-reason", "group": "test-group"}
+                                    {"reason": "test-reason", "group": "test-group", "range": 3}
                                 """)
         );
         String response = this.mockMvc.perform(
                         post("/order/buy/{id}", Pair.LSK_JPY.getValue())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
-                                            {"reason": "test-reason", "group": "test-group"}
+                                            {"reason": "test-reason", "group": "test-group", "range": 3}
                                         """)
                 )
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
@@ -60,7 +60,7 @@ class OrderControllerTest {
                         post("/order/sell/{id}", Pair.BTC_JPY.getValue())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
-                                            {"reason": "test-reason", "group": "test-group"}
+                                            {"reason": "test-reason", "group": "test-group", "range": 3}
                                         """)
                 )
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();

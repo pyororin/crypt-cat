@@ -1,15 +1,23 @@
 package pyororin.cryptcat.controller;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
+import pyororin.cryptcat.controller.filter.RequestIntervalFilter;
 import pyororin.cryptcat.repository.model.Pair;
+import pyororin.cryptcat.service.IPCheckService;
+import pyororin.cryptcat.service.RequestIntervalService;
 import pyororin.cryptcat.service.TradeService;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -18,8 +26,17 @@ class OrderControllerTest {
     @Autowired
     MockMvc mockMvc;
 
+    @Autowired
+    WebApplicationContext context;
+
     @MockBean
     TradeService skipTradeService;
+
+    @Mock
+    IPCheckService ipCheckService;
+
+    @Mock
+    RequestIntervalService requestIntervalService;
 
     @Test
     void buy() throws Exception {
@@ -36,8 +53,12 @@ class OrderControllerTest {
     }
 
     @Test
-    void shortInterval() throws Exception {
-        this.mockMvc.perform(
+    void filter() throws Exception {
+        when(ipCheckService.isNotAllowedIPAddress(any())).thenReturn(false);
+        when(requestIntervalService.shouldNotProcessRequest(any())).thenReturn(false);
+        var intervalCheckMok = MockMvcBuilders.webAppContextSetup(this.context)
+                .addFilter(new RequestIntervalFilter(ipCheckService, requestIntervalService), "/order/*").build();
+        intervalCheckMok.perform(
                 post("/order/buy/{id}", Pair.LSK_JPY.getValue())
                         .header("x-forwarded-for", "127.0.0.1")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -45,7 +66,10 @@ class OrderControllerTest {
                                     {"reason": "test-reason", "group": "test-group", "range": 3}
                                 """)
         );
-        String response = this.mockMvc.perform(
+
+        when(ipCheckService.isNotAllowedIPAddress(any())).thenReturn(false);
+        when(requestIntervalService.shouldNotProcessRequest(any())).thenReturn(true);
+        String response = intervalCheckMok.perform(
                         post("/order/buy/{id}", Pair.LSK_JPY.getValue())
                                 .header("x-forwarded-for", "127.0.0.1")
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -55,7 +79,10 @@ class OrderControllerTest {
                 )
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
         assertEquals("Request interval too short. Please try again later.", response);
-        response = this.mockMvc.perform(
+
+        when(ipCheckService.isNotAllowedIPAddress(any())).thenReturn(false);
+        when(requestIntervalService.shouldNotProcessRequest(any())).thenReturn(false);
+        response = intervalCheckMok.perform(
                         post("/order/buy/{id}", Pair.LSK_JPY.getValue())
                                 .header("x-forwarded-for", "127.0.0.1")
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -65,6 +92,19 @@ class OrderControllerTest {
                 )
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
         assertEquals("OK", response);
+
+        when(ipCheckService.isNotAllowedIPAddress(any())).thenReturn(true);
+        when(requestIntervalService.shouldNotProcessRequest(any())).thenReturn(false);
+        response = intervalCheckMok.perform(
+                        post("/order/buy/{id}", Pair.LSK_JPY.getValue())
+                                .header("x-forwarded-for", "127.0.0.2")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                            {"reason": "test-reason", "group": "test-group", "range": 1}
+                                        """)
+                )
+                .andExpect(status().is4xxClientError()).andReturn().getResponse().getContentAsString();
+        assertEquals("", response);
     }
 
     @Test

@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import pyororin.cryptcat.controller.filter.RequestIntervalFilter;
 import pyororin.cryptcat.service.IPCheckService;
 import pyororin.cryptcat.service.RequestIntervalService;
@@ -16,7 +15,6 @@ public class FilterConfig {
     private final RequestIntervalService requestIntervalService;
 
     @Bean
-    @Primary
     public FilterRegistrationBean<RequestIntervalFilter> customFilterRegistration() {
         FilterRegistrationBean<RequestIntervalFilter> registration = new FilterRegistrationBean<>();
         registration.setFilter(new RequestIntervalFilter(ipCheckService, requestIntervalService));

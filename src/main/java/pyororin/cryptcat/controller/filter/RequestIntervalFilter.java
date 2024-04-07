@@ -48,8 +48,9 @@ public class RequestIntervalFilter extends OncePerRequestFilter {
             log.warn("{} {}",
                     value("kind", "request-remote-ip-denied"),
                     value("remote-ip", request.getRemoteAddr()));
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access Denied");
-            return;
+// 一時的にOFF
+//            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access Denied");
+//            return;
         }
         // 前回からのリクエストからの経過時間を判定
         var requestWrapper = new BufferedServletRequestWrapper(request);

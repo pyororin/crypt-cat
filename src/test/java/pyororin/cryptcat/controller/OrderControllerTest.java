@@ -99,7 +99,7 @@ class OrderControllerTest {
                         post("/order/strategy/{id}", Pair.BTC_JPY.getValue())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
-                                            {"reason": "test-reason", "group": "test-group3", "range": 1, "order_type": "other"}
+                                            {"reason": "test-reason", "group": "test-group3", "range": 1, "order-type": "other"}
                                         """)
                 )
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();

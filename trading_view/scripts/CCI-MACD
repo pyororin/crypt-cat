@@ -1,0 +1,23 @@
+//@version=5
+strategy("CCI-MACD Strategy", overlay=true)
+
+// CCIインジケーターのパラメーター設定
+length = input(14, title="CCI Length")
+cciValue = ta.cci(close, length)
+
+// MACDの設定
+[macdLine, signalLine, _] = ta.macd(close, 12, 26, 9)
+
+// MACDのシグナルをCCIのソースとして利用
+source = macdLine - signalLine
+
+// エントリーおよびエグジット条件
+longCondition = ta.crossover(cciValue, 30) and ta.crossover(source, 0)
+shortCondition = ta.crossunder(cciValue, -30) and ta.crossunder(source, 0)
+
+// エントリーおよびエグジットのロジック
+if (longCondition)
+    strategy.entry("Buy", strategy.long)
+
+if (shortCondition)
+    strategy.entry("Sell", strategy.short)

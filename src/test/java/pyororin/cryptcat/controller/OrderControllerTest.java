@@ -25,6 +25,7 @@ class OrderControllerTest {
     void buy() throws Exception {
         String response = this.mockMvc.perform(
                         post("/order/buy/{id}", Pair.BTC_JPY.getValue())
+                                .header("x-forwarded-for", "127.0.0.1")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
                                             {"reason": "test-reason", "group": "test-group", "range": 3}
@@ -38,6 +39,7 @@ class OrderControllerTest {
     void shortInterval() throws Exception {
         this.mockMvc.perform(
                 post("/order/buy/{id}", Pair.LSK_JPY.getValue())
+                        .header("x-forwarded-for", "127.0.0.1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                     {"reason": "test-reason", "group": "test-group", "range": 3}
@@ -45,6 +47,7 @@ class OrderControllerTest {
         );
         String response = this.mockMvc.perform(
                         post("/order/buy/{id}", Pair.LSK_JPY.getValue())
+                                .header("x-forwarded-for", "127.0.0.1")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
                                             {"reason": "test-reason", "group": "test-group", "range": 1}
@@ -54,6 +57,7 @@ class OrderControllerTest {
         assertEquals("Request interval too short. Please try again later.", response);
         response = this.mockMvc.perform(
                         post("/order/buy/{id}", Pair.LSK_JPY.getValue())
+                                .header("x-forwarded-for", "127.0.0.1")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
                                             {"reason": "test-reason", "group": "test-group", "range": 0}
@@ -67,6 +71,7 @@ class OrderControllerTest {
     void sell() throws Exception {
         String response = this.mockMvc.perform(
                         post("/order/sell/{id}", Pair.BTC_JPY.getValue())
+                                .header("x-forwarded-for", "127.0.0.1")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
                                             {"reason": "test-reason", "group": "test-group", "range": 1}
@@ -80,6 +85,7 @@ class OrderControllerTest {
     void strategySell() throws Exception {
         String response = this.mockMvc.perform(
                         post("/order/strategy/{id}", Pair.BTC_JPY.getValue())
+                                .header("x-forwarded-for", "127.0.0.1")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
                                             {"reason": "test-reason", "group": "test-group1", "range": 1, "order_type": "sell"}
@@ -93,6 +99,7 @@ class OrderControllerTest {
     void strategyBuy() throws Exception {
         String response = this.mockMvc.perform(
                         post("/order/strategy/{id}", Pair.BTC_JPY.getValue())
+                                .header("x-forwarded-for", "127.0.0.1")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
                                             {"reason": "test-reason", "group": "test-group2", "range": 1, "order_type": "buy"}
@@ -106,6 +113,7 @@ class OrderControllerTest {
     void strategyOther() throws Exception {
         String response = this.mockMvc.perform(
                         post("/order/strategy/{id}", Pair.BTC_JPY.getValue())
+                                .header("x-forwarded-for", "127.0.0.1")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
                                             {"reason": "test-reason", "group": "test-group3", "range": 1, "order-type": "other"}

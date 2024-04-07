@@ -44,13 +44,12 @@ public class RequestIntervalFilter extends OncePerRequestFilter {
             allowedIPs = new HashSet<>(Arrays.asList(allowedIPsConfig.split(",")));
         }
 
-        if (!allowedIPs.contains(request.getRemoteAddr())) {
+        if (!allowedIPs.contains(request.getHeader("x-forwarded-for"))) {
             log.warn("{} {}",
                     value("kind", "request-remote-ip-denied"),
-                    value("remote-ip", request.getRemoteAddr()));
-// 一時的にOFF
-//            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access Denied");
-//            return;
+                    value("remote-ip", request.getHeader("x-forwarded-for")));
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access Denied");
+            return;
         }
         // 前回からのリクエストからの経過時間を判定
         var requestWrapper = new BufferedServletRequestWrapper(request);

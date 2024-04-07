@@ -31,7 +31,7 @@ class OrderControllerTest {
                                         """)
                 )
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
-        assertEquals(response, "OK");
+        assertEquals("OK", response);
     }
 
     @Test
@@ -51,7 +51,16 @@ class OrderControllerTest {
                                         """)
                 )
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
-        assertEquals(response, "Request interval too short. Please try again later.");
+        assertEquals("Request interval too short. Please try again later.", response);
+        response = this.mockMvc.perform(
+                        post("/order/buy/{id}", Pair.LSK_JPY.getValue())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                            {"reason": "test-reason", "group": "test-group", "range": 0}
+                                        """)
+                )
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        assertEquals("OK", response);
     }
 
     @Test
@@ -64,7 +73,7 @@ class OrderControllerTest {
                                         """)
                 )
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
-        assertEquals(response, "OK");
+        assertEquals("OK", response);
     }
 
     @Test
@@ -77,7 +86,7 @@ class OrderControllerTest {
                                         """)
                 )
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
-        assertEquals(response, "OK");
+        assertEquals("OK", response);
     }
 
     @Test
@@ -90,7 +99,7 @@ class OrderControllerTest {
                                         """)
                 )
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
-        assertEquals(response, "OK");
+        assertEquals("OK", response);
     }
 
     @Test

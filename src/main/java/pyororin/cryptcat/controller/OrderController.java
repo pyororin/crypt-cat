@@ -29,4 +29,10 @@ public class OrderController {
         tradeService.sell(Pair.fromValue(pair), orderRequest);
         return ResponseEntity.ok("OK");
     }
+
+    @PostMapping("/order/strategy/{pair}")
+    public ResponseEntity<String> strategy(@PathVariable String pair, @RequestBody @Validated OrderRequest orderRequest) {
+        tradeService.order(Pair.fromValue(pair), orderRequest);
+        return ResponseEntity.ok("OK");
+    }
 }

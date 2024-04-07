@@ -37,4 +37,31 @@ class SkipTradeServiceImplTest {
                 .thenReturn(CoinCheckTickerResponse.builder().last(10665058).bid(10665059).ask(10665057).build());
         assertEquals(BigDecimal.valueOf(26662.6475).setScale(4, RoundingMode.HALF_EVEN), skipTradeService.sell(Pair.BTC_JPY, new OrderRequest()));
     }
+
+    @Test
+    void strategySell() {
+        var request = new OrderRequest();
+        request.setOrderType("sell");
+        Mockito.when(repository.retrieveTicker(any()))
+                .thenReturn(CoinCheckTickerResponse.builder().last(10665058).bid(10665059).ask(10665057).build());
+        assertEquals(BigDecimal.valueOf(26662.6475).setScale(4, RoundingMode.HALF_EVEN), skipTradeService.order(Pair.BTC_JPY, request));
+    }
+
+    @Test
+    void strategyBuy() {
+        var request = new OrderRequest();
+        request.setOrderType("buy");
+        Mockito.when(repository.retrieveTicker(any()))
+                .thenReturn(CoinCheckTickerResponse.builder().last(10665058).bid(10665059).ask(10665057).build());
+        assertEquals(BigDecimal.valueOf(26662.6425).setScale(4, RoundingMode.HALF_EVEN), skipTradeService.order(Pair.BTC_JPY, request));
+    }
+
+    @Test
+    void strategyOther() {
+        var request = new OrderRequest();
+        request.setOrderType("other");
+        Mockito.when(repository.retrieveTicker(any()))
+                .thenReturn(CoinCheckTickerResponse.builder().last(10665058).bid(10665059).ask(10665057).build());
+        assertEquals(BigDecimal.valueOf(0), skipTradeService.order(Pair.BTC_JPY, request));
+    }
 }

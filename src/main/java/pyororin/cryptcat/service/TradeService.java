@@ -9,4 +9,6 @@ public interface TradeService {
     BigDecimal buy(Pair pair, OrderRequest orderRequest);
 
     BigDecimal sell(Pair pair, OrderRequest orderRequest);
+
+    BigDecimal order(Pair pair, OrderRequest orderRequest);
 }

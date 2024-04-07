@@ -54,4 +54,16 @@ public class TradeServiceImpl implements TradeService {
         repository.exchangeSell(Pair.BTC_JPY, apiConfig.getAmount());
         return marketSellAmount;
     }
+
+    @Override
+    public BigDecimal order(Pair pair, OrderRequest orderRequest) {
+        if (orderRequest.isBuy()) {
+            return this.buy(pair, orderRequest);
+        }
+        if (orderRequest.isSell()) {
+            return this.sell(pair, orderRequest);
+        }
+        log.warn("BodyパラメータにorderTypeが無いか、buy|sell ではありません");
+        return BigDecimal.valueOf(0);
+    }
 }

@@ -35,7 +35,7 @@ class OrderControllerTest {
     }
 
     @Test
-    void short_interval() throws Exception {
+    void shortInterval() throws Exception {
         this.mockMvc.perform(
                 post("/order/buy/{id}", Pair.LSK_JPY.getValue())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -47,7 +47,7 @@ class OrderControllerTest {
                         post("/order/buy/{id}", Pair.LSK_JPY.getValue())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
-                                            {"reason": "test-reason", "group": "test-group", "range": 3}
+                                            {"reason": "test-reason", "group": "test-group", "range": 1}
                                         """)
                 )
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
@@ -60,7 +60,46 @@ class OrderControllerTest {
                         post("/order/sell/{id}", Pair.BTC_JPY.getValue())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
-                                            {"reason": "test-reason", "group": "test-group", "range": 3}
+                                            {"reason": "test-reason", "group": "test-group", "range": 1}
+                                        """)
+                )
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        assertEquals(response, "OK");
+    }
+
+    @Test
+    void strategySell() throws Exception {
+        String response = this.mockMvc.perform(
+                        post("/order/strategy/{id}", Pair.BTC_JPY.getValue())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                            {"reason": "test-reason", "group": "test-group1", "range": 1, "order_type": "sell"}
+                                        """)
+                )
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        assertEquals(response, "OK");
+    }
+
+    @Test
+    void strategyBuy() throws Exception {
+        String response = this.mockMvc.perform(
+                        post("/order/strategy/{id}", Pair.BTC_JPY.getValue())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                            {"reason": "test-reason", "group": "test-group2", "range": 1, "order_type": "buy"}
+                                        """)
+                )
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        assertEquals(response, "OK");
+    }
+
+    @Test
+    void strategyOther() throws Exception {
+        String response = this.mockMvc.perform(
+                        post("/order/strategy/{id}", Pair.BTC_JPY.getValue())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                            {"reason": "test-reason", "group": "test-group3", "range": 1, "order_type": "other"}
                                         """)
                 )
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();

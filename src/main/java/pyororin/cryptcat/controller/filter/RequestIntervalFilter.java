@@ -15,8 +15,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static net.logstash.logback.argument.StructuredArguments.value;
@@ -27,6 +26,11 @@ public class RequestIntervalFilter extends OncePerRequestFilter {
     @Value("${skip.range.chart}")
     long skipRangeChart;
 
+    @Value("${allowed.ips}")
+    private String allowedIPsConfig;
+
+    private Set<String> allowedIPs;
+
     private final Map<String, Instant> lastRequestMap = new HashMap<>();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -35,6 +39,19 @@ public class RequestIntervalFilter extends OncePerRequestFilter {
             @NotNull HttpServletRequest request,
             @NotNull HttpServletResponse response,
             @NotNull FilterChain filterChain) throws ServletException, IOException {
+        // リクエスト元のIPアドレスをチェック
+        if (allowedIPs == null) {
+            allowedIPs = new HashSet<>(Arrays.asList(allowedIPsConfig.split(",")));
+        }
+
+        if (!allowedIPs.contains(request.getRemoteAddr())) {
+            log.warn("{} {}",
+                    value("kind", "request-remote-ip-denied"),
+                    value("remote-ip", request.getRemoteAddr()));
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access Denied");
+            return;
+        }
+        // 前回からのリクエストからの経過時間を判定
         var requestWrapper = new BufferedServletRequestWrapper(request);
 
         String key = getGroupFromRequestBody(requestWrapper, "group") + requestWrapper.getRequestURI();

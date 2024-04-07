@@ -15,7 +15,7 @@ public class OrderRequest {
     @NotNull
     private int range;
 
-    @JsonProperty("order_type")
+    @JsonProperty("order-type")
     private String orderType;
 
     public boolean isSell() {

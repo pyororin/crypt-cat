@@ -29,6 +29,7 @@ public class TradeServiceImpl implements TradeService {
         var tickerResponse = repository.retrieveTicker(CoinCheckRequest.builder().pair(pair).build());
         var marketBuyAmount = BigDecimal.valueOf(tickerResponse.getFairBuyPrice())
                 .multiply(apiConfig.getAmount()).multiply(orderRequest.getRatio());
+        repository.exchangeBuy(Pair.BTC_JPY, marketBuyAmount);
         log.info("{} {} {} {} {} {}",
                 value("kind", "exchange"),
                 value("pair", "btc_jpy"),
@@ -36,7 +37,6 @@ public class TradeServiceImpl implements TradeService {
                 value("market_buy_amount", marketBuyAmount),
                 value("order_rate", tickerResponse.getFairBuyPrice()),
                 value("group", orderRequest.getGroup()));
-        repository.exchangeBuy(Pair.BTC_JPY, marketBuyAmount);
         return marketBuyAmount;
     }
 
@@ -46,6 +46,7 @@ public class TradeServiceImpl implements TradeService {
         var tickerResponse = repository.retrieveTicker(CoinCheckRequest.builder().pair(pair).build());
         var marketSellAmount = BigDecimal.valueOf(tickerResponse.getFairSellPrice())
                 .multiply(apiConfig.getAmount()).multiply(orderRequest.getRatio());
+        repository.exchangeSell(Pair.BTC_JPY, apiConfig.getAmount());
         log.info("{} {} {} {} {} {}",
                 value("kind", "exchange"),
                 value("pair", "btc_jpy"),
@@ -53,7 +54,6 @@ public class TradeServiceImpl implements TradeService {
                 value("market_sell_amount", marketSellAmount),
                 value("order_rate", tickerResponse.getFairSellPrice()),
                 value("group", orderRequest.getGroup()));
-        repository.exchangeSell(Pair.BTC_JPY, apiConfig.getAmount());
         return marketSellAmount;
     }
 

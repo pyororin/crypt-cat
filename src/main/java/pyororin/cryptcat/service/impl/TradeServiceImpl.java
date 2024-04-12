@@ -25,9 +25,10 @@ public class TradeServiceImpl implements TradeService {
 
     @Override
     public BigDecimal buy(Pair pair, OrderRequest orderRequest) {
-        /* 市場最終価格(ticker.last or ticker.ask) * 注文量(amount) = 注文価格 */
+        /* 市場最終価格(ticker.last or ticker.ask) * 注文量(amount) * レシオ(ratio) = 注文価格 */
         var tickerResponse = repository.retrieveTicker(CoinCheckRequest.builder().pair(pair).build());
-        var marketBuyAmount = BigDecimal.valueOf(tickerResponse.getFairBuyPrice()).multiply(apiConfig.getAmount());
+        var marketBuyAmount = BigDecimal.valueOf(tickerResponse.getFairBuyPrice())
+                .multiply(apiConfig.getAmount()).multiply(orderRequest.getRatio());
         log.info("{} {} {} {} {} {}",
                 value("kind", "exchange"),
                 value("pair", "btc_jpy"),
@@ -41,9 +42,10 @@ public class TradeServiceImpl implements TradeService {
 
     @Override
     public BigDecimal sell(Pair pair, OrderRequest orderRequest) {
-        /* 市場最終価格(ticker.last or ticker.ask) * 注文量(amount) = 注文価格 */
+        /* 市場最終価格(ticker.last or ticker.ask) * 注文量(amount) * レシオ(ratio)  = 注文価格 */
         var tickerResponse = repository.retrieveTicker(CoinCheckRequest.builder().pair(pair).build());
-        var marketSellAmount = BigDecimal.valueOf(tickerResponse.getFairSellPrice()).multiply(apiConfig.getAmount());
+        var marketSellAmount = BigDecimal.valueOf(tickerResponse.getFairSellPrice())
+                .multiply(apiConfig.getAmount()).multiply(orderRequest.getRatio());
         log.info("{} {} {} {} {} {}",
                 value("kind", "exchange"),
                 value("pair", "btc_jpy"),

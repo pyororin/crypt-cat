@@ -42,9 +42,10 @@ class SkipTradeServiceImplTest {
     void strategySell() {
         var request = new OrderRequest();
         request.setOrderType("sell");
+        request.setRatio(BigDecimal.valueOf(2));
         Mockito.when(repository.retrieveTicker(any()))
                 .thenReturn(CoinCheckTickerResponse.builder().last(10665058).bid(10665059).ask(10665057).build());
-        assertEquals(BigDecimal.valueOf(26662.6475).setScale(4, RoundingMode.HALF_EVEN), skipTradeService.order(Pair.BTC_JPY, request));
+        assertEquals(BigDecimal.valueOf(53325.2950).setScale(4, RoundingMode.HALF_EVEN), skipTradeService.order(Pair.BTC_JPY, request));
     }
 
     @Test

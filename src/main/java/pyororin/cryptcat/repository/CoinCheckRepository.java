@@ -7,6 +7,7 @@ import org.json.JSONObject;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 import pyororin.cryptcat.config.CoinCheckApiConfig;
 import pyororin.cryptcat.config.CoinCheckRequestConfig;
 import pyororin.cryptcat.repository.model.CoinCheckRequest;
@@ -79,7 +80,10 @@ public class CoinCheckRepository {
                 .body(jsonBody.toString())
                 .retrieve()
                 .onStatus(HttpStatusCode::is2xxSuccessful, (req, res) -> log.info("{} {}", value("kind", "api"), value("status", "ok")))
-                .onStatus(HttpStatusCode::isError, (req, res) -> log.error("{} {}", value("kind", "api"), value("status", res.getStatusText())))
+                .onStatus(HttpStatusCode::isError, (req, res) -> {
+                    log.error("{} {}", value("kind", "api"), value("status", res.getStatusText()));
+                    throw new RestClientException(res.getStatusCode().toString());
+                })
                 .toBodilessEntity();
     }
 

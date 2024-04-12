@@ -46,7 +46,7 @@ public class TradeServiceImpl implements TradeService {
         var tickerResponse = repository.retrieveTicker(CoinCheckRequest.builder().pair(pair).build());
         var marketSellAmount = BigDecimal.valueOf(tickerResponse.getFairSellPrice())
                 .multiply(apiConfig.getAmount()).multiply(orderRequest.getRatio());
-        repository.exchangeSell(Pair.BTC_JPY, apiConfig.getAmount());
+        repository.exchangeSell(Pair.BTC_JPY, apiConfig.getAmount().multiply(orderRequest.getRatio()));
         log.info("{} {} {} {} {} {}",
                 value("kind", "exchange"),
                 value("pair", "btc_jpy"),

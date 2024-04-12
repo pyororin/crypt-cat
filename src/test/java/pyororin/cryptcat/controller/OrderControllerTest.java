@@ -128,7 +128,7 @@ class OrderControllerTest {
                                 .header("x-forwarded-for", "127.0.0.1")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
-                                            {"reason": "test-reason", "group": "test-group1", "range": 1, "order_type": "sell"}
+                                            {"reason": "test-reason", "group": "test-group1", "range": 1, "order_type": "sell", "ratio": 2.0}
                                         """)
                 )
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
@@ -142,7 +142,7 @@ class OrderControllerTest {
                                 .header("x-forwarded-for", "127.0.0.1")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
-                                            {"reason": "test-reason", "group": "test-group2", "range": 1, "order_type": "buy"}
+                                            {"reason": "test-reason", "group": "test-group2", "range": 1, "order_type": "buy", "ratio": 2.0}
                                         """)
                 )
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
@@ -156,7 +156,7 @@ class OrderControllerTest {
                                 .header("x-forwarded-for", "127.0.0.1")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
-                                            {"reason": "test-reason", "group": "test-group3", "range": 1, "order-type": "other"}
+                                            {"reason": "test-reason", "group": "test-group3", "range": 1, "order-type": "other", "ratio": 2.0}
                                         """)
                 )
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();

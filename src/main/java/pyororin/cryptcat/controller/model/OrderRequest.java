@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.ToString;
 
+import java.math.BigDecimal;
+
 @Data
 @ToString
 public class OrderRequest {
@@ -14,6 +16,7 @@ public class OrderRequest {
     private String group;
     @NotNull
     private int range;
+    private BigDecimal ratio = BigDecimal.valueOf(1);
 
     @JsonProperty("order-type")
     private String orderType;

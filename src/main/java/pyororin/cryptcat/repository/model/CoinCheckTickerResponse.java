@@ -20,11 +20,11 @@ public class CoinCheckTickerResponse {
 
     public BigDecimal getFairBuyPrice() {
 //        return last;
-        return last.min(ask);
+        return last.max(ask);
     }
 
     public BigDecimal getFairSellPrice() {
 //        return last;
-        return last.max(bid);
+        return last.min(bid);
     }
 }

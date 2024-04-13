@@ -12,6 +12,7 @@ import pyororin.cryptcat.config.CoinCheckApiConfig;
 import pyororin.cryptcat.config.CoinCheckRequestConfig;
 import pyororin.cryptcat.repository.model.CoinCheckRequest;
 import pyororin.cryptcat.repository.model.CoinCheckTickerResponse;
+import pyororin.cryptcat.repository.model.CoinCheckBalanceResponse;
 import pyororin.cryptcat.repository.model.Pair;
 
 import javax.crypto.Mac;
@@ -55,7 +56,7 @@ public class CoinCheckRepository {
         exchange(jsonBody);
     }
 
-    public String getBalance() {
+    public CoinCheckBalanceResponse getBalance() {
         String nonce = String.valueOf(System.currentTimeMillis() / 1000L);
         return restClient.get()
                 .uri("/api/accounts/balance")
@@ -65,7 +66,7 @@ public class CoinCheckRepository {
                     httpHeaders.set("ACCESS-SIGNATURE", HMAC_SHA256Encode(config.getSecret(), nonce + apiConfig.getHost() + "/api/accounts/balance"));
                 })
                 .retrieve()
-                .toEntity(String.class).getBody();
+                .toEntity(CoinCheckBalanceResponse.class).getBody();
     }
 
     private void exchange(JSONObject jsonBody) {

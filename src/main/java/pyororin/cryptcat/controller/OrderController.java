@@ -26,7 +26,7 @@ public class OrderController {
 
     @PostMapping("/order/strategy/{pair}/split")
     public ResponseEntity<String> strategySplit(@PathVariable String pair, @RequestBody @Validated OrderRequest orderRequest) {
-        tradeService.order(Pair.fromValue(pair), orderRequest);
+        tradeService.orderSplit(Pair.fromValue(pair), orderRequest);
         return ResponseEntity.ok("OK");
     }
 }

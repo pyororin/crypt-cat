@@ -87,7 +87,7 @@ public class TradeServiceImpl implements TradeService {
 
     @Override
     public void orderSplit(Pair pair, OrderRequest orderRequest) {
-        if (!orderRequest.isBuy() || !orderRequest.isSell()) {
+        if (!orderRequest.isBuy() && !orderRequest.isSell()) {
             log.warn("BodyパラメータにorderTypeが無いか、buy|sell ではありません");
             return;
         }

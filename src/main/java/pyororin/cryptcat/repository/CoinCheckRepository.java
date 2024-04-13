@@ -10,9 +10,9 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 import pyororin.cryptcat.config.CoinCheckApiConfig;
 import pyororin.cryptcat.config.CoinCheckRequestConfig;
+import pyororin.cryptcat.repository.model.CoinCheckBalanceResponse;
 import pyororin.cryptcat.repository.model.CoinCheckRequest;
 import pyororin.cryptcat.repository.model.CoinCheckTickerResponse;
-import pyororin.cryptcat.repository.model.CoinCheckBalanceResponse;
 import pyororin.cryptcat.repository.model.Pair;
 
 import javax.crypto.Mac;
@@ -40,19 +40,21 @@ public class CoinCheckRepository {
                 .toEntity(CoinCheckTickerResponse.class).getBody();
     }
 
-    public void exchangeBuy(Pair pair, BigDecimal marketBuyAmount) {
+    public void exchangeBuy(Pair pair, BigDecimal rate, BigDecimal amount) {
         var jsonBody = new JSONObject();
         jsonBody.put("pair", pair.getValue());
-        jsonBody.put("order_type", "market_buy");
-        jsonBody.put("market_buy_amount", marketBuyAmount.toString());
+        jsonBody.put("order_type", "buy");
+        jsonBody.put("rate", rate);
+        jsonBody.put("amount", amount);
         exchange(jsonBody);
     }
 
-    public void exchangeSell(Pair pair, BigDecimal amount) {
+    public void exchangeSell(Pair pair, BigDecimal rate, BigDecimal amount) {
         var jsonBody = new JSONObject();
         jsonBody.put("pair", pair.getValue());
-        jsonBody.put("order_type", "market_sell");
-        jsonBody.put("amount", amount.toString());
+        jsonBody.put("order_type", "sell");
+        jsonBody.put("rate", rate);
+        jsonBody.put("amount", amount);
         exchange(jsonBody);
     }
 

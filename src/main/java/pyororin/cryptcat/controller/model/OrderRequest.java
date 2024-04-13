@@ -14,11 +14,11 @@ public class OrderRequest {
     private String reason;
     @NotNull
     private String group;
-    @NotNull
     private int range;
+    @NotNull
     private BigDecimal ratio = BigDecimal.valueOf(1);
 
-    @JsonProperty("order-type")
+    @JsonProperty(value = "order-type", required = true)
     private String orderType;
 
     public boolean isSell() {

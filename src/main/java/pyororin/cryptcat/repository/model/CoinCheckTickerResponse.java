@@ -4,6 +4,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.ToString;
 
+import java.math.BigDecimal;
+
 @Builder
 @Data
 @ToString
@@ -16,11 +18,11 @@ public class CoinCheckTickerResponse {
     private String volume;
     private long timestamp;
 
-    public int getFairBuyPrice() {
-        return Math.min(last, ask);
+    public BigDecimal getFairBuyPrice() {
+        return BigDecimal.valueOf(Math.min(last, ask));
     }
 
-    public int getFairSellPrice() {
-        return Math.max(last, bid);
+    public BigDecimal getFairSellPrice() {
+        return BigDecimal.valueOf(Math.max(last, bid));
     }
 }

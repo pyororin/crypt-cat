@@ -85,7 +85,7 @@ class CoinCheckRepositoryTest {
 
         var restClient = restClientBuilder.build();
         var repository = new CoinCheckRepository(restClient, config, apiConfig);
-        repository.exchangeBuy(Pair.BTC_JPY, BigDecimal.valueOf(1.3));
+        repository.exchangeBuy(Pair.BTC_JPY, BigDecimal.valueOf(30010.0), BigDecimal.valueOf(1.3));
         mockServer.verify();
     }
 
@@ -105,7 +105,7 @@ class CoinCheckRepositoryTest {
 
         var restClient = restClientBuilder.build();
         var repository = new CoinCheckRepository(restClient, config, apiConfig);
-        repository.exchangeBuy(Pair.BTC_JPY, BigDecimal.valueOf(1.3));
+        repository.exchangeBuy(Pair.BTC_JPY, BigDecimal.valueOf(30010.0), BigDecimal.valueOf(1.3));
         mockServer.verify();
     }
 
@@ -118,13 +118,18 @@ class CoinCheckRepositoryTest {
     @Disabled
     @Test
     void exchangeBuy() {
-        var marketBuyAmount = BigDecimal.valueOf(10656106).multiply(apiConfig.getAmount());
-        repository.exchangeBuy(Pair.BTC_JPY, marketBuyAmount);
+        var response = repository.retrieveTicker(CoinCheckRequest.builder().pair(Pair.BTC_JPY).build());
+        var rate = response.getFairBuyPrice();
+        var amount = BigDecimal.valueOf(0.0055);
+        repository.exchangeBuy(Pair.BTC_JPY, rate, amount);
     }
 
     @Disabled
     @Test
     void exchangeSell() {
-        repository.exchangeSell(Pair.BTC_JPY, apiConfig.getAmount());
+        var response = repository.retrieveTicker(CoinCheckRequest.builder().pair(Pair.BTC_JPY).build());
+        var rate = response.getFairSellPrice();
+        var amount = BigDecimal.valueOf(0.0055);
+        repository.exchangeSell(Pair.BTC_JPY, rate, amount);
     }
 }

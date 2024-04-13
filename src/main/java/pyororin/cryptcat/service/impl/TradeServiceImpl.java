@@ -25,36 +25,52 @@ public class TradeServiceImpl implements TradeService {
 
     @Override
     public BigDecimal buy(Pair pair, OrderRequest orderRequest) {
-        /* 市場最終価格(ticker.last or ticker.ask) * 注文量(amount) * レシオ(ratio) = 注文価格 */
+        //"buy"
+        //指値注文 現物取引 買い
+        //
+        //*rate注文のレート。（例）28000
+        //*amount注文での量。（例）0.1
+
+        /* 市場最終価格(ticker.last or ticker.ask) = rate */
+        /* 固定注文量 * アラート別レシオ = amount */
         var tickerResponse = repository.retrieveTicker(CoinCheckRequest.builder().pair(pair).build());
-        var marketBuyAmount = BigDecimal.valueOf(tickerResponse.getFairBuyPrice())
-                .multiply(apiConfig.getAmount()).multiply(orderRequest.getRatio());
-        repository.exchangeBuy(Pair.BTC_JPY, marketBuyAmount);
-        log.info("{} {} {} {} {} {}",
+        var amount = apiConfig.getAmount().multiply(orderRequest.getRatio());
+        var marketBuyPrice = tickerResponse.getFairBuyPrice().multiply(amount);
+        repository.exchangeBuy(Pair.BTC_JPY, tickerResponse.getFairBuyPrice(), amount);
+        log.info("{} {} {} {} {} {} {}",
                 value("kind", "exchange"),
                 value("pair", "btc_jpy"),
                 value("order_type", "market_buy"),
-                value("market_buy_amount", marketBuyAmount),
+                value("market_buy_amount", amount),
+                value("market_buy_price", marketBuyPrice),
                 value("order_rate", tickerResponse.getFairBuyPrice()),
                 value("group", orderRequest.getGroup()));
-        return marketBuyAmount;
+        return marketBuyPrice;
     }
 
     @Override
     public BigDecimal sell(Pair pair, OrderRequest orderRequest) {
-        /* 市場最終価格(ticker.last or ticker.ask) * 注文量(amount) * レシオ(ratio)  = 注文価格 */
+        //"sell"
+        //指値注文 現物取引 売り
+        //
+        //*rate注文のレート。（例）28000
+        //*amount注文での量。（例）0.1
+
+        /* 市場最終価格(ticker.last or ticker.ask) = rate */
+        /* 固定注文量 * アラート別レシオ = amount */
         var tickerResponse = repository.retrieveTicker(CoinCheckRequest.builder().pair(pair).build());
-        var marketSellAmount = BigDecimal.valueOf(tickerResponse.getFairSellPrice())
-                .multiply(apiConfig.getAmount()).multiply(orderRequest.getRatio());
-        repository.exchangeSell(Pair.BTC_JPY, apiConfig.getAmount().multiply(orderRequest.getRatio()));
-        log.info("{} {} {} {} {} {}",
+        var amount = apiConfig.getAmount().multiply(orderRequest.getRatio());
+        var marketSellPrice = tickerResponse.getFairBuyPrice().multiply(amount);
+        repository.exchangeSell(Pair.BTC_JPY, tickerResponse.getFairBuyPrice(), amount);
+        log.info("{} {} {} {} {} {} {}",
                 value("kind", "exchange"),
                 value("pair", "btc_jpy"),
                 value("order_type", "market_sell"),
-                value("market_sell_amount", marketSellAmount),
+                value("market_sell_amount", amount),
+                value("market_sell_price", marketSellPrice),
                 value("order_rate", tickerResponse.getFairSellPrice()),
                 value("group", orderRequest.getGroup()));
-        return marketSellAmount;
+        return marketSellPrice;
     }
 
     @Override

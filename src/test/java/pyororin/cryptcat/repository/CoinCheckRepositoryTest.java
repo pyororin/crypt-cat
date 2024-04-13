@@ -60,7 +60,7 @@ class CoinCheckRepositoryTest {
         var repository = new CoinCheckRepository(restClient, config, apiConfig);
         var actual = repository.retrieveTicker(CoinCheckRequest.builder().pair(Pair.BTC_JPY).build());
         mockServer.verify();
-        assertEquals(actual.getLast(), 27390);
+        assertEquals(actual.getLast(), new BigDecimal(27390));
     }
 
     @Test

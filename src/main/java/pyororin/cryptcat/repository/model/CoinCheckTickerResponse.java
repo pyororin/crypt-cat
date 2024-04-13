@@ -10,19 +10,19 @@ import java.math.BigDecimal;
 @Data
 @ToString
 public class CoinCheckTickerResponse {
-    private int last;
-    private int bid;
-    private int ask;
-    private int high;
-    private int low;
+    private BigDecimal last;
+    private BigDecimal bid;
+    private BigDecimal ask;
+    private BigDecimal high;
+    private BigDecimal low;
     private String volume;
     private long timestamp;
 
     public BigDecimal getFairBuyPrice() {
-        return BigDecimal.valueOf(Math.min(last, ask));
+        return last.min(ask);
     }
 
     public BigDecimal getFairSellPrice() {
-        return BigDecimal.valueOf(Math.max(last, bid));
+        return last.max(bid);
     }
 }

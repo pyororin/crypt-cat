@@ -44,7 +44,7 @@ public class CoinCheckRepository {
         var jsonBody = new JSONObject();
         jsonBody.put("pair", pair.getValue());
         jsonBody.put("order_type", "buy");
-        jsonBody.put("rate", rate);
+        jsonBody.put("rate", rate.longValue());
         jsonBody.put("amount", amount);
         exchange(jsonBody);
     }
@@ -53,7 +53,7 @@ public class CoinCheckRepository {
         var jsonBody = new JSONObject();
         jsonBody.put("pair", pair.getValue());
         jsonBody.put("order_type", "sell");
-        jsonBody.put("rate", rate);
+        jsonBody.put("rate", rate.longValue());
         jsonBody.put("amount", amount);
         exchange(jsonBody);
     }
@@ -85,7 +85,7 @@ public class CoinCheckRepository {
                 .retrieve()
                 .onStatus(HttpStatusCode::is2xxSuccessful, (req, res) -> log.info("{} {} {}", value("kind", "api"), value("status", "ok"), value("response", new Scanner(res.getBody()).useDelimiter("\\A").next().replaceAll("\\r\\n|\\r|\\n", ""))))
                 .onStatus(HttpStatusCode::isError, (req, res) -> {
-                    log.error("{} {} {}", value("kind", "api"), value("status", res.getStatusText()), value("body", jsonBody.toString()));
+                    log.error("{} {} {}", value("kind", "api"), value("status", res.getStatusText()), value("response-body", jsonBody.toString()));
                     throw new RestClientException(res.getStatusCode().toString());
                 })
                 .toBodilessEntity();

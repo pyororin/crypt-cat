@@ -11,7 +11,6 @@ import org.springframework.web.client.RestClientException;
 import pyororin.cryptcat.config.CoinCheckApiConfig;
 import pyororin.cryptcat.config.CoinCheckRequestConfig;
 import pyororin.cryptcat.repository.model.CoinCheckRequest;
-import pyororin.cryptcat.repository.model.CoinCheckResponse;
 import pyororin.cryptcat.repository.model.CoinCheckTickerResponse;
 import pyororin.cryptcat.repository.model.Pair;
 
@@ -20,6 +19,7 @@ import javax.crypto.spec.SecretKeySpec;
 import java.math.BigDecimal;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Scanner;
 
 import static net.logstash.logback.argument.StructuredArguments.value;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -70,7 +70,7 @@ public class CoinCheckRepository {
 
     private void exchange(JSONObject jsonBody) {
         String nonce = String.valueOf(System.currentTimeMillis() / 1000L);
-        var response =  restClient.post()
+        restClient.post()
                 .uri("/api/exchange/orders")
                 .contentType(APPLICATION_JSON)
                 .headers(httpHeaders -> {
@@ -80,13 +80,12 @@ public class CoinCheckRepository {
                 })
                 .body(jsonBody.toString())
                 .retrieve()
-                .onStatus(HttpStatusCode::is2xxSuccessful, (req, res) -> log.info("{} {}", value("kind", "api"), value("status", "ok")))
+                .onStatus(HttpStatusCode::is2xxSuccessful, (req, res) -> log.info("{} {} {}", value("kind", "api"), value("status", "ok"), value("response", new Scanner(res.getBody()).useDelimiter("\\A").next().replaceAll("\\r\\n|\\r|\\n", ""))))
                 .onStatus(HttpStatusCode::isError, (req, res) -> {
                     log.error("{} {} {}", value("kind", "api"), value("status", res.getStatusText()), value("body", jsonBody.toString()));
                     throw new RestClientException(res.getStatusCode().toString());
                 })
-                .toEntity(CoinCheckResponse.class).getBody();
-        log.info("{} {} {}", value("kind", "api"), value("status", "ok"), value("response", response));
+                .toBodilessEntity();
     }
 
     private static String HMAC_SHA256Encode(String secretKey, String message) {

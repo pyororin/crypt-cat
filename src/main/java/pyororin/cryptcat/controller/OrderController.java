@@ -23,4 +23,10 @@ public class OrderController {
         tradeService.order(Pair.fromValue(pair), orderRequest);
         return ResponseEntity.ok("OK");
     }
+
+    @PostMapping("/order/strategy/{pair}/split")
+    public ResponseEntity<String> strategySplit(@PathVariable String pair, @RequestBody @Validated OrderRequest orderRequest) {
+        tradeService.order(Pair.fromValue(pair), orderRequest);
+        return ResponseEntity.ok("OK");
+    }
 }

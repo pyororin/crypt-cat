@@ -12,6 +12,10 @@ import pyororin.cryptcat.repository.model.Pair;
 import pyororin.cryptcat.service.TradeService;
 
 import java.math.BigDecimal;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.LongStream;
 
 import static net.logstash.logback.argument.StructuredArguments.value;
 
@@ -23,8 +27,7 @@ public class TradeServiceImpl implements TradeService {
     private final CoinCheckRepository repository;
     private final CoinCheckApiConfig apiConfig;
 
-    @Override
-    public BigDecimal buy(Pair pair, OrderRequest orderRequest) {
+    private BigDecimal buy(Pair pair, OrderRequest orderRequest) {
         //"buy"
         //指値注文 現物取引 買い
         //
@@ -34,22 +37,20 @@ public class TradeServiceImpl implements TradeService {
         /* 市場最終価格(ticker.last or ticker.ask) = rate */
         /* 固定注文量 * アラート別レシオ = amount */
         var tickerResponse = repository.retrieveTicker(CoinCheckRequest.builder().pair(pair).build());
-        var amount = apiConfig.getAmount().multiply(orderRequest.getRatio());
-        var marketBuyPrice = tickerResponse.getFairBuyPrice().multiply(amount);
-        repository.exchangeBuy(Pair.BTC_JPY, tickerResponse.getFairBuyPrice(), amount);
+        var marketBuyPrice = tickerResponse.getFairBuyPrice().multiply(apiConfig.getAmount());
+        repository.exchangeBuy(Pair.BTC_JPY, tickerResponse.getFairBuyPrice(), apiConfig.getAmount());
         log.info("{} {} {} {} {} {} {}",
                 value("kind", "exchange"),
                 value("pair", "btc_jpy"),
                 value("order_type", "market_buy"),
-                value("market_buy_amount", amount),
+                value("market_buy_amount", apiConfig.getAmount()),
                 value("market_buy_price", marketBuyPrice),
                 value("order_rate", tickerResponse.getFairBuyPrice()),
                 value("group", orderRequest.getGroup()));
         return marketBuyPrice;
     }
 
-    @Override
-    public BigDecimal sell(Pair pair, OrderRequest orderRequest) {
+    private BigDecimal sell(Pair pair, OrderRequest orderRequest) {
         //"sell"
         //指値注文 現物取引 売り
         //
@@ -57,16 +58,15 @@ public class TradeServiceImpl implements TradeService {
         //*amount注文での量。（例）0.1
 
         /* 市場最終価格(ticker.last or ticker.ask) = rate */
-        /* 固定注文量 * アラート別レシオ = amount */
+        /* 固定注文量 = amount */
         var tickerResponse = repository.retrieveTicker(CoinCheckRequest.builder().pair(pair).build());
-        var amount = apiConfig.getAmount().multiply(orderRequest.getRatio());
-        var marketSellPrice = tickerResponse.getFairBuyPrice().multiply(amount);
-        repository.exchangeSell(Pair.BTC_JPY, tickerResponse.getFairBuyPrice(), amount);
+        var marketSellPrice = tickerResponse.getFairBuyPrice().multiply(apiConfig.getAmount());
+        repository.exchangeSell(Pair.BTC_JPY, tickerResponse.getFairBuyPrice(), apiConfig.getAmount());
         log.info("{} {} {} {} {} {} {}",
                 value("kind", "exchange"),
                 value("pair", "btc_jpy"),
                 value("order_type", "market_sell"),
-                value("market_sell_amount", amount),
+                value("market_sell_amount", apiConfig.getAmount()),
                 value("market_sell_price", marketSellPrice),
                 value("order_rate", tickerResponse.getFairSellPrice()),
                 value("group", orderRequest.getGroup()));
@@ -83,5 +83,37 @@ public class TradeServiceImpl implements TradeService {
         }
         log.warn("BodyパラメータにorderTypeが無いか、buy|sell ではありません");
         return BigDecimal.valueOf(0);
+    }
+
+    @Override
+    public void orderSplit(Pair pair, OrderRequest orderRequest) {
+        if (!orderRequest.isBuy() || !orderRequest.isSell()) {
+            log.warn("BodyパラメータにorderTypeが無いか、buy|sell ではありません");
+            return;
+        }
+
+        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+
+        // 5秒ごとにタスクを実行する
+        LongStream.range(0, orderRequest.getRatio().longValue())
+                .forEach(i -> executor.schedule(() -> {
+                    if (orderRequest.isBuy()) {
+                        buy(pair, orderRequest);
+                    }
+                    if (orderRequest.isSell()) {
+                        sell(pair, orderRequest);
+                    }
+                }, i * apiConfig.getInterval(), TimeUnit.SECONDS));
+
+        // すべてのタスクが完了したらシャットダウン
+        executor.shutdown();
+        try {
+            if (!executor.awaitTermination(1, TimeUnit.MINUTES)) {
+                executor.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            executor.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
     }
 }

@@ -16,4 +16,5 @@ public class CoinCheckApiConfig {
     private String host;
     private BigDecimal amount;
     private String actually;
+    private int interval;
 }

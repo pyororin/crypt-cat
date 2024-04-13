@@ -80,6 +80,20 @@ class OrderControllerTest {
     }
 
     @Test
+    void strategyBuySplit() throws Exception {
+        String response = this.mockMvc.perform(
+                        post("/order/strategy/{id}/split", Pair.BTC_JPY.getValue())
+                                .header("x-forwarded-for", "127.0.0.1")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                            {"reason": "test-reason", "group": "test-group2", "order_type": "buy", "ratio": 2}
+                                        """)
+                )
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        assertEquals("OK", response);
+    }
+
+    @Test
     void strategyOther() throws Exception {
         String response = this.mockMvc.perform(
                         post("/order/strategy/{id}", Pair.BTC_JPY.getValue())

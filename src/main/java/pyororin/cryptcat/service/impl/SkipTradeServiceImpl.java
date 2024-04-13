@@ -12,6 +12,10 @@ import pyororin.cryptcat.repository.model.Pair;
 import pyororin.cryptcat.service.TradeService;
 
 import java.math.BigDecimal;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.LongStream;
 
 import static net.logstash.logback.argument.StructuredArguments.value;
 
@@ -24,8 +28,7 @@ public class SkipTradeServiceImpl implements TradeService {
     private final CoinCheckRepository repository;
     private final CoinCheckApiConfig apiConfig;
 
-    @Override
-    public BigDecimal buy(Pair pair, OrderRequest orderRequest) {
+    private BigDecimal buy(Pair pair, OrderRequest orderRequest) {
         /* 市場最終価格(ticker.last or ticker.ask) * 注文量(amount) = 注文価格 */
         var tickerResponse = repository.retrieveTicker(CoinCheckRequest.builder().pair(pair).build());
         var marketBuyAmount = tickerResponse.getFairBuyPrice()
@@ -40,8 +43,7 @@ public class SkipTradeServiceImpl implements TradeService {
         return marketBuyAmount;
     }
 
-    @Override
-    public BigDecimal sell(Pair pair, OrderRequest orderRequest) {
+    private BigDecimal sell(Pair pair, OrderRequest orderRequest) {
         /* 市場最終価格(ticker.last or ticker.ask) * 注文量(amount) = 注文価格 */
         var tickerResponse = repository.retrieveTicker(CoinCheckRequest.builder().pair(pair).build());
         var marketSellAmount = tickerResponse.getFairSellPrice()
@@ -66,5 +68,37 @@ public class SkipTradeServiceImpl implements TradeService {
         }
         log.warn("BodyパラメータにorderTypeが無いか、buy|sell ではありません");
         return BigDecimal.valueOf(0);
+    }
+
+    @Override
+    public void orderSplit(Pair pair, OrderRequest orderRequest) {
+        if (!orderRequest.isBuy() && !orderRequest.isSell()) {
+            log.warn("BodyパラメータにorderTypeが無いか、buy|sell ではありません");
+            return;
+        }
+
+        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+
+        // 5秒ごとにタスクを実行する
+        LongStream.range(0, orderRequest.getRatio().longValue())
+                .forEach(i -> executor.schedule(() -> {
+                    if (orderRequest.isBuy()) {
+                        buy(pair, orderRequest);
+                    }
+                    if (orderRequest.isSell()) {
+                        sell(pair, orderRequest);
+                    }
+                }, i * apiConfig.getInterval(), TimeUnit.SECONDS));
+
+        // すべてのタスクが完了したらシャットダウン
+        executor.shutdown();
+        try {
+            if (!executor.awaitTermination(1, TimeUnit.MINUTES)) {
+                executor.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            executor.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
     }
 }

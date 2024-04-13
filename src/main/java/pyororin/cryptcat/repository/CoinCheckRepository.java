@@ -11,6 +11,7 @@ import org.springframework.web.client.RestClientException;
 import pyororin.cryptcat.config.CoinCheckApiConfig;
 import pyororin.cryptcat.config.CoinCheckRequestConfig;
 import pyororin.cryptcat.repository.model.CoinCheckRequest;
+import pyororin.cryptcat.repository.model.CoinCheckResponse;
 import pyororin.cryptcat.repository.model.CoinCheckTickerResponse;
 import pyororin.cryptcat.repository.model.Pair;
 
@@ -69,7 +70,7 @@ public class CoinCheckRepository {
 
     private void exchange(JSONObject jsonBody) {
         String nonce = String.valueOf(System.currentTimeMillis() / 1000L);
-        restClient.post()
+        var response =  restClient.post()
                 .uri("/api/exchange/orders")
                 .contentType(APPLICATION_JSON)
                 .headers(httpHeaders -> {
@@ -84,7 +85,8 @@ public class CoinCheckRepository {
                     log.error("{} {} {}", value("kind", "api"), value("status", res.getStatusText()), value("body", jsonBody.toString()));
                     throw new RestClientException(res.getStatusCode().toString());
                 })
-                .toBodilessEntity();
+                .toEntity(CoinCheckResponse.class).getBody();
+        log.info("{} {} {}", value("kind", "api"), value("status", "ok"), value("response", response));
     }
 
     private static String HMAC_SHA256Encode(String secretKey, String message) {

@@ -15,6 +15,7 @@ import java.math.BigDecimal;
 public class CoinCheckApiConfig {
     private String host;
     private BigDecimal amount;
+    private BigDecimal price;
     private String actually;
     private int interval;
 }

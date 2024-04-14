@@ -12,6 +12,7 @@ import org.springframework.web.context.WebApplicationContext;
 import pyororin.cryptcat.controller.filter.RequestIntervalFilter;
 import pyororin.cryptcat.repository.model.Pair;
 import pyororin.cryptcat.service.IPCheckService;
+import pyororin.cryptcat.service.TradeJpyFixService;
 import pyororin.cryptcat.service.TradeService;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -30,6 +31,9 @@ class OrderControllerTest {
 
     @MockBean
     TradeService skipTradeService;
+
+    @MockBean
+    TradeJpyFixService tradeJpyFixService;
 
     @Mock
     IPCheckService ipCheckService;

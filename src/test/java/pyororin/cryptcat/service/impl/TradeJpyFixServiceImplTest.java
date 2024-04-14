@@ -33,7 +33,7 @@ class TradeJpyFixServiceImplTest {
         when(repository.retrieveTicker(any()))
                 .thenReturn(CoinCheckTickerResponse.builder().last(new BigDecimal(1000)).bid(new BigDecimal(999)).build());
         doNothing().when(repository).exchangeSell(any(), any(), any());
-        assertEquals(BigDecimal.valueOf(25.000000).setScale(6, RoundingMode.HALF_EVEN), tradeJpyFixService.order(Pair.BTC_JPY, request));
+        assertEquals(BigDecimal.valueOf(25.000000000).setScale(9, RoundingMode.HALF_EVEN), tradeJpyFixService.order(Pair.BTC_JPY, request));
     }
 
     @Test
@@ -44,7 +44,7 @@ class TradeJpyFixServiceImplTest {
         when(repository.retrieveTicker(any()))
                 .thenReturn(CoinCheckTickerResponse.builder().last(new BigDecimal(1000)).ask(new BigDecimal(1001)).build());
         doNothing().when(repository).exchangeBuy(any(), any(), any());
-        assertEquals(BigDecimal.valueOf(25.000000).setScale(6, RoundingMode.HALF_EVEN), tradeJpyFixService.order(Pair.BTC_JPY, request));
+        assertEquals(BigDecimal.valueOf(25.000000000).setScale(9, RoundingMode.HALF_EVEN), tradeJpyFixService.order(Pair.BTC_JPY, request));
     }
 
     @Test

@@ -3,7 +3,10 @@ package pyororin.cryptcat.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 import pyororin.cryptcat.config.CoinCheckApiConfig;
 import pyororin.cryptcat.controller.model.OrderRequest;
 import pyororin.cryptcat.repository.CoinCheckRepository;
@@ -59,6 +62,7 @@ public class SkipTradeServiceImpl implements TradeService {
     }
 
     @Override
+    @Retryable(retryFor = RestClientException.class, maxAttempts = 5, backoff = @Backoff(delay = 6000))
     public BigDecimal order(Pair pair, OrderRequest orderRequest) {
         if (orderRequest.isBuy()) {
             return this.buy(pair, orderRequest);
@@ -82,12 +86,7 @@ public class SkipTradeServiceImpl implements TradeService {
         // 5秒ごとにタスクを実行する
         LongStream.range(0, orderRequest.getRatio().longValue())
                 .forEach(i -> executor.schedule(() -> {
-                    if (orderRequest.isBuy()) {
-                        buy(pair, orderRequest);
-                    }
-                    if (orderRequest.isSell()) {
-                        sell(pair, orderRequest);
-                    }
+                    order(pair, orderRequest);
                 }, i * apiConfig.getInterval(), TimeUnit.SECONDS));
 
         // すべてのタスクが完了したらシャットダウン

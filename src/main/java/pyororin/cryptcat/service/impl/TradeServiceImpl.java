@@ -3,7 +3,12 @@ package pyororin.cryptcat.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.http.ResponseEntity;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 import pyororin.cryptcat.config.CoinCheckApiConfig;
 import pyororin.cryptcat.controller.model.OrderRequest;
 import pyororin.cryptcat.repository.CoinCheckRepository;
@@ -74,6 +79,7 @@ public class TradeServiceImpl implements TradeService {
     }
 
     @Override
+    @Retryable(retryFor = RestClientException.class, maxAttempts = 5, backoff = @Backoff(delay = 6000))
     public BigDecimal order(Pair pair, OrderRequest orderRequest) {
         if (orderRequest.isBuy()) {
             return this.buy(pair, orderRequest);
@@ -97,12 +103,7 @@ public class TradeServiceImpl implements TradeService {
         // 5秒ごとにタスクを実行する
         LongStream.range(0, orderRequest.getRatio().longValue())
                 .forEach(i -> executor.schedule(() -> {
-                    if (orderRequest.isBuy()) {
-                        buy(pair, orderRequest);
-                    }
-                    if (orderRequest.isSell()) {
-                        sell(pair, orderRequest);
-                    }
+                    order(pair, orderRequest);
                 }, i * apiConfig.getInterval(), TimeUnit.SECONDS));
 
         // すべてのタスクが完了したらシャットダウン
@@ -115,5 +116,11 @@ public class TradeServiceImpl implements TradeService {
             executor.shutdownNow();
             Thread.currentThread().interrupt();
         }
+    }
+
+    @Recover
+    public ResponseEntity<String> recover(Exception e) {
+        log.error("{} {} {}", value("kind", "api"), value("cause", "APIリトライ回数超過"), value("message", e.getMessage()));
+        return ResponseEntity.ok("リトライ後のリカバリー");
     }
 }

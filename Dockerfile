@@ -12,11 +12,12 @@ FROM eclipse-temurin:17.0.10_7-jre-alpine
 
 ARG _IS_ACTUALLY_SELL_BUY
 ARG _SELL_BUY_AMOUNT
-ENV IS_ACTUALLY_SELL_BUY=${_IS_ACTUALLY_SELL_BUY} SELL_BUY_AMOUNT=${_SELL_BUY_AMOUNT}
+ARG _SELL_BUY_PRICE
+ENV IS_ACTUALLY_SELL_BUY=${_IS_ACTUALLY_SELL_BUY} SELL_BUY_AMOUNT=${_SELL_BUY_AMOUNT} _SELL_BUY_PRICE=${_SELL_BUY_PRICE}
 
 RUN echo $IS_ACTUALLY_SELL_BUY
 RUN echo $SELL_BUY_AMOUNT
-
+RUN echo $SELL_BUY_PRICE
 
 COPY --from=builder /app/target/crypt-cat-*.jar /crypt-cat.jar
 CMD ["java", "-Djava.security.egd=file:/dev/./urandom", "-jar", "/crypt-cat.jar"]

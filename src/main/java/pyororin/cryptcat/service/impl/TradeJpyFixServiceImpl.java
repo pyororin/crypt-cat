@@ -42,7 +42,7 @@ public class TradeJpyFixServiceImpl implements TradeJpyFixService {
         /* 固定金額(JPY) / 市場最終価格(ticker.last or ticker.ask) = amount */
         var tickerResponse = repository.retrieveTicker(CoinCheckRequest.builder().pair(pair).build());
         var marketBuyPrice = apiConfig.getPrice();
-        var amount = apiConfig.getPrice().divide(tickerResponse.getFairBuyPrice(), 6, RoundingMode.HALF_EVEN);
+        var amount = apiConfig.getPrice().divide(tickerResponse.getFairBuyPrice(), 9, RoundingMode.HALF_EVEN);
         repository.exchangeBuy(Pair.BTC_JPY, tickerResponse.getFairBuyPrice(), amount);
         log.info("{} {} {} {} {} {} {}",
                 value("kind", "exchange"),
@@ -66,7 +66,7 @@ public class TradeJpyFixServiceImpl implements TradeJpyFixService {
         /* 固定金額(JPY) / 市場最終価格(ticker.last or ticker.ask) = amount */
         var tickerResponse = repository.retrieveTicker(CoinCheckRequest.builder().pair(pair).build());
         var marketSellPrice = apiConfig.getPrice();
-        var amount = apiConfig.getPrice().divide(tickerResponse.getFairSellPrice(), 6, RoundingMode.HALF_EVEN);
+        var amount = apiConfig.getPrice().divide(tickerResponse.getFairSellPrice(), 9, RoundingMode.HALF_EVEN);
         repository.exchangeSell(Pair.BTC_JPY, tickerResponse.getFairSellPrice(), amount);
         log.info("{} {} {} {} {} {} {}",
                 value("kind", "exchange"),

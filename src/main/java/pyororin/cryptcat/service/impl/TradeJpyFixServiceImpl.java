@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import pyororin.cryptcat.config.CoinCheckApiConfig;
 import pyororin.cryptcat.controller.model.OrderRequest;
-import pyororin.cryptcat.repository.CoinCheckRepository;
+import pyororin.cryptcat.repository.impl.CoinCheckRepositoryImpl;
 import pyororin.cryptcat.repository.model.CoinCheckRequest;
 import pyororin.cryptcat.repository.model.Pair;
 import pyororin.cryptcat.service.TradeJpyFixService;
@@ -28,7 +28,7 @@ import static net.logstash.logback.argument.StructuredArguments.value;
 @Service
 @RequiredArgsConstructor
 public class TradeJpyFixServiceImpl implements TradeJpyFixService {
-    private final CoinCheckRepository repository;
+    private final CoinCheckRepositoryImpl repository;
     private final CoinCheckApiConfig apiConfig;
 
     private BigDecimal buy(Pair pair, OrderRequest orderRequest) {

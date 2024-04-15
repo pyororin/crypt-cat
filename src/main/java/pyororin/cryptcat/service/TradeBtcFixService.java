@@ -5,7 +5,7 @@ import pyororin.cryptcat.repository.model.Pair;
 
 import java.math.BigDecimal;
 
-public interface TradeService {
+public interface TradeBtcFixService {
 
     BigDecimal order(Pair pair, OrderRequest orderRequest);
 

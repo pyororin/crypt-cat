@@ -10,6 +10,7 @@ import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestClient;
 import pyororin.cryptcat.config.CoinCheckApiConfig;
 import pyororin.cryptcat.config.CoinCheckRequestConfig;
+import pyororin.cryptcat.repository.impl.CoinCheckRepositoryImpl;
 import pyororin.cryptcat.repository.model.CoinCheckRequest;
 import pyororin.cryptcat.repository.model.Pair;
 
@@ -21,9 +22,9 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 @SpringBootTest
-class CoinCheckRepositoryTest {
+class CoinCheckRepositoryImplTest {
     @Autowired
-    CoinCheckRepository repository;
+    CoinCheckRepositoryImpl repository;
 
     @Autowired
     CoinCheckRequestConfig config;
@@ -57,7 +58,7 @@ class CoinCheckRepositoryTest {
                         """, MediaType.APPLICATION_JSON));
 
         var restClient = restClientBuilder.build();
-        var repository = new CoinCheckRepository(restClient, config, apiConfig);
+        var repository = new CoinCheckRepositoryImpl(restClient, config, apiConfig);
         var actual = repository.retrieveTicker(CoinCheckRequest.builder().pair(Pair.BTC_JPY).build());
         mockServer.verify();
         assertEquals(actual.getLast(), new BigDecimal(27390));
@@ -84,7 +85,7 @@ class CoinCheckRepositoryTest {
                         """, MediaType.APPLICATION_JSON));
 
         var restClient = restClientBuilder.build();
-        var repository = new CoinCheckRepository(restClient, config, apiConfig);
+        var repository = new CoinCheckRepositoryImpl(restClient, config, apiConfig);
         repository.exchangeBuy(Pair.BTC_JPY, BigDecimal.valueOf(30010.0), BigDecimal.valueOf(1.3));
         mockServer.verify();
     }
@@ -104,7 +105,7 @@ class CoinCheckRepositoryTest {
                         """, MediaType.APPLICATION_JSON));
 
         var restClient = restClientBuilder.build();
-        var repository = new CoinCheckRepository(restClient, config, apiConfig);
+        var repository = new CoinCheckRepositoryImpl(restClient, config, apiConfig);
         repository.exchangeBuy(Pair.BTC_JPY, BigDecimal.valueOf(30010.0), BigDecimal.valueOf(1.3));
         mockServer.verify();
     }

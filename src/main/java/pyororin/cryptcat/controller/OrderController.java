@@ -8,24 +8,24 @@ import org.springframework.web.bind.annotation.*;
 import pyororin.cryptcat.controller.model.OrderRequest;
 import pyororin.cryptcat.repository.model.Pair;
 import pyororin.cryptcat.service.TradeJpyFixService;
-import pyororin.cryptcat.service.TradeService;
+import pyororin.cryptcat.service.TradeBtcFixService;
 
 @RestController
 @Slf4j
 @RequiredArgsConstructor
 public class OrderController {
-    private final TradeService tradeService;
+    private final TradeBtcFixService tradeBtcFixService;
     private final TradeJpyFixService tradejpyFixService;
 
     @PostMapping("/order/strategy/{pair}")
     public ResponseEntity<String> strategy(@PathVariable String pair, @RequestBody @Validated OrderRequest orderRequest) {
-        tradeService.order(Pair.fromValue(pair), orderRequest);
+        tradeBtcFixService.order(Pair.fromValue(pair), orderRequest);
         return ResponseEntity.ok("OK");
     }
 
     @PostMapping("/order/strategy/{pair}/split")
     public ResponseEntity<String> strategySplit(@PathVariable String pair, @RequestBody @Validated OrderRequest orderRequest) {
-        tradeService.orderSplit(Pair.fromValue(pair), orderRequest);
+        tradeBtcFixService.orderSplit(Pair.fromValue(pair), orderRequest);
         return ResponseEntity.ok("OK");
     }
 

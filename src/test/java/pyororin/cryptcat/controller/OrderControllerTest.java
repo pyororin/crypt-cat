@@ -13,7 +13,7 @@ import pyororin.cryptcat.controller.filter.RequestIntervalFilter;
 import pyororin.cryptcat.repository.model.Pair;
 import pyororin.cryptcat.service.IPCheckService;
 import pyororin.cryptcat.service.TradeJpyFixService;
-import pyororin.cryptcat.service.TradeService;
+import pyororin.cryptcat.service.TradeBtcFixService;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -30,7 +30,7 @@ class OrderControllerTest {
     WebApplicationContext context;
 
     @MockBean
-    TradeService skipTradeService;
+    TradeBtcFixService skipTradeBtcFixService;
 
     @MockBean
     TradeJpyFixService tradeJpyFixService;

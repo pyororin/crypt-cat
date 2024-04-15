@@ -19,12 +19,10 @@ public class CoinCheckTickerResponse {
     private long timestamp;
 
     public BigDecimal getFairBuyPrice() {
-//        return last;
-        return last.min(ask);
+        return last.min(ask).add(last.subtract(ask).abs().multiply(BigDecimal.valueOf(0.01)));
     }
 
     public BigDecimal getFairSellPrice() {
-//        return last;
-        return last.max(bid);
+        return last.max(bid).subtract(last.subtract(bid).abs().multiply(BigDecimal.valueOf(0.01)));
     }
 }

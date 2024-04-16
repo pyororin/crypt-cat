@@ -1,6 +1,6 @@
 //@version=5
 strategy("Buy Start - CCI(MACD) with Trend", overlay=true)
-length = input.int(4, minval=1)
+length = input.int(2, minval=1)
 src = input(hlc3, title="Source")
 ma = ta.sma(src, length)
 cci = (src - ma) / (0.015 * ta.dev(src, length))
@@ -22,14 +22,16 @@ typeMA = input.string(title = "Method", defval = "VWMA", options=["SMA", "EMA", 
 smoothingLength = input.int(title = "Length", defval = 4, minval = 1, maxval = 100, group="Smoothing")
 
 // パラメータ化した15分設定
-hourInterval = input.int(title="Hour Interval", defval=22, minval=1, group="Trend")
+hourInterval = input.int(title="Hour Interval", defval=80, minval=1, group="Trend")
+
+// 最大保有期間
+maxHoldMin = input.int(defval = 75, title = "最大時間(m)", minval = 1)
 
 lastHourClose = request.security(syminfo.tickerid, str.tostring(hourInterval), close)
 prevHourClose = request.security(syminfo.tickerid, str.tostring(hourInterval), close[1])
 
 isUpTrend = lastHourClose > prevHourClose
 isDownTrend = lastHourClose < prevHourClose
-
 
 // 購入開始シグナル
 buySignal = ta.crossover(cci, -66) and isUpTrend
@@ -39,12 +41,15 @@ sellSignal = cci >= 66 and isUpTrend
 
 var float previousEntryPrice = na
 var string previousEntryType = na
+var int previousEntryTime = na
 
 // 購入エントリー
 if (previousEntryType != "Buy" and buySignal)
     strategy.entry("Buy", strategy.long)
     previousEntryPrice := close
     previousEntryType := "Buy"
+    previousEntryTime := time_close
+
 
 // 購入後売却処理開始
 if (previousEntryType == "Buy" and sellSignal)
@@ -53,6 +58,11 @@ if (previousEntryType == "Buy" and sellSignal)
         previousEntryType := "Sell"
         previousEntryPrice := na
 
+// 一定時間を経過したらエントリーリセット
+if ((time_close - previousEntryTime) > (maxHoldMin * 60 * 1000) and ta.crossunder(cci, 66) and isUpTrend)
+    previousEntryType := na
+    previousEntryPrice := na
+    strategy.close_all()
 
 // 可視化
 plotshape(series=isUpTrend ? 1 : na, title="Up Trend", color=color.green, style=shape.triangleup, location=location.top)

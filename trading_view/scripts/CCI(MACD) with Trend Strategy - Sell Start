@@ -1,3 +1,5 @@
+// パラメータの「ソース」には「MACD: Signal」を設定すること
+
 //@version=5
 strategy("Sell Start - CCI(MACD) with Trend", overlay=true)
 length = input.int(2, minval=1)
@@ -21,11 +23,11 @@ ma(source, length, type) =>
 typeMA = input.string(title = "Method", defval = "VWMA", options=["SMA", "EMA", "SMMA (RMA)", "WMA", "VWMA"], group="Smoothing")
 smoothingLength = input.int(title = "Length", defval = 4, minval = 1, maxval = 100, group="Smoothing")
 
-// パラメータ化した15分設定
-hourInterval = input.int(title="Hour Interval", defval=80, minval=1, group="Trend")
+// インターバル換算設定
+hourInterval = input.int(title="Hour Interval", defval=7, minval=1, group="Trend")
 
 // 最大保有期間
-maxHoldMin = input.int(defval = 75, title = "最大時間(m)", minval = 1)
+// maxHoldMin = input.int(defval = 10, title = "最大時間(m)", minval = 1)
 
 lastHourClose = request.security(syminfo.tickerid, str.tostring(hourInterval), close)
 prevHourClose = request.security(syminfo.tickerid, str.tostring(hourInterval), close[1])
@@ -58,8 +60,8 @@ if (previousEntryType == "Sell" and buySignal)
         previousEntryType := "Buy"
         previousEntryPrice := na
 
-// 一定時間を経過したらエントリーリセット
-if ((time_close - previousEntryTime) > (maxHoldMin * 60 * 1000) and ta.crossover(cci, -66) and isDownTrend)
+// トレンド転換したらエントリーリセット
+if (isUpTrend)
     previousEntryType := na
     previousEntryPrice := na
     strategy.close_all()

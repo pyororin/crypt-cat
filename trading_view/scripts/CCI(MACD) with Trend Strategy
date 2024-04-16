@@ -21,6 +21,9 @@ ma(source, length, type) =>
 typeMA = input.string(title = "Method", defval = "SMA", options=["SMA", "EMA", "SMMA (RMA)", "WMA", "VWMA"], group="Smoothing")
 smoothingLength = input.int(title = "Length", defval = 5, minval = 1, maxval = 100, group="Smoothing")
 
+
+var int lastBuySignalBar = na
+
 // パラメータ化した15分設定
 hourInterval = input.int(title="Hour Interval", defval=15, minval=1, group="Trend")
 
@@ -49,6 +52,7 @@ if (sellSignal)
 // 可視化
 plotshape(series=isUpTrend ? 1 : na, title="Up Trend", color=color.green, style=shape.triangleup, location=location.absolute)
 plotshape(series=isDownTrend ? 1 : na, title="Down Trend", color=color.red, style=shape.triangledown, location=location.absolute)
+
 
 smoothingLine = ma(cci, smoothingLength, typeMA)
 plot(smoothingLine, title="Smoothing Line", color=#f37f20)

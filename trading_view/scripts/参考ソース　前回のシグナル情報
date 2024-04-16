@@ -1,0 +1,24 @@
+//@version=5
+strategy("Previous Entry Price Example", overlay=true)
+
+// エントリー価格を保存する変数
+var float previousEntryPrice = na
+
+// バイシグナルの条件
+buySignal = ta.crossover(close, sma(close, 20))
+
+// セルシグナルの条件
+sellSignal = ta.crossunder(close, sma(close, 20))
+
+// バイシグナルでエントリー
+if (buySignal)
+    strategy.entry("Buy", strategy.long)
+    previousEntryPrice := close  // エントリー価格を保存
+
+// セルシグナルでエントリー
+if (sellSignal)
+    strategy.entry("Sell", strategy.short)
+    previousEntryPrice := close  // エントリー価格を保存
+
+// 前回のエントリー価格をプロット
+plot(previousEntryPrice, title="Previous Entry Price", color=color.blue, linewidth=2, style=plot.style_line)

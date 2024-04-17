@@ -37,6 +37,6 @@ public class OrderController {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleException() {
-        return ResponseEntity.ok("NG");
+        return ResponseEntity.internalServerError().build();
     }
 }

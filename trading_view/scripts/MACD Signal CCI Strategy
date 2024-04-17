@@ -4,10 +4,24 @@
 //@version=5
 strategy(title="MACD Signal CCI Strategy", shorttitle="MACD+CCI", overlay=true)
 
-length = input.int(9, minval=1)
-src = input(hlc3, title="Source")
-ma = ta.sma(src, length)
-cci = (src - ma) / (0.015 * ta.dev(src, length))
+// MACD 計算
+fast_length = input(title = "Fast Length", defval = 12, group="CCIソース(MACD)")
+slow_length = input(title = "Slow Length", defval = 26, group="CCIソース(MACD)")
+srcMacd = input(title = "Source", defval = close, group="CCIソース(MACD)")
+signal_length = input.int(title = "Signal Smoothing",  minval = 1, maxval = 50, defval = 9, display = display.data_window, group="CCIソース(MACD)")
+sma_source = input.string(title = "Oscillator MA Type",  defval = "EMA", options = ["SMA", "EMA"], display = display.data_window, group="CCIソース(MACD)")
+sma_signal = input.string(title = "Signal Line MA Type", defval = "EMA", options = ["SMA", "EMA"], display = display.data_window, group="CCIソース(MACD)")
+// Calculating
+fast_ma = sma_source == "SMA" ? ta.sma(srcMacd, fast_length) : ta.ema(srcMacd, fast_length)
+slow_ma = sma_source == "SMA" ? ta.sma(srcMacd, slow_length) : ta.ema(srcMacd, slow_length)
+macd = fast_ma - slow_ma
+signal = sma_signal == "SMA" ? ta.sma(macd, signal_length) : ta.ema(macd, signal_length)
+
+
+// CCI 計算
+length = input.int(2, minval=1, group="CCI")
+ma = ta.sma(signal, length)
+cci = (signal - ma) / (0.015 * ta.dev(signal, length))
 
 ma(source, length, type) =>
     switch type
@@ -17,22 +31,30 @@ ma(source, length, type) =>
         "WMA" => ta.wma(source, length)
         "VWMA" => ta.vwma(source, length)
 
-typeMA = input.string(title = "Method", defval = "VWMA", options=["SMA", "EMA", "SMMA (RMA)", "WMA", "VWMA"], group="Smoothing")
-smoothingLength = input.int(title = "Length", defval = 1, minval = 1, maxval = 100, group="Smoothing")
+typeMA = input.string(title = "Method", defval = "VWMA", options=["SMA", "EMA", "SMMA (RMA)", "WMA", "VWMA"], group="CCI")
+smoothingLength = input.int(title = "Length", defval = 1, minval = 1, maxval = 100, group="CCI")
 
 smoothingLine = ma(cci, smoothingLength, typeMA)
 
 plot(smoothingLine, title="Smoothing Line", color=#f37f20)
 
 // Long entry condition
-long_threshold = input.int(-105, "Buy", group="閾値")
-long_condition = ta.crossunder(smoothingLine, long_threshold)
+long_threshold = input.int(-66, "Buy", group="閾値")
+long_if = input.string(title="条件", defval = "を上回る", options=["を上回る", "を下回る"], group="閾値")
+long_condition = false
+if long_if == "を上回る"
+    long_condition := ta.crossover(smoothingLine, long_threshold)
+else
+    long_condition := ta.crossunder(smoothingLine, long_threshold)
 
 // Short entry condition
-short_threshold = input.int(105, "Sell", group="閾値")
-short_condition = ta.crossunder(smoothingLine, short_threshold)
-plotshape(series=long_condition, title="Buy", color=color.green, style=shape.triangleup, location=location.top)
-plotshape(series=short_condition, title="Sell", color=color.red, style=shape.triangledown, location=location.bottom)
+short_threshold = input.int(66, "Sell", group="閾値")
+short_if = input.string(title="条件", defval = "を下回る", options=["を上回る", "を下回る"], group="閾値")
+short_condition = false
+if short_if == "を上回る"
+    short_condition := ta.crossover(smoothingLine, short_threshold)
+else
+    short_condition := ta.crossunder(smoothingLine, short_threshold)
 
 // Strategy entry/exit conditions
 if (long_condition)

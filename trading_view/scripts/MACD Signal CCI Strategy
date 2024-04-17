@@ -1,0 +1,41 @@
+// This Pine Script™ code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © shunichi1014
+
+//@version=5
+strategy(title="MACD Signal CCI Strategy", shorttitle="MACD+CCI", overlay=true)
+
+length = input.int(9, minval=1)
+src = input(hlc3, title="Source")
+ma = ta.sma(src, length)
+cci = (src - ma) / (0.015 * ta.dev(src, length))
+
+ma(source, length, type) =>
+    switch type
+        "SMA" => ta.sma(source, length)
+        "EMA" => ta.ema(source, length)
+        "SMMA (RMA)" => ta.rma(source, length)
+        "WMA" => ta.wma(source, length)
+        "VWMA" => ta.vwma(source, length)
+
+typeMA = input.string(title = "Method", defval = "VWMA", options=["SMA", "EMA", "SMMA (RMA)", "WMA", "VWMA"], group="Smoothing")
+smoothingLength = input.int(title = "Length", defval = 1, minval = 1, maxval = 100, group="Smoothing")
+
+smoothingLine = ma(cci, smoothingLength, typeMA)
+
+plot(smoothingLine, title="Smoothing Line", color=#f37f20)
+
+// Long entry condition
+long_threshold = input.int(-105, "Buy", group="閾値")
+long_condition = ta.crossunder(smoothingLine, long_threshold)
+
+// Short entry condition
+short_threshold = input.int(105, "Sell", group="閾値")
+short_condition = ta.crossunder(smoothingLine, short_threshold)
+plotshape(series=long_condition, title="Buy", color=color.green, style=shape.triangleup, location=location.top)
+plotshape(series=short_condition, title="Sell", color=color.red, style=shape.triangledown, location=location.bottom)
+
+// Strategy entry/exit conditions
+if (long_condition)
+    strategy.entry("Buy", strategy.long)
+if (short_condition)
+    strategy.entry("Sell", strategy.short)

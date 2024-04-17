@@ -1,5 +1,3 @@
-// パラメータの「ソース」には「MACD: Signal」を設定すること
-
 //@version=5
 strategy("Buy Start - CCI(MACD) with Trend", overlay=true)
 length = input.int(2, minval=1)
@@ -22,6 +20,7 @@ ma(source, length, type) =>
 
 typeMA = input.string(title = "Method", defval = "VWMA", options=["SMA", "EMA", "SMMA (RMA)", "WMA", "VWMA"], group="Smoothing")
 smoothingLength = input.int(title = "Length", defval = 4, minval = 1, maxval = 100, group="Smoothing")
+smoothingLine = ma(cci, smoothingLength, typeMA)
 
 // インターバル換算設定
 hourInterval = input.int(title="Hour Interval", defval=7, minval=1, group="Trend")
@@ -36,10 +35,10 @@ isUpTrend = lastHourClose > prevHourClose
 isDownTrend = lastHourClose < prevHourClose
 
 // 購入開始シグナル
-buySignal = ta.crossover(cci, -66) and isUpTrend
+buySignal = ta.crossover(smoothingLine, -66) and isUpTrend
 
 // 購入後売却シグナル
-sellSignal = cci >= 66 and isUpTrend
+sellSignal = smoothingLine >= 66 and isUpTrend
 
 var float previousEntryPrice = na
 var string previousEntryType = na
@@ -61,7 +60,7 @@ if (previousEntryType == "Buy" and sellSignal)
         previousEntryPrice := na
 
 // トレンド転換したらエントリーリセット
-if (isUpTrend)
+if (isDownTrend)
     previousEntryType := na
     previousEntryPrice := na
     strategy.close_all()
@@ -70,7 +69,7 @@ if (isUpTrend)
 plotshape(series=isUpTrend ? 1 : na, title="Up Trend", color=color.green, style=shape.triangleup, location=location.top)
 plotshape(series=isDownTrend ? 1 : na, title="Down Trend", color=color.red, style=shape.triangledown, location=location.top)
 
-smoothingLine = ma(cci, smoothingLength, typeMA)
+
 plot(smoothingLine, title="Smoothing Line", color=#f37f20, display=display.none)
 
 plot(previousEntryPrice, title="Previous Entry Price", color=color.blue, linewidth=2, style=plot.style_line)

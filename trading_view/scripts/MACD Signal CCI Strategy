@@ -1,5 +1,6 @@
 // This Pine Script™ code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
 // © shunichi1014
+// [Best range is 5 min]
 
 //@version=5
 strategy(title="MACD Signal CCI Strategy", shorttitle="MACD+CCI", overlay=true)
@@ -16,7 +17,6 @@ fast_ma = sma_source == "SMA" ? ta.sma(srcMacd, fast_length) : ta.ema(srcMacd, f
 slow_ma = sma_source == "SMA" ? ta.sma(srcMacd, slow_length) : ta.ema(srcMacd, slow_length)
 macd = fast_ma - slow_ma
 signal = sma_signal == "SMA" ? ta.sma(macd, signal_length) : ta.ema(macd, signal_length)
-
 
 // CCI 計算
 length = input.int(2, minval=1, group="CCI")
@@ -38,23 +38,38 @@ smoothingLine = ma(cci, smoothingLength, typeMA)
 
 plot(smoothingLine, title="Smoothing Line", color=#f37f20)
 
+// トレンド
+hourInterval = input.int(title="Hour Interval", defval=23, minval=1, group="Trend")
+
+lastHourClose = request.security(syminfo.tickerid, str.tostring(hourInterval), close)
+prevHourClose = request.security(syminfo.tickerid, str.tostring(hourInterval), close[1])
+
+isUpTrend = lastHourClose > prevHourClose
+isDownTrend = lastHourClose < prevHourClose
+plotshape(series=isUpTrend ? 1 : na, title="Up Trend", color=color.green, style=shape.triangleup, location=location.top)
+plotshape(series=isDownTrend ? 1 : na, title="Down Trend", color=color.red, style=shape.triangledown, location=location.top)
+
 // Long entry condition
 long_threshold = input.int(-66, "Buy", group="閾値")
 long_if = input.string(title="条件", defval = "を上回る", options=["を上回る", "を下回る"], group="閾値")
 long_condition = false
-if long_if == "を上回る"
-    long_condition := ta.crossover(smoothingLine, long_threshold)
-else
-    long_condition := ta.crossunder(smoothingLine, long_threshold)
+
+if isUpTrend
+    if long_if == "を上回る"
+        long_condition := ta.crossover(smoothingLine, long_threshold)
+    else
+        long_condition := ta.crossunder(smoothingLine, long_threshold)
 
 // Short entry condition
 short_threshold = input.int(66, "Sell", group="閾値")
 short_if = input.string(title="条件", defval = "を下回る", options=["を上回る", "を下回る"], group="閾値")
 short_condition = false
-if short_if == "を上回る"
-    short_condition := ta.crossover(smoothingLine, short_threshold)
-else
-    short_condition := ta.crossunder(smoothingLine, short_threshold)
+
+if isUpTrend
+    if short_if == "を上回る"
+        short_condition := ta.crossover(smoothingLine, short_threshold)
+    else
+        short_condition := ta.crossunder(smoothingLine, short_threshold)
 
 // Strategy entry/exit conditions
 if (long_condition)

@@ -83,9 +83,12 @@ public class CoinCheckRepositoryImpl {
                 })
                 .body(jsonBody.toString())
                 .retrieve()
-                .onStatus(HttpStatusCode::is2xxSuccessful, (req, res) -> log.info("{} {} {}", value("kind", "api"), value("status", "ok"), value("response", new Scanner(res.getBody()).useDelimiter("\\A").next().replaceAll("\\r\\n|\\r|\\n", ""))))
-                .onStatus(HttpStatusCode::isError, (req, res) -> {
-                    log.error("{} {} {}", value("kind", "api"), value("status", res.getStatusText()), value("response-body", jsonBody.toString()));
+                .onStatus(HttpStatusCode::is2xxSuccessful, (req, res) -> log.info("{} {} {} {}",
+                        value("kind", "api"), value("status", "ok"), value("request-body", jsonBody.toString()),
+                        value("response", new Scanner(res.getBody()).useDelimiter("\\A").next().replaceAll("\\r\\n|\\r|\\n", ""))))
+                .onStatus(HttpStatusCode::isError, (req, res) -> { log.error("{} {} {} {}",
+                        value("kind", "api"), value("status", res.getStatusText()), value("request-body", jsonBody.toString()),
+                        value("response", new Scanner(res.getBody()).useDelimiter("\\A").next().replaceAll("\\r\\n|\\r|\\n", "")));
                     throw new RestClientException(res.getStatusCode().toString());
                 })
                 .toBodilessEntity();

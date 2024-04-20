@@ -21,9 +21,14 @@ public class TradeCancelServiceImpl {
     public void cancel() {
         repository.retrieveOpensOrders().findOrdersOver24Hours(clock).forEach(order -> {
             repository.exchangeCancel(order.getId());
-            log.info("{} {} {}",
+            log.info("{} {} {} {} {} {} {} {}",
                     value("kind", "cancel"),
+                    value("pair", order.getPair()),
+                    value("pending_amount", order.getPendingAmount()),
+                    value("pending_market_buy_amount", order.getPendingMarketBuyAmount()),
+                    value("order_rate", order.getOrderType()),
                     value("order_time", order.getCreatedAt()),
+                    value("stop_loss_rate", order.getStopLossRate()),
                     value("id", order.getId()));
         });
     }

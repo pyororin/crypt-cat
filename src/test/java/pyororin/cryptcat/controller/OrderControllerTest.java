@@ -12,11 +12,11 @@ import org.springframework.web.context.WebApplicationContext;
 import pyororin.cryptcat.controller.filter.RequestIntervalFilter;
 import pyororin.cryptcat.repository.model.Pair;
 import pyororin.cryptcat.service.IPCheckService;
-import pyororin.cryptcat.service.TradeJpyFixService;
-import pyororin.cryptcat.service.TradeBtcFixService;
+import pyororin.cryptcat.service.TradeService;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -29,11 +29,11 @@ class OrderControllerTest {
     @Autowired
     WebApplicationContext context;
 
-    @MockBean
-    TradeBtcFixService skipTradeBtcFixService;
+    @MockBean(name = "tradeBtcFixServiceImpl")
+    TradeService tradeBtcFixServiceImpl;
 
-    @MockBean
-    TradeJpyFixService tradeJpyFixService;
+    @MockBean(name = "tradeJpyFixServiceImpl")
+    TradeService tradeJpyFixServiceImpl;
 
     @Mock
     IPCheckService ipCheckService;
@@ -44,7 +44,7 @@ class OrderControllerTest {
                 .addFilter(new RequestIntervalFilter(ipCheckService), "/order/*").build();
         when(ipCheckService.isNotAllowedIPAddress(any())).thenReturn(true);
         var response = filterMok.perform(
-                        post("/order/strategy/{id}", Pair.LSK_JPY.getValue())
+                        post("/order/btcfix/{id}", Pair.LSK_JPY.getValue())
                                 .header("x-forwarded-for", "127.0.0.2")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
@@ -56,9 +56,9 @@ class OrderControllerTest {
     }
 
     @Test
-    void strategySell() throws Exception {
+    void btcfixSell() throws Exception {
         String response = this.mockMvc.perform(
-                        post("/order/strategy/{id}", Pair.BTC_JPY.getValue())
+                        post("/order/btcfix/{id}", Pair.BTC_JPY.getValue())
                                 .header("x-forwarded-for", "127.0.0.1")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
@@ -70,9 +70,9 @@ class OrderControllerTest {
     }
 
     @Test
-    void strategyBuy() throws Exception {
+    void btcfixBuy() throws Exception {
         String response = this.mockMvc.perform(
-                        post("/order/strategy/{id}", Pair.BTC_JPY.getValue())
+                        post("/order/btcfix/{id}", Pair.BTC_JPY.getValue())
                                 .header("x-forwarded-for", "127.0.0.1")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
@@ -84,9 +84,9 @@ class OrderControllerTest {
     }
 
     @Test
-    void strategyBuySplit() throws Exception {
+    void jpyfixBuy() throws Exception {
         String response = this.mockMvc.perform(
-                        post("/order/strategy/{id}/split", Pair.BTC_JPY.getValue())
+                        post("/order/jpyfix/{id}", Pair.BTC_JPY.getValue())
                                 .header("x-forwarded-for", "127.0.0.1")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
@@ -98,16 +98,31 @@ class OrderControllerTest {
     }
 
     @Test
-    void strategyOther() throws Exception {
+    void jpyfixSell() throws Exception {
         String response = this.mockMvc.perform(
-                        post("/order/strategy/{id}", Pair.BTC_JPY.getValue())
+                        post("/order/jpyfix/{id}", Pair.BTC_JPY.getValue())
                                 .header("x-forwarded-for", "127.0.0.1")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
-                                            {"reason": "test-reason", "group": "test-group3", "range": 1, "order-type": "other", "ratio": 2.0}
+                                            {"reason": "test-reason", "group": "test-group2", "order_type": "sell", "ratio": 2}
                                         """)
                 )
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
-        assertEquals(response, "OK");
+        assertEquals("OK", response);
+    }
+
+    @Test
+    void ng() throws Exception {
+        doThrow(RuntimeException.class).when(tradeJpyFixServiceImpl).order(any(), any());
+        String response = this.mockMvc.perform(
+                        post("/order/jpyfix/{id}", Pair.BTC_JPY.getValue())
+                                .header("x-forwarded-for", "127.0.0.1")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                            {"reason": "test-reason", "group": "test-group2", "order_type": "sell", "ratio": 2}
+                                        """)
+                )
+                .andExpect(status().is5xxServerError()).andReturn().getResponse().getContentAsString();
+        assertEquals("", response);
     }
 }

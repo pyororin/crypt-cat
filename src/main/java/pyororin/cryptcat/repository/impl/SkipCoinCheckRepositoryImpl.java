@@ -11,6 +11,7 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 import pyororin.cryptcat.repository.CoinCheckRepository;
 import pyororin.cryptcat.repository.model.CoinCheckBalanceResponse;
+import pyororin.cryptcat.repository.model.CoinCheckOpensOrdersResponse;
 import pyororin.cryptcat.repository.model.CoinCheckRequest;
 import pyororin.cryptcat.repository.model.CoinCheckTickerResponse;
 
@@ -38,6 +39,11 @@ public class SkipCoinCheckRepositoryImpl implements CoinCheckRepository {
     }
 
     @Override
+    public CoinCheckOpensOrdersResponse retrieveOpensOrders() {
+        return CoinCheckOpensOrdersResponse.builder().build();
+    }
+
+    @Override
     public void exchangeBuy(CoinCheckRequest request) {
         log.info("{} {} {} {} {} {} {}",
                 value("kind", "exchange-skip"),
@@ -59,6 +65,12 @@ public class SkipCoinCheckRepositoryImpl implements CoinCheckRepository {
                 value("market_buy_price", request.getPrice()),
                 value("order_rate", request.getRate()),
                 value("group", request.getGroup()));
+    }
+
+    @Override
+    public void exchangeCancel(long id) {
+        log.info("{} {} {}",
+                value("kind", "cancel-skip"), value("status", "ok"), value("id", id));
     }
 
     @Recover

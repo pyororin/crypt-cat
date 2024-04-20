@@ -18,6 +18,7 @@ import pyororin.cryptcat.repository.model.CoinCheckRequest;
 import pyororin.cryptcat.repository.model.Pair;
 
 import java.math.BigDecimal;
+import java.time.Clock;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -29,6 +30,9 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 @SpringBootTest
 @TestPropertySource(properties = "coincheck.actually=true")
 class CoinCheckRepositoryImplTest {
+    @Autowired
+    Clock clock;
+
     @Autowired
     CoinCheckRepository repository;
 
@@ -129,8 +133,18 @@ class CoinCheckRepositoryImplTest {
 
     @Disabled
     @Test
-    void getBalance() {
+    void retrieveBalance() {
+        var repository = new CoinCheckRepositoryImpl(
+                RestClient.builder().baseUrl(apiConfig.getHost()).build(), config, apiConfig);
         System.out.println(repository.retrieveBalance());
+    }
+
+    @Disabled
+    @Test
+    void retrieveOpensOrders() {
+        var repository = new CoinCheckRepositoryImpl(
+                RestClient.builder().baseUrl(apiConfig.getHost()).build(), config, apiConfig);
+        System.out.println(repository.retrieveOpensOrders());
     }
 
     @Disabled

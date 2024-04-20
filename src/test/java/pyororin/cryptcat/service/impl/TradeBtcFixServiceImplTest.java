@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import pyororin.cryptcat.controller.model.OrderRequest;
-import pyororin.cryptcat.repository.impl.CoinCheckRepositoryImpl;
+import pyororin.cryptcat.repository.CoinCheckRepository;
 import pyororin.cryptcat.repository.model.CoinCheckTickerResponse;
 import pyororin.cryptcat.repository.model.Pair;
 import pyororin.cryptcat.service.TradeService;
@@ -21,7 +21,7 @@ class TradeBtcFixServiceImplTest {
     TradeService tradeBtcFixServiceImpl;
 
     @MockBean(name = "skipCoinCheckRepositoryImpl")
-    CoinCheckRepositoryImpl repository;
+    CoinCheckRepository repository;
 
     @Test
     void Sell() {

@@ -16,6 +16,7 @@ import pyororin.cryptcat.config.CoinCheckApiConfig;
 import pyororin.cryptcat.config.CoinCheckRequestConfig;
 import pyororin.cryptcat.repository.CoinCheckRepository;
 import pyororin.cryptcat.repository.model.CoinCheckBalanceResponse;
+import pyororin.cryptcat.repository.model.CoinCheckOpensOrdersResponse;
 import pyororin.cryptcat.repository.model.CoinCheckRequest;
 import pyororin.cryptcat.repository.model.CoinCheckTickerResponse;
 
@@ -61,6 +62,20 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
                 .toEntity(CoinCheckBalanceResponse.class).getBody();
     }
 
+    @Override
+    public CoinCheckOpensOrdersResponse retrieveOpensOrders() {
+        String nonce = String.valueOf(System.currentTimeMillis() / 1000L);
+        return restClient.get()
+                .uri("/api/exchange/orders/opens")
+                .headers(httpHeaders -> {
+                    httpHeaders.set("ACCESS-KEY", config.getAccessKey());
+                    httpHeaders.set("ACCESS-NONCE", nonce);
+                    httpHeaders.set("ACCESS-SIGNATURE", HMAC_SHA256Encode(config.getSecret(), nonce + apiConfig.getHost() + "/api/exchange/orders/opens"));
+                })
+                .retrieve()
+                .toEntity(CoinCheckOpensOrdersResponse.class).getBody();
+    }
+
     @Retryable(retryFor = RuntimeException.class, maxAttempts = 5, backoff = @Backoff(delay = 1000, maxDelay = 5000))
     public void exchangeBuy(CoinCheckRequest request) {
         var jsonBody = new JSONObject();
@@ -81,6 +96,25 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
         exchange(jsonBody);
     }
 
+    @Override
+    public void exchangeCancel(long id) {
+        String nonce = String.valueOf(System.currentTimeMillis() / 1000L);
+        restClient.delete()
+                .uri("/api/exchange/orders/{id}", id)
+                .headers(httpHeaders -> {
+                    httpHeaders.set("ACCESS-KEY", config.getAccessKey());
+                    httpHeaders.set("ACCESS-NONCE", nonce);
+                    httpHeaders.set("ACCESS-SIGNATURE", HMAC_SHA256Encode(config.getSecret(),
+                            nonce + apiConfig.getHost() + "/api/exchange/orders/" + id));
+                })
+                .retrieve()
+                .onStatus(HttpStatusCode::is2xxSuccessful, (req, res) -> log.info("{} {} {} {}",
+                        value("kind", "api"), value("status", "ok"), value("id", id),
+                        value("response", new Scanner(res.getBody()).useDelimiter("\\A").next().replaceAll("\\r\\n|\\r|\\n", ""))))
+                .toBodilessEntity();
+    }
+
+
     private void exchange(JSONObject jsonBody) {
         String nonce = String.valueOf(System.currentTimeMillis() / 1000L);
         restClient.post()
@@ -89,7 +123,8 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
                 .headers(httpHeaders -> {
                     httpHeaders.set("ACCESS-KEY", config.getAccessKey());
                     httpHeaders.set("ACCESS-NONCE", nonce);
-                    httpHeaders.set("ACCESS-SIGNATURE", HMAC_SHA256Encode(config.getSecret(), nonce + apiConfig.getHost() + "/api/exchange/orders" + jsonBody));
+                    httpHeaders.set("ACCESS-SIGNATURE", HMAC_SHA256Encode(config.getSecret(),
+                            nonce + apiConfig.getHost() + "/api/exchange/orders" + jsonBody));
                 })
                 .body(jsonBody.toString())
                 .retrieve()

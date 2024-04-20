@@ -2,12 +2,7 @@ package pyororin.cryptcat.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Recover;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClientException;
 import pyororin.cryptcat.config.CoinCheckApiConfig;
 import pyororin.cryptcat.controller.model.OrderRequest;
 import pyororin.cryptcat.repository.CoinCheckRepository;
@@ -55,7 +50,6 @@ public class TradeBtcFixServiceImpl implements TradeService {
         }
     }
 
-    @Retryable(retryFor = RestClientException.class, maxAttempts = 5, backoff = @Backoff(delay = 6000))
     private BigDecimal exchange(Pair pair, OrderRequest orderRequest) {
         var tickerResponse = repository.retrieveTicker(CoinCheckRequest.builder().pair(pair).build());
         if (orderRequest.isBuy()) {
@@ -95,11 +89,5 @@ public class TradeBtcFixServiceImpl implements TradeService {
                     value("group", orderRequest.getGroup()));
             return marketSellPrice;
         }
-    }
-
-    @Recover
-    public ResponseEntity<String> recover(Exception e) {
-        log.error("{} {} {}", value("kind", "api"), value("cause", "APIリトライ回数超過"), value("message", e.getMessage()));
-        return ResponseEntity.ok("リトライ後のリカバリー");
     }
 }

@@ -3,9 +3,14 @@ package pyororin.cryptcat.repository.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 import pyororin.cryptcat.repository.CoinCheckRepository;
+import pyororin.cryptcat.repository.model.CoinCheckBalanceResponse;
 import pyororin.cryptcat.repository.model.CoinCheckRequest;
 import pyororin.cryptcat.repository.model.CoinCheckTickerResponse;
 
@@ -19,11 +24,17 @@ public class SkipCoinCheckRepositoryImpl implements CoinCheckRepository {
     private final RestClient restClient;
 
     @Override
+    @Retryable(retryFor = RuntimeException.class, maxAttempts = 5, backoff = @Backoff(delay = 1000, maxDelay = 5000))
     public CoinCheckTickerResponse retrieveTicker(CoinCheckRequest request) {
         return restClient.get()
                 .uri("/api/ticker/?pair={rate}", request.getPair().getValue())
                 .retrieve()
                 .toEntity(CoinCheckTickerResponse.class).getBody();
+    }
+
+    @Override
+    public CoinCheckBalanceResponse retrieveBalance() {
+        return CoinCheckBalanceResponse.builder().build();
     }
 
     @Override
@@ -48,5 +59,11 @@ public class SkipCoinCheckRepositoryImpl implements CoinCheckRepository {
                 value("market_buy_price", request.getPrice()),
                 value("order_rate", request.getRate()),
                 value("group", request.getGroup()));
+    }
+
+    @Recover
+    public CoinCheckTickerResponse tickerRecover(Exception e) {
+        log.error("{} {} {}", value("kind", "api"), value("cause", "APIリトライ回数超過"), value("message", e.getMessage()));
+        throw new RestClientException("APIリトライ回数超過", e);
     }
 }

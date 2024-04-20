@@ -4,11 +4,13 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 import pyororin.cryptcat.config.CoinCheckApiConfig;
 import pyororin.cryptcat.config.CoinCheckRequestConfig;
 import pyororin.cryptcat.repository.impl.CoinCheckRepositoryImpl;
@@ -18,6 +20,8 @@ import pyororin.cryptcat.repository.model.Pair;
 import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
@@ -33,6 +37,9 @@ class CoinCheckRepositoryImplTest {
 
     @Autowired
     CoinCheckApiConfig apiConfig;
+
+    @MockBean
+    RestClient restClient;
 
     @Disabled
     @Test
@@ -120,11 +127,11 @@ class CoinCheckRepositoryImplTest {
         mockServer.verify();
     }
 
-//    @Disabled
-//    @Test
-//    void getBalance() {
-//        System.out.println(repository.getBalance());
-//    }
+    @Disabled
+    @Test
+    void getBalance() {
+        System.out.println(repository.retrieveBalance());
+    }
 
     @Disabled
     @Test
@@ -142,5 +149,44 @@ class CoinCheckRepositoryImplTest {
         var rate = response.getFairSellPrice();
         var amount = BigDecimal.valueOf(0.0055);
         repository.exchangeSell(CoinCheckRequest.builder().pair(Pair.BTC_JPY).price(rate).amount(amount).build());
+    }
+
+    @Test
+    void retryTicker() {
+        doThrow(new RuntimeException("Test")).when(restClient).get();
+        assertThrows(RestClientException.class, () -> repository.retrieveTicker(CoinCheckRequest.builder().pair(Pair.BTC_JPY).build()));
+        verify(restClient, times(5)).get();
+    }
+
+    @Test
+    void retryExchange() {
+        var restClientBuilder = RestClient.builder();
+        MockRestServiceServer mockServer = MockRestServiceServer.bindTo(restClientBuilder).build();
+        mockServer.expect(requestTo("/api/jpyfix/btc_jpy"))
+                .andExpect(method(HttpMethod.POST))
+                .andRespond(withSuccess("""
+                        {
+                          "success": true,
+                          "id": 12345,
+                          "rate": "30010.0",
+                          "amount": "1.3",
+                          "order_type": "sell",
+                          "time_in_force": "good_til_cancelled",
+                          "stop_loss_rate": null,
+                          "pair": "btc_jpy",
+                          "created_at": "2015-01-10T05:55:38.000Z"
+                        }
+                        """, MediaType.APPLICATION_JSON));
+
+        doThrow(new RuntimeException("Test")).when(restClient).post();
+        assertThrows(RestClientException.class, () -> {
+            repository.exchangeBuy(CoinCheckRequest.builder()
+                    .pair(Pair.BTC_JPY)
+                    .price(BigDecimal.valueOf(30010.0))
+                    .amount(BigDecimal.valueOf(1.3))
+                    .rate(BigDecimal.valueOf(39013)).build());
+            mockServer.verify();
+        });
+        verify(restClient, times(5)).post();
     }
 }

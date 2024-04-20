@@ -17,7 +17,7 @@ public class TradeCancelServiceImpl {
     private final Clock clock;
     private final CoinCheckRepository repository;
 
-    @Scheduled(cron = "0 * * * * *")
+    @Scheduled(cron = "0 0 * * * *")
     public void cancel() {
         repository.retrieveOpensOrders().findOrdersOver24Hours(clock).forEach(order -> {
             repository.exchangeCancel(order.getId());

@@ -11,6 +11,8 @@ import pyororin.cryptcat.repository.SecretManagerRepository;
 import pyororin.cryptcat.repository.model.Secret;
 
 import java.io.IOException;
+import java.time.Clock;
+import java.time.ZoneId;
 
 @Configuration
 @RequiredArgsConstructor
@@ -38,8 +40,13 @@ public class CoinCheckRestClientConfiguration {
     @Profile("test")
     CoinCheckRequestConfig skipCoinCheckRequestConfig() {
         return CoinCheckRequestConfig.builder()
-                .accessKey("test")
-                .secret("test")
+                .accessKey("yYTQREbTx3uWJpoW")
+                .secret("Ixy44AzSiXDi1vYQw6saA4ZCAt8Mfth6")
                 .build();
+    }
+
+    @Bean
+    public Clock clock() {
+        return Clock.system(ZoneId.of("Asia/Tokyo"));
     }
 }

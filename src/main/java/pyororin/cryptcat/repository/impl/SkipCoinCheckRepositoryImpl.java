@@ -61,8 +61,8 @@ public class SkipCoinCheckRepositoryImpl implements CoinCheckRepository {
                 value("kind", "exchange-skip"),
                 value("pair", request.getPair().getValue()),
                 value("order_type", "sell"),
-                value("market_buy_amount", request.getAmount()),
-                value("market_buy_price", request.getPrice()),
+                value("market_sell_amount", request.getAmount()),
+                value("market_sell_price", request.getPrice()),
                 value("order_rate", request.getRate()),
                 value("group", request.getGroup()));
     }

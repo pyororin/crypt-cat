@@ -12,8 +12,8 @@ import java.math.BigDecimal;
 public class CoinCheckRequest {
     private final OrderType orderType;
     private final Pair pair;
-    private final String amount;
-    private final String market_buy_amount;
+    private final BigDecimal amount;
+    private final BigDecimal market_buy_amount;
     private final BigDecimal price;
     private final BigDecimal rate;
     private final BigDecimal group;

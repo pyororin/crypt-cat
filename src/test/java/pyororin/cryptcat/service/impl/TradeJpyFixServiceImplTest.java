@@ -8,75 +8,55 @@ import pyororin.cryptcat.controller.model.OrderRequest;
 import pyororin.cryptcat.repository.impl.CoinCheckRepositoryImpl;
 import pyororin.cryptcat.repository.model.CoinCheckTickerResponse;
 import pyororin.cryptcat.repository.model.Pair;
+import pyororin.cryptcat.service.TradeService;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @SpringBootTest
 class TradeJpyFixServiceImplTest {
     @Autowired
-    TradeJpyFixServiceImpl tradeJpyFixService;
+    TradeService tradeJpyFixServiceImpl;
 
-    @MockBean
+    @MockBean(name = "skipCoinCheckRepositoryImpl")
     CoinCheckRepositoryImpl repository;
 
     @Test
-    void strategySell() {
+    void Sell() {
         var request = new OrderRequest();
         request.setOrderType("sell");
-        request.setRatio(BigDecimal.valueOf(1));
+        request.setRatio(BigDecimal.valueOf(2));
         when(repository.retrieveTicker(any()))
                 .thenReturn(CoinCheckTickerResponse.builder().last(new BigDecimal(1000)).bid(new BigDecimal(999)).build());
-        doNothing().when(repository).exchangeSell(any(), any(), any());
-        assertEquals(BigDecimal.valueOf(25.000250003).setScale(9, RoundingMode.HALF_EVEN), tradeJpyFixService.order(Pair.BTC_JPY, request));
+        doNothing().when(repository).exchangeSell(any());
+        tradeJpyFixServiceImpl.order(Pair.BTC_JPY, request);
+        verify(repository, times(2)).exchangeSell(any());
     }
 
     @Test
-    void strategyBuy() {
+    void buy() {
         var request = new OrderRequest();
         request.setOrderType("buy");
-        request.setRatio(BigDecimal.valueOf(1));
+        request.setRatio(BigDecimal.valueOf(2));
         when(repository.retrieveTicker(any()))
                 .thenReturn(CoinCheckTickerResponse.builder().last(new BigDecimal(1000)).ask(new BigDecimal(1001)).build());
-        doNothing().when(repository).exchangeBuy(any(), any(), any());
-        assertEquals(BigDecimal.valueOf(24.999750002).setScale(9, RoundingMode.HALF_EVEN), tradeJpyFixService.order(Pair.BTC_JPY, request));
+        doNothing().when(repository).exchangeBuy(any());
+        tradeJpyFixServiceImpl.order(Pair.BTC_JPY, request);
+        verify(repository, times(2)).exchangeBuy(any());
     }
 
     @Test
-    void strategyOther() {
+    void other() {
         var request = new OrderRequest();
         request.setOrderType("other");
-        request.setRatio(BigDecimal.valueOf(1));
-        when(repository.retrieveTicker(any()))
-                .thenReturn(CoinCheckTickerResponse.builder().last(new BigDecimal(1000)).bid(new BigDecimal(999)).ask(new BigDecimal(1001)).build());
-        doNothing().when(repository).exchangeBuy(any(), any(), any());
-        assertEquals(BigDecimal.valueOf(0), tradeJpyFixService.order(Pair.BTC_JPY, request));
-    }
-
-    @Test
-    void strategyOtherSplitBuy() {
-        var request = new OrderRequest();
-        request.setOrderType("buy");
         request.setRatio(BigDecimal.valueOf(2));
         when(repository.retrieveTicker(any()))
                 .thenReturn(CoinCheckTickerResponse.builder().last(new BigDecimal(1000)).bid(new BigDecimal(999)).ask(new BigDecimal(1001)).build());
-        doNothing().when(repository).exchangeBuy(any(), any(), any());
-        tradeJpyFixService.orderSplit(Pair.BTC_JPY, request);
-    }
-
-    @Test
-    void strategyOtherSplitSell() {
-        var request = new OrderRequest();
-        request.setOrderType("sell");
-        request.setRatio(BigDecimal.valueOf(2));
-        when(repository.retrieveTicker(any()))
-                .thenReturn(CoinCheckTickerResponse.builder().last(new BigDecimal(1000)).bid(new BigDecimal(1001)).ask(new BigDecimal(999)).build());
-        doNothing().when(repository).exchangeSell(any(), any(), any());
-        tradeJpyFixService.orderSplit(Pair.BTC_JPY, request);
+        doNothing().when(repository).exchangeBuy(any());
+        tradeJpyFixServiceImpl.order(Pair.BTC_JPY, request);
+        verify(repository, times(0)).exchangeSell(any());
+        verify(repository, times(0)).exchangeBuy(any());
     }
 }

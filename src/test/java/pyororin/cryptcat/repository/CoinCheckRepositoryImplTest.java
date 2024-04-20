@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestClient;
 import pyororin.cryptcat.config.CoinCheckApiConfig;
@@ -22,9 +23,10 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 @SpringBootTest
+@TestPropertySource(properties = "coincheck.actually=true")
 class CoinCheckRepositoryImplTest {
     @Autowired
-    CoinCheckRepositoryImpl repository;
+    CoinCheckRepository repository;
 
     @Autowired
     CoinCheckRequestConfig config;
@@ -86,7 +88,11 @@ class CoinCheckRepositoryImplTest {
 
         var restClient = restClientBuilder.build();
         var repository = new CoinCheckRepositoryImpl(restClient, config, apiConfig);
-        repository.exchangeBuy(Pair.BTC_JPY, BigDecimal.valueOf(30010.0), BigDecimal.valueOf(1.3));
+        repository.exchangeBuy(CoinCheckRequest.builder()
+                .pair(Pair.BTC_JPY)
+                .price(BigDecimal.valueOf(30010.0))
+                .amount(BigDecimal.valueOf(1.3))
+                .rate(BigDecimal.valueOf(39013)).build());
         mockServer.verify();
     }
 
@@ -106,15 +112,19 @@ class CoinCheckRepositoryImplTest {
 
         var restClient = restClientBuilder.build();
         var repository = new CoinCheckRepositoryImpl(restClient, config, apiConfig);
-        repository.exchangeBuy(Pair.BTC_JPY, BigDecimal.valueOf(30010.0), BigDecimal.valueOf(1.3));
+        repository.exchangeBuy(CoinCheckRequest.builder()
+                .pair(Pair.BTC_JPY)
+                .price(BigDecimal.valueOf(30010.0))
+                .amount(BigDecimal.valueOf(1.3))
+                .rate(BigDecimal.valueOf(39013)).build());
         mockServer.verify();
     }
 
-    @Disabled
-    @Test
-    void getBalance() {
-        System.out.println(repository.getBalance());
-    }
+//    @Disabled
+//    @Test
+//    void getBalance() {
+//        System.out.println(repository.getBalance());
+//    }
 
     @Disabled
     @Test
@@ -122,7 +132,7 @@ class CoinCheckRepositoryImplTest {
         var response = repository.retrieveTicker(CoinCheckRequest.builder().pair(Pair.BTC_JPY).build());
         var rate = response.getFairBuyPrice();
         var amount = BigDecimal.valueOf(0.0055);
-        repository.exchangeBuy(Pair.BTC_JPY, rate, amount);
+        repository.exchangeBuy(CoinCheckRequest.builder().pair(Pair.BTC_JPY).price(rate).amount(amount).build());
     }
 
     @Disabled
@@ -131,6 +141,6 @@ class CoinCheckRepositoryImplTest {
         var response = repository.retrieveTicker(CoinCheckRequest.builder().pair(Pair.BTC_JPY).build());
         var rate = response.getFairSellPrice();
         var amount = BigDecimal.valueOf(0.0055);
-        repository.exchangeSell(Pair.BTC_JPY, rate, amount);
+        repository.exchangeSell(CoinCheckRequest.builder().pair(Pair.BTC_JPY).price(rate).amount(amount).build());
     }
 }

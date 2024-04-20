@@ -5,15 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.client.RestClient;
-import pyororin.cryptcat.config.CoinCheckApiConfig;
-import pyororin.cryptcat.config.CoinCheckRequestConfig;
 import pyororin.cryptcat.repository.CoinCheckRepository;
-import pyororin.cryptcat.repository.model.CoinCheckBalanceResponse;
 import pyororin.cryptcat.repository.model.CoinCheckRequest;
 import pyororin.cryptcat.repository.model.CoinCheckTickerResponse;
-import pyororin.cryptcat.repository.model.Pair;
-
-import java.math.BigDecimal;
 
 import static net.logstash.logback.argument.StructuredArguments.value;
 

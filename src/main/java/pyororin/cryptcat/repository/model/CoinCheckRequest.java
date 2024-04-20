@@ -16,5 +16,5 @@ public class CoinCheckRequest {
     private final BigDecimal market_buy_amount;
     private final BigDecimal price;
     private final BigDecimal rate;
-    private final BigDecimal group;
+    private final String group;
 }

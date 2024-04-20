@@ -16,8 +16,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.LongStream;
 
-import static net.logstash.logback.argument.StructuredArguments.value;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -60,15 +58,9 @@ public class TradeBtcFixServiceImpl implements TradeService {
                     .pair(pair)
                     .price(marketBuyPrice)
                     .amount(apiConfig.getAmount())
+                    .rate(tickerResponse.getFairBuyPrice())
+                    .group(orderRequest.getGroup())
                     .build());
-            log.info("{} {} {} {} {} {} {}",
-                    value("kind", "exchange"),
-                    value("pair", "btc_jpy"),
-                    value("order_type", "market_buy"),
-                    value("market_buy_amount", apiConfig.getAmount()),
-                    value("market_buy_price", marketBuyPrice),
-                    value("order_rate", tickerResponse.getFairBuyPrice()),
-                    value("group", orderRequest.getGroup()));
             return marketBuyPrice;
         } else {
             /* 市場最終価格(ticker.last or ticker.ask) = rate */
@@ -78,15 +70,9 @@ public class TradeBtcFixServiceImpl implements TradeService {
                     .pair(pair)
                     .price(marketSellPrice)
                     .amount(apiConfig.getAmount())
+                    .rate(tickerResponse.getFairSellPrice())
+                    .group(orderRequest.getGroup())
                     .build());
-            log.info("{} {} {} {} {} {} {}",
-                    value("kind", "exchange"),
-                    value("pair", "btc_jpy"),
-                    value("order_type", "market_sell"),
-                    value("market_sell_amount", apiConfig.getAmount()),
-                    value("market_sell_price", marketSellPrice),
-                    value("order_rate", tickerResponse.getFairSellPrice()),
-                    value("group", orderRequest.getGroup()));
             return marketSellPrice;
         }
     }

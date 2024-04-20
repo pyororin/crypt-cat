@@ -101,10 +101,4 @@ class SkipCoinCheckRepositoryImplTest {
         repository.exchangeBuy(CoinCheckRequest.builder().pair(Pair.BTC_JPY).price(BigDecimal.valueOf(30010.0)).amount(BigDecimal.valueOf(1.3)).build());
         mockServer.verify();
     }
-
-//    @Disabled
-//    @Test
-//    void getBalance() {
-//        System.out.println(repository.getBalance());
-//    }
 }

@@ -33,7 +33,7 @@ class TradeBtcFixServiceImplTest {
         doNothing().when(repository).exchangeSell(any());
         tradeBtcFixServiceImpl.order(Pair.BTC_JPY, request);
         verify(repository, times(2)).exchangeSell(any());
-        verify(repository, times(0)).exchangeBuy(any());
+        verify(repository, never()).exchangeBuy(any());
     }
 
     @Test
@@ -46,7 +46,7 @@ class TradeBtcFixServiceImplTest {
         doNothing().when(repository).exchangeBuy(any());
         tradeBtcFixServiceImpl.order(Pair.BTC_JPY, request);
         verify(repository, times(2)).exchangeBuy(any());
-        verify(repository, times(0)).exchangeSell(any());
+        verify(repository, never()).exchangeSell(any());
     }
 
     @Test
@@ -58,7 +58,7 @@ class TradeBtcFixServiceImplTest {
                 .thenReturn(CoinCheckTickerResponse.builder().last(new BigDecimal(1000)).bid(new BigDecimal(999)).ask(new BigDecimal(1001)).build());
         doNothing().when(repository).exchangeBuy(any());
         tradeBtcFixServiceImpl.order(Pair.BTC_JPY, request);
-        verify(repository, times(0)).exchangeSell(any());
-        verify(repository, times(0)).exchangeBuy(any());
+        verify(repository, never()).exchangeSell(any());
+        verify(repository, never()).exchangeBuy(any());
     }
 }

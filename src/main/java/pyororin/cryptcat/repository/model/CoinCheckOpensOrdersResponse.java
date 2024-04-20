@@ -10,6 +10,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Builder
@@ -40,7 +41,7 @@ public class CoinCheckOpensOrdersResponse {
     }
 
     public List<CoinCheckOpensOrdersResponse.Order> findOrdersOver24Hours(Clock clock) {
-        return orders.stream()
+        return Objects.isNull(orders) ? List.of() : orders.stream()
                 .filter(order -> order.getCreatedAt().isBefore(clock.instant().minus(24, ChronoUnit.HOURS)))
                 .collect(Collectors.toList());
     }

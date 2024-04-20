@@ -66,15 +66,9 @@ public class TradeJpyFixServiceImpl implements TradeService {
                     .pair(pair)
                     .price(apiConfig.getPrice())
                     .amount(amount)
+                    .rate(tickerResponse.getFairBuyPrice())
+                    .group(orderRequest.getGroup())
                     .build());
-            log.info("{} {} {} {} {} {} {}",
-                    value("kind", "exchange"),
-                    value("pair", "btc_jpy"),
-                    value("order_type", "market_buy"),
-                    value("market_buy_amount", amount),
-                    value("market_buy_price", apiConfig.getPrice()),
-                    value("order_rate", tickerResponse.getFairBuyPrice()),
-                    value("group", orderRequest.getGroup()));
             return amount;
         } else {
             /* 市場最終価格(ticker.last or ticker.ask) = rate */
@@ -84,15 +78,9 @@ public class TradeJpyFixServiceImpl implements TradeService {
                     .pair(pair)
                     .price(apiConfig.getPrice())
                     .amount(amount)
+                    .rate(tickerResponse.getFairSellPrice())
+                    .group(orderRequest.getGroup())
                     .build());
-            log.info("{} {} {} {} {} {} {}",
-                    value("kind", "exchange"),
-                    value("pair", "btc_jpy"),
-                    value("order_type", "market_sell"),
-                    value("market_sell_amount", amount),
-                    value("market_sell_price", apiConfig.getPrice()),
-                    value("order_rate", tickerResponse.getFairSellPrice()),
-                    value("group", orderRequest.getGroup()));
             return amount;
         }
     }

@@ -19,6 +19,7 @@ public class TradeCancelServiceImpl {
 
     @Scheduled(cron = "0 0 * * * *")
     public void cancel() {
+        log.info("{} {}", value("kind", "cancel-batch"), value("status", "start"));
         repository.retrieveOpensOrders().findOrdersOver24Hours(clock).forEach(order -> {
             repository.exchangeCancel(order.getId());
             log.info("{} {} {} {} {} {} {} {}",
@@ -31,5 +32,6 @@ public class TradeCancelServiceImpl {
                     value("stop_loss_rate", order.getStopLossRate()),
                     value("id", order.getId()));
         });
+        log.info("{} {}", value("kind", "cancel-batch"), value("status", "end"));
     }
 }

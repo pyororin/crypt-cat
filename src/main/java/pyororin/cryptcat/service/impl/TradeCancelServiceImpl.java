@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import pyororin.cryptcat.repository.CoinCheckRepository;
 
 import java.time.Clock;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static net.logstash.logback.argument.StructuredArguments.value;
 
@@ -21,16 +23,20 @@ public class TradeCancelServiceImpl {
     public void cancel() {
         log.info("{} {}", value("kind", "cancel-batch"), value("status", "start"));
         repository.retrieveOpensOrders().findOrdersOver24Hours(clock).forEach(order -> {
-            repository.exchangeCancel(order.getId());
-            log.info("{} {} {} {} {} {} {} {}",
-                    value("kind", "cancel"),
-                    value("pair", order.getPair()),
-                    value("pending_amount", order.getPendingAmount()),
-                    value("pending_market_buy_amount", order.getPendingMarketBuyAmount()),
-                    value("order_rate", order.getOrderType()),
-                    value("order_time", order.getCreatedAt()),
-                    value("stop_loss_rate", order.getStopLossRate()),
-                    value("id", order.getId()));
+            var executorService = Executors.newScheduledThreadPool(1);
+            executorService.schedule(() -> {
+                repository.exchangeCancel(order.getId());
+                log.info("{} {} {} {} {} {} {} {}",
+                        value("kind", "cancel"),
+                        value("pair", order.getPair()),
+                        value("pending_amount", order.getPendingAmount()),
+                        value("pending_market_buy_amount", order.getPendingMarketBuyAmount()),
+                        value("order_rate", order.getOrderType()),
+                        value("order_time", order.getCreatedAt()),
+                        value("stop_loss_rate", order.getStopLossRate()),
+                        value("id", order.getId()));
+            }, 5, TimeUnit.SECONDS);
+            executorService.shutdown();
         });
         log.info("{} {}", value("kind", "cancel-batch"), value("status", "end"));
     }

@@ -46,7 +46,7 @@ public class TradeJpyFixServiceImpl implements TradeService {
         // すべてのタスクが完了したらシャットダウン
         executor.shutdown();
         try {
-            if (!executor.awaitTermination(1, TimeUnit.MINUTES)) {
+            if (!executor.awaitTermination(5, TimeUnit.MINUTES)) {
                 executor.shutdownNow();
             }
         } catch (InterruptedException e) {

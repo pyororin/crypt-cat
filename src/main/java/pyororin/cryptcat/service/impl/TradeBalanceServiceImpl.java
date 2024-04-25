@@ -16,17 +16,20 @@ import static net.logstash.logback.argument.StructuredArguments.value;
 public class TradeBalanceServiceImpl {
     private final CoinCheckRepository repository;
 
-    @Scheduled(cron = "0 0 * * * *")
+    @Scheduled(cron = "30 0 * * * *")
     public void balance() {
         var ticker = repository.retrieveTicker(CoinCheckRequest.builder().pair(Pair.BTC_JPY).build());
         var balance = repository.retrieveBalance();
         var btcToYen = balance.getBtc().multiply(ticker.getLast());
-        log.info("{} {} {} {} {}",
+        var btcReservedToYen = balance.getBtc_reserved().multiply(ticker.getLast());
+        log.info("{} {} {} {} {} {} {}",
                 value("kind", "balance"),
                 value("jpy", balance.getJpy()),
+                value("jpy_reserved", balance.getJpy_reserved()),
                 value("btc", balance.getBtc()),
+                value("btc_reserved", balance.getBtc_reserved()),
                 value("rate", ticker.getLast()),
-                value("total", balance.getJpy().add(btcToYen))
+                value("total", balance.getJpy().add(balance.getJpy_reserved()).add(btcToYen).add(btcReservedToYen))
         );
     }
 }

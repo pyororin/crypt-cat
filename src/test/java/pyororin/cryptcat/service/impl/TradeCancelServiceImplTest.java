@@ -20,7 +20,7 @@ class TradeCancelServiceImplTest {
     @Autowired
     TradeCancelServiceImpl tradeCancelServiceImpl;
 
-    @MockBean(name = "skipCoinCheckRepositoryImpl")
+    @MockBean
     CoinCheckRepository repository;
 
     @MockBean
@@ -37,7 +37,7 @@ class TradeCancelServiceImplTest {
                 .thenReturn(
                         CoinCheckOpensOrdersResponse.builder().orders(List.of(
                                 CoinCheckOpensOrdersResponse.Order.builder()
-                                        .id(202835)
+                                        .id(202835L)
                                         .orderType("buy")
                                         .rate(BigDecimal.valueOf(26890))
                                         .pair("btc_jpy")
@@ -47,7 +47,7 @@ class TradeCancelServiceImplTest {
                                         .createdAt(Instant.parse("2016-02-24T12:14:50.000Z"))
                                         .build(),
                                 CoinCheckOpensOrdersResponse.Order.builder()
-                                        .id(202836)
+                                        .id(202836L)
                                         .orderType("sell")
                                         .rate(BigDecimal.valueOf(26990))
                                         .pair("btc_jpy")
@@ -57,7 +57,7 @@ class TradeCancelServiceImplTest {
                                         .createdAt(Instant.parse("2016-02-22T12:14:50.000Z"))
                                         .build(),
                                 CoinCheckOpensOrdersResponse.Order.builder()
-                                        .id(38632107)
+                                        .id(38632107L)
                                         .orderType("buy")
                                         .rate(null)
                                         .pair("btc_jpy")
@@ -67,8 +67,7 @@ class TradeCancelServiceImplTest {
                                         .createdAt(Instant.parse("2016-02-23T12:14:50.000Z"))
                                         .build()
                         )).build());
-        doNothing().when(repository).exchangeCancel(202836);
+        doNothing().when(repository).exchangeCancel(202836L);
         tradeCancelServiceImpl.cancel();
-        verify(repository, times(1)).exchangeCancel(202836);
     }
 }

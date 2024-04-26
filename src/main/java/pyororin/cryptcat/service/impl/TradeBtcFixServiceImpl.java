@@ -53,24 +53,24 @@ public class TradeBtcFixServiceImpl implements TradeService {
         if (orderRequest.isBuy()) {
             /* 市場最終価格(ticker.last or ticker.ask) = rate */
             /* 固定注文量 * アラート別レシオ = amount */
-            var marketBuyPrice = tickerResponse.getFairBuyPrice().multiply(apiConfig.getAmount());
+            var marketBuyPrice = tickerResponse.getFairBuyPrice(apiConfig.getOrderLogic()).multiply(apiConfig.getAmount());
             repository.exchangeBuy(CoinCheckRequest.builder()
                     .pair(pair)
                     .price(marketBuyPrice)
                     .amount(apiConfig.getAmount())
-                    .rate(tickerResponse.getFairBuyPrice())
+                    .rate(tickerResponse.getFairBuyPrice(apiConfig.getOrderLogic()))
                     .group(orderRequest.getGroup())
                     .build());
             return marketBuyPrice;
         } else {
             /* 市場最終価格(ticker.last or ticker.ask) = rate */
             /* 固定注文量 = amount */
-            var marketSellPrice = tickerResponse.getFairSellPrice().multiply(apiConfig.getAmount());
+            var marketSellPrice = tickerResponse.getFairSellPrice(apiConfig.getOrderLogic()).multiply(apiConfig.getAmount());
             repository.exchangeSell(CoinCheckRequest.builder()
                     .pair(pair)
                     .price(marketSellPrice)
                     .amount(apiConfig.getAmount())
-                    .rate(tickerResponse.getFairSellPrice())
+                    .rate(tickerResponse.getFairSellPrice(apiConfig.getOrderLogic()))
                     .group(orderRequest.getGroup())
                     .build());
             return marketSellPrice;

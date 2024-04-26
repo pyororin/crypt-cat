@@ -61,24 +61,24 @@ public class TradeJpyFixServiceImpl implements TradeService {
         if (orderRequest.isBuy()) {
             /* 市場最終価格(ticker.last or ticker.ask) = rate */
             /* 固定金額(JPY) / 市場最終価格(ticker.last or ticker.ask) = amount */
-            var amount = apiConfig.getPrice().divide(tickerResponse.getFairBuyPrice(), 9, RoundingMode.HALF_EVEN);
+            var amount = apiConfig.getPrice().divide(tickerResponse.getFairBuyPrice(apiConfig.getOrderLogic()), 9, RoundingMode.HALF_EVEN);
             repository.exchangeBuy(CoinCheckRequest.builder()
                     .pair(pair)
                     .price(apiConfig.getPrice())
                     .amount(amount)
-                    .rate(tickerResponse.getFairBuyPrice())
+                    .rate(tickerResponse.getFairBuyPrice(apiConfig.getOrderLogic()))
                     .group(orderRequest.getGroup())
                     .build());
             return amount;
         } else {
             /* 市場最終価格(ticker.last or ticker.ask) = rate */
             /* 固定金額(JPY) / 市場最終価格(ticker.last or ticker.ask) = amount */
-            var amount = apiConfig.getPrice().divide(tickerResponse.getFairSellPrice(), 9, RoundingMode.HALF_EVEN);
+            var amount = apiConfig.getPrice().divide(tickerResponse.getFairSellPrice(apiConfig.getOrderLogic()), 9, RoundingMode.HALF_EVEN);
             repository.exchangeSell(CoinCheckRequest.builder()
                     .pair(pair)
                     .price(apiConfig.getPrice())
                     .amount(amount)
-                    .rate(tickerResponse.getFairSellPrice())
+                    .rate(tickerResponse.getFairSellPrice(apiConfig.getOrderLogic()))
                     .group(orderRequest.getGroup())
                     .build());
             return amount;

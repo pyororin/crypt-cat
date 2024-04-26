@@ -74,13 +74,16 @@ public class TradeBatchServiceImpl {
         var response = repository.retrieveOrdersTransactions();
         var sumFunds = response.sumFunds(clock);
         var jpyToBtc = sumFunds.getJpy().divide(ticker.getLast(), 9, RoundingMode.HALF_EVEN);
-        log.info("{} {} {} {} {} {}",
+        var btcToJpy = sumFunds.getBtc().multiply(ticker.getLast());
+        log.info("{} {} {} {} {} {} {}",
                 value("kind", "transactions"),
                 value("count", response.findOrdersWithinHours(clock).size()),
                 value("jpy", sumFunds.getJpy()),
                 value("btc", sumFunds.getBtc()),
                 value("rate", ticker.getLast()),
-                value("fix_jpy_btc", sumFunds.getBtc().add(jpyToBtc)));
+                value("fix_jpy_btc", sumFunds.getBtc().add(jpyToBtc)),
+                value("fix_btc_jpy", sumFunds.getJpy().add(btcToJpy))
+        );
 
     }
 }

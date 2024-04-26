@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.TestPropertySource;
+import pyororin.cryptcat.batch.TradeBatchServiceImpl;
 import pyororin.cryptcat.repository.CoinCheckRepository;
 import pyororin.cryptcat.repository.model.CoinCheckOpensOrdersResponse;
 
@@ -14,13 +15,14 @@ import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest
 @TestPropertySource(properties = "coincheck.actually=true")
-class TradeCancelServiceImplTest {
+class TradeBatchServiceImplTest {
     @Autowired
-    TradeCancelServiceImpl tradeCancelServiceImpl;
+    TradeBatchServiceImpl tradeBatchService;
 
     @MockBean
     CoinCheckRepository repository;
@@ -70,6 +72,6 @@ class TradeCancelServiceImplTest {
                                         .build()
                         )).build());
         doNothing().when(repository).exchangeCancel(202836L);
-        tradeCancelServiceImpl.cancel();
+        tradeBatchService.cancel();
     }
 }

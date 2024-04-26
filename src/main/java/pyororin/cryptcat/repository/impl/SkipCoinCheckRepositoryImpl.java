@@ -10,10 +10,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 import pyororin.cryptcat.repository.CoinCheckRepository;
-import pyororin.cryptcat.repository.model.CoinCheckBalanceResponse;
-import pyororin.cryptcat.repository.model.CoinCheckOpensOrdersResponse;
-import pyororin.cryptcat.repository.model.CoinCheckRequest;
-import pyororin.cryptcat.repository.model.CoinCheckTickerResponse;
+import pyororin.cryptcat.repository.model.*;
 
 import static net.logstash.logback.argument.StructuredArguments.value;
 
@@ -41,6 +38,11 @@ public class SkipCoinCheckRepositoryImpl implements CoinCheckRepository {
     @Override
     public CoinCheckOpensOrdersResponse retrieveOpensOrders() {
         return CoinCheckOpensOrdersResponse.builder().build();
+    }
+
+    @Override
+    public CoinCheckTransactionsResponse retrieveOrdersTransactions() {
+        return CoinCheckTransactionsResponse.builder().build();
     }
 
     @Override

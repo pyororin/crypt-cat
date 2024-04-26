@@ -18,7 +18,9 @@ import pyororin.cryptcat.repository.model.CoinCheckRequest;
 import pyororin.cryptcat.repository.model.Pair;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Clock;
+import java.time.ZoneId;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -48,6 +50,8 @@ class CoinCheckRepositoryImplTest {
     @Disabled
     @Test
     void retrieveTicker() {
+        var restClient = RestClient.builder().baseUrl(apiConfig.getHost()).build();
+        var repository = new CoinCheckRepositoryImpl(restClient, config, apiConfig);
         var response = repository.retrieveTicker(CoinCheckRequest.builder().pair(Pair.BTC_JPY).build());
         System.out.println(response);
     }
@@ -150,6 +154,8 @@ class CoinCheckRepositoryImplTest {
     @Disabled
     @Test
     void exchangeBuy() {
+        var repository = new CoinCheckRepositoryImpl(
+                RestClient.builder().baseUrl(apiConfig.getHost()).build(), config, apiConfig);
         var response = repository.retrieveTicker(CoinCheckRequest.builder().pair(Pair.BTC_JPY).build());
         var rate = response.getFairBuyPrice();
         var amount = BigDecimal.valueOf(0.0055);
@@ -202,5 +208,20 @@ class CoinCheckRepositoryImplTest {
             mockServer.verify();
         });
         verify(restClient, times(5)).post();
+    }
+
+    @Disabled
+    @Test
+    void orders() {
+        var repository = new CoinCheckRepositoryImpl(
+                RestClient.builder().baseUrl(apiConfig.getHost()).build(), config, apiConfig);
+        var response = repository.retrieveOrdersTransactions();
+        System.out.println(response);
+        System.out.println(response.sumFunds(Clock.system(ZoneId.of("Asia/Tokyo"))));
+        var ticker = repository.retrieveTicker(CoinCheckRequest.builder().pair(Pair.BTC_JPY).build());
+        System.out.println(ticker);
+        var jpyToBtc = response.sumFunds(clock).getJpy().divide(ticker.getLast(), 9, RoundingMode.HALF_EVEN);
+        System.out.println(jpyToBtc);
+        System.out.println(response.sumFunds(clock).getBtc().add(jpyToBtc));
     }
 }

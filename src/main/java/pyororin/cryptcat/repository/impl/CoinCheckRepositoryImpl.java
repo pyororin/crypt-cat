@@ -15,10 +15,7 @@ import org.springframework.web.client.RestClientException;
 import pyororin.cryptcat.config.CoinCheckApiConfig;
 import pyororin.cryptcat.config.CoinCheckRequestConfig;
 import pyororin.cryptcat.repository.CoinCheckRepository;
-import pyororin.cryptcat.repository.model.CoinCheckBalanceResponse;
-import pyororin.cryptcat.repository.model.CoinCheckOpensOrdersResponse;
-import pyororin.cryptcat.repository.model.CoinCheckRequest;
-import pyororin.cryptcat.repository.model.CoinCheckTickerResponse;
+import pyororin.cryptcat.repository.model.*;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -74,6 +71,20 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
                 })
                 .retrieve()
                 .toEntity(CoinCheckOpensOrdersResponse.class).getBody();
+    }
+
+    @Override
+    public CoinCheckTransactionsResponse retrieveOrdersTransactions() {
+        String nonce = String.valueOf(System.currentTimeMillis() / 1000L);
+        return restClient.get()
+                .uri("/api/exchange/orders/transactions")
+                .headers(httpHeaders -> {
+                    httpHeaders.set("ACCESS-KEY", config.getAccessKey());
+                    httpHeaders.set("ACCESS-NONCE", nonce);
+                    httpHeaders.set("ACCESS-SIGNATURE", HMAC_SHA256Encode(config.getSecret(), nonce + apiConfig.getHost() + "/api/exchange/orders/transactions"));
+                })
+                .retrieve()
+                .toEntity(CoinCheckTransactionsResponse.class).getBody();
     }
 
     @Retryable(retryFor = RuntimeException.class, maxAttempts = 5, backoff = @Backoff(delay = 1000, maxDelay = 5000))

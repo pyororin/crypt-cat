@@ -24,7 +24,7 @@ public class TradeBatchServiceImpl {
     private final Clock clock;
     private final CoinCheckRepository repository;
 
-    @Scheduled(cron = "30 0 * * * *")
+    @Scheduled(cron = "0 0 * * * *")
     public void balance() {
         var ticker = repository.retrieveTicker(CoinCheckRequest.builder().pair(Pair.BTC_JPY).build());
         var balance = repository.retrieveBalance();
@@ -69,7 +69,7 @@ public class TradeBatchServiceImpl {
         log.info("{} {}", value("kind", "cancel-batch"), value("status", "end"));
     }
 
-    @Scheduled(cron = "0 0 * * * *")
+    @Scheduled(cron = "45 59 * * * *")
     public void orders() {
         var ticker = repository.retrieveTicker(CoinCheckRequest.builder().pair(Pair.BTC_JPY).build());
         var response = repository.retrieveOrdersTransactions();

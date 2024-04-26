@@ -18,4 +18,5 @@ public class CoinCheckApiConfig {
     private BigDecimal price;
     private String actually;
     private int interval;
+    private OrderLogic orderLogic;
 }

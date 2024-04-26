@@ -45,4 +45,10 @@ public class CoinCheckOpensOrdersResponse {
                 .filter(order -> order.getCreatedAt().isBefore(clock.instant().minus(24, ChronoUnit.HOURS)))
                 .collect(Collectors.toList());
     }
+
+    public List<CoinCheckOpensOrdersResponse.Order> findOrdersWithinHours(Clock clock) {
+        return Objects.isNull(orders) ? List.of() : orders.stream()
+                .filter(order -> order.getCreatedAt().isAfter(clock.instant().minus(1, ChronoUnit.HOURS)))
+                .collect(Collectors.toList());
+    }
 }

@@ -117,7 +117,7 @@ class TestStrategytest():
           avgtrade = report.find_element(By.XPATH, 'div[6]/div[2]/div[1]').text
           avgtradeP = report.find_element(By.XPATH, 'div[6]/div[2]/div[2]').text
           avtTradeBar = report.find_element(By.XPATH, 'div[7]/div[2]/div[1]').text
-          junriekiDrwawP = '=SUBSTITUTE(SUBSTITUTE(offset($A$1,row()-1,2),"%","")," ","") / SUBSTITUTE(offset($A$1,row()-1,6),"%","")'
+          junriekiDrwawP = '=REGEXREPLACE(TO_TEXT(offset($A$1,row()-1,2))," |%|−","") / REGEXREPLACE(TO_TEXT(offset($A$1,row()-1,6)), " |%|−", "")'
 
           print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}".format(
             j, i, junriekiP, tradeSum, shoritsuP, profit, drawDownP, avgtradeP, avtTradeBar, junriekiDrwawP

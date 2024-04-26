@@ -47,12 +47,12 @@ class TestStrategytest():
   def test_strategytest(self):
     # パラメータ生成
     if strategy_parameter.PARAMETER_1_USE :
-      range1 = np.arange(strategy_parameter.PARAMETER_1_START_VALUE, strategy_parameter.PARAMETER_1_MAX_VALUE, strategy_parameter.PARAMETER_1_INCREMENTAL_VALUE)
+      range1 = np.arange(strategy_parameter.PARAMETER_1_START_VALUE, strategy_parameter.PARAMETER_1_MAX_VALUE + strategy_parameter.PARAMETER_1_INCREMENTAL_VALUE, strategy_parameter.PARAMETER_1_INCREMENTAL_VALUE)
     else :
       range1 = np.arange(0, 1, 1)
 
     if strategy_parameter.PARAMETER_2_USE :
-      range2 = np.arange(strategy_parameter.PARAMETER_2_START_VALUE, strategy_parameter.PARAMETER_2_MAX_VALUE, strategy_parameter.PARAMETER_2_INCREMENTAL_VALUE)
+      range2 = np.arange(strategy_parameter.PARAMETER_2_START_VALUE, strategy_parameter.PARAMETER_2_MAX_VALUE + strategy_parameter.PARAMETER_2_INCREMENTAL_VALUE, strategy_parameter.PARAMETER_2_INCREMENTAL_VALUE)
     else :
       range2 = np.arange(0, 1, 1)
 

@@ -6,6 +6,7 @@ import lombok.ToString;
 import pyororin.cryptcat.config.OrderLogic;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 @Builder
 @Data
@@ -21,22 +22,26 @@ public class CoinCheckTickerResponse {
 
     public BigDecimal getFairBuyPrice(OrderLogic logic) {
         if (logic.equals(OrderLogic.HIGH)) {
-            return last.min(ask).add(last.subtract(ask).abs().multiply(BigDecimal.valueOf(0.05)));
+            return last.min(bid).add(last.subtract(bid).abs().multiply(BigDecimal.valueOf(0.05)));
         } else if (logic.equals(OrderLogic.MIDIUM)) {
-            return last;
+            return last.min(ask);
         } else if (logic.equals(OrderLogic.LOW)) {
             return ask;
+        } else if (logic.equals(OrderLogic.EVEN)) {
+            return ask.add(bid).add(last).divide(BigDecimal.valueOf(3), 9, RoundingMode.HALF_EVEN);
         }
         return last;
     }
 
     public BigDecimal getFairSellPrice(OrderLogic logic) {
         if (logic.equals(OrderLogic.HIGH)) {
-            return last.max(bid).subtract(last.subtract(bid).abs().multiply(BigDecimal.valueOf(0.05)));
+            return last.max(ask).subtract(last.subtract(ask).abs().multiply(BigDecimal.valueOf(0.05)));
         } else if (logic.equals(OrderLogic.MIDIUM)) {
-            return last;
+            return last.max(bid);
         } else if (logic.equals(OrderLogic.LOW)) {
             return bid;
+        } else if (logic.equals(OrderLogic.EVEN)) {
+            return ask.add(bid).add(last).divide(BigDecimal.valueOf(3), 9, RoundingMode.HALF_EVEN);
         }
         return last;
     }

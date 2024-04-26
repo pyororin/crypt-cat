@@ -65,6 +65,7 @@ public class TradeBatchServiceImpl {
             }, 5, TimeUnit.SECONDS);
             executorService.shutdown();
         });
+        log.info("{} {}", value("kind", "opens"), value("count", opensOrders.findOrdersWithinHours(clock).size()));
         log.info("{} {}", value("kind", "cancel-batch"), value("status", "end"));
     }
 
@@ -84,6 +85,5 @@ public class TradeBatchServiceImpl {
                 value("fix_jpy_btc", sumFunds.getBtc().add(jpyToBtc)),
                 value("fix_btc_jpy", sumFunds.getJpy().add(btcToJpy))
         );
-
     }
 }

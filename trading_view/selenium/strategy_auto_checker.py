@@ -26,7 +26,6 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.chrome.options import Options
-now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=9), 'JST')).strftime('%Y%m%d-%H%M%S')
 
 class TestStrategytest():
 
@@ -65,39 +64,46 @@ class TestStrategytest():
     self.driver.find_element(By.CSS_SELECTOR, ".apply-common-tooltip:nth-child(1) > .icon-bYDQcOkp > svg").click()
 
     # ファイルに追記
-    file_prefix = self.driver.find_element(By.XPATH, '//*[@id="overlap-manager-root"]/div/div/div[1]/div/div[1]/div/div').text
+    logFileName = "./log/{0}-strategy-{1}.tsv".format(
+      datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=9), 'JST')).strftime('%Y%m%d-%H%M%S'),
+      self.driver.find_element(By.XPATH, '//*[@id="overlap-manager-root"]/div/div/div[1]/div/div[1]/div/div').text)
 
     print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}".format(
       "パラメータ1", "パラメータ2", "純利益", "終了したトレードの合計", "勝率", "プロフィットファクター", "最大ドローダウン", "平均トレード", "平均バー数", "純利益割合"
-    ), file=codecs.open("./log/strategy-{0}-{1}.tsv".format(file_prefix, now), 'a', 'utf-8'))
+    ), file=codecs.open(logFileName, 'a', 'utf-8'))
 
     # パラメータ変更
     for i in range2 :
 
       if strategy_parameter.PARAMETER_2_USE :
         # パラメータ2変更
-        element = self.driver.find_element(By.XPATH, strategy_parameter.PARAMETER_2_PATH)
-        element.send_keys( Keys.CONTROL + "a" )
-        element.send_keys( Keys.DELETE )
-        element.send_keys(str(i))
+        for parametar in self.driver.find_elements(By.XPATH, '//*[@id="overlap-manager-root"]/div/div/div[1]/div/div[3]/div/div') :
+          if strategy_parameter.PARAMETER_2_KEY == parametar.find_element(By.XPATH, 'div').text :
+            element = parametar.find_element(By.XPATH, './following-sibling::div/div/span/span[1]/input')
+            element.send_keys( Keys.CONTROL + "a" )
+            element.send_keys( Keys.DELETE )
+            element.send_keys(str(i))
 
       for j in range1 :
         if strategy_parameter.PARAMETER_1_USE :
           # パラメータ1変更
-          element = self.driver.find_element(By.XPATH, strategy_parameter.PARAMETER_1_PATH)
-          element.send_keys( Keys.CONTROL + "a" )
-          element.send_keys( Keys.DELETE )
-          element.send_keys(str(j))
+          for parametar in self.driver.find_elements(By.XPATH, '//*[@id="overlap-manager-root"]/div/div/div[1]/div/div[3]/div/div') :
+            if strategy_parameter.PARAMETER_1_KEY == parametar.find_element(By.XPATH, 'div').text :
+              element = parametar.find_element(By.XPATH, './following-sibling::div/div/span/span[1]/input')
+              element.send_keys( Keys.CONTROL + "a" )
+              element.send_keys( Keys.DELETE )
+              element.send_keys(str(j))
 
           # パラメータ変更確定
           self.driver.find_element(By.XPATH, '//*[@id="overlap-manager-root"]/div/div/div[1]/div/div[4]').click()
           time.sleep(3)
 
         # パフォーマンス結果取得
-        if self.driver.find_element(By.XPATH, '//*[@id="bottom-area"]/div[4]/div/div[2]/div[1]/div[2]').text == 'データなし' :
+        if (self.driver.find_elements(By.XPATH, '//*[@id="bottom-area"]/div[4]/div/div[2]/div[1]/div[2]') == 0
+                or self.driver.find_element(By.XPATH, '//*[@id="bottom-area"]/div[4]/div/div[2]/div[1]/div[2]').text == 'データなし') :
           print("{0}\t{1}".format(
             j, i
-          ), file=codecs.open("./log/strategy-{0}-{1}.tsv".format(file_prefix, now), 'a', 'utf-8'))
+          ), file=codecs.open(logFileName, 'a', 'utf-8'))
 
         else :
           report = self.driver.find_element(By.XPATH, '//*[@id="bottom-area"]/div[4]/div/div[2]/div/div[1]')
@@ -114,5 +120,6 @@ class TestStrategytest():
           junriekiDrwawP = '=SUBSTITUTE(SUBSTITUTE(offset($A$1,row()-1,2),"%","")," ","") / SUBSTITUTE(offset($A$1,row()-1,6),"%","")'
 
           print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}".format(
-            i, j, junriekiP, tradeSum, shoritsuP, profit, drawDownP, avgtradeP, avtTradeBar, junriekiDrwawP
-          ), file=codecs.open("./log/strategy-{0}-{1}.tsv".format(file_prefix, now), 'a', 'utf-8'))
+            j, i, junriekiP, tradeSum, shoritsuP, profit, drawDownP, avgtradeP, avtTradeBar, junriekiDrwawP
+          ), file=codecs.open(logFileName, 'a', 'utf-8'))
+

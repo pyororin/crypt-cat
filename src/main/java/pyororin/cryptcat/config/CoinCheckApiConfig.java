@@ -19,4 +19,5 @@ public class CoinCheckApiConfig {
     private String actually;
     private int interval;
     private OrderLogic orderLogic;
+    private boolean orderRetry;
 }

@@ -5,9 +5,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import pyororin.cryptcat.config.CoinCheckApiConfig;
 import pyororin.cryptcat.repository.CoinCheckRepository;
 import pyororin.cryptcat.repository.model.CoinCheckRequest;
 import pyororin.cryptcat.repository.model.Pair;
+import pyororin.cryptcat.service.impl.TradeRateLogicService;
 
 import java.math.RoundingMode;
 import java.time.Clock;
@@ -22,6 +24,8 @@ import static net.logstash.logback.argument.StructuredArguments.value;
 @ConditionalOnProperty(name = "coincheck.actually", havingValue = "true")
 public class TradeBatchServiceImpl {
     private final Clock clock;
+    private final CoinCheckApiConfig apiConfig;
+    private final TradeRateLogicService tradeRateLogicService;
     private final CoinCheckRepository repository;
 
     @Scheduled(cron = "0 0 * * * *")
@@ -44,7 +48,7 @@ public class TradeBatchServiceImpl {
         );
     }
 
-    @Scheduled(cron = "0 59 * * * *")
+    @Scheduled(cron = "0 1 * * * *")
     public void cancel() {
         log.info("{} {}", value("kind", "cancel-batch"), value("status", "start"));
         var opensOrders = repository.retrieveOpensOrders();
@@ -67,6 +71,60 @@ public class TradeBatchServiceImpl {
         });
         log.info("{} {}", value("kind", "opens"), value("count", opensOrders.findOrdersWithinHours(clock).size()));
         log.info("{} {}", value("kind", "cancel-batch"), value("status", "end"));
+    }
+
+    @Scheduled(cron = "30 * * * * *")
+    public void cancelRetry() {
+        if (apiConfig.isOrderRetry()) {
+            log.info("{} {}", value("kind", "cancel-retry-batch"), value("status", "start"));
+            var opensOrders = repository.retrieveOpensOrders();
+            opensOrders.findOrdersWithinMinuits(clock, 1).forEach(order -> {
+                var executorService = Executors.newScheduledThreadPool(1);
+                executorService.schedule(() -> {
+                    repository.exchangeCancel(order.getId());
+                    log.info("{} {} {} {} {} {} {} {}",
+                            value("kind", "cancel"),
+                            value("pair", order.getPair()),
+                            value("pending_amount", order.getPendingAmount()),
+                            value("pending_market_buy_amount", order.getPendingMarketBuyAmount()),
+                            value("order_rate", order.getOrderType()),
+                            value("order_time", order.getCreatedAt()),
+                            value("stop_loss_rate", order.getStopLossRate()),
+                            value("id", order.getId()));
+                    if (order.getOrderType().equals("sell")) {
+                        var sellPrice = tradeRateLogicService.getFairSellPrice(Pair.fromValue(order.getPair()));
+                        /* 市場最終価格(ticker.last or ticker.ask) = rate */
+                        /* 固定金額(JPY) / 市場最終価格(ticker.last or ticker.ask) = amount */
+                        var amount = apiConfig.getPrice().divide(sellPrice, 9, RoundingMode.HALF_EVEN);
+                        repository.exchangeSell(CoinCheckRequest.builder()
+                                .pair(Pair.fromValue(order.getPair()))
+                                .price(apiConfig.getPrice())
+                                .amount(amount)
+                                .rate(sellPrice)
+                                .group("Cancel-Retry")
+                                .build());
+                    }
+                    if (order.getOrderType().equals("buy")) {
+                        var buyPrice = tradeRateLogicService.getFairBuyPrice(Pair.fromValue(order.getPair()));
+                        /* 市場最終価格(ticker.last or ticker.ask) = rate */
+                        /* 固定金額(JPY) / 市場最終価格(ticker.last or ticker.ask) = amount */
+                        var amount = apiConfig.getPrice().divide(buyPrice, 9, RoundingMode.HALF_EVEN);
+                        repository.exchangeBuy(CoinCheckRequest.builder()
+                                .pair(Pair.fromValue(order.getPair()))
+                                .price(apiConfig.getPrice())
+                                .amount(amount)
+                                .rate(buyPrice)
+                                .group("Cancel-Retry")
+                                .build());
+                    }
+
+                }, 3, TimeUnit.SECONDS);
+                executorService.shutdown();
+            });
+            log.info("{} {}", value("kind", "cancel-retry-batch"), value("status", "end"));
+        } else {
+            log.info("{} {}", value("kind", "cancel-retry-batch"), value("status", "skip"));
+        }
     }
 
     @Scheduled(cron = "15 0 * * * *")

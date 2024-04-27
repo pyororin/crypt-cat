@@ -66,6 +66,13 @@ public class CoinCheckTransactionsResponse {
                 .collect(Collectors.toList());
     }
 
+    public List<Data> findOrdersWithinHours(Clock clock, String side) {
+        return Objects.isNull(data) ? List.of() : data.stream()
+                .filter(data -> data.getCreatedAt().isAfter(clock.instant().minus(1, ChronoUnit.HOURS)))
+                .filter(data -> data.getSide().equals(side))
+                .collect(Collectors.toList());
+    }
+
     public Funds sumFunds(Clock clock) {
         BigDecimal totalBtc = this.findOrdersWithinHours(clock).stream()
                 .filter(data -> Objects.nonNull(data.getFunds()) && Objects.nonNull(data.getFunds().getBtc()))

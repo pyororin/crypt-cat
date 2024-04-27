@@ -18,12 +18,25 @@ import java.util.stream.Collectors;
 @ToString
 public class CoinCheckTransactionsResponse {
     private boolean success;
-    private List<Transaction> transactions;
+    private List<Data> data;
+    private Pagination pagination;
 
-    @Data
+    @lombok.Data()
     @Builder
     @ToString
-    public static class Transaction {
+    public static class Pagination {
+        private long limit;
+        private String order;
+        @JsonProperty("starting_after")
+        private long startingAfter;
+        @JsonProperty("ending_before")
+        private long endingBefore;
+    }
+
+    @lombok.Data
+    @Builder
+    @ToString
+    public static class Data {
         private long id;
         @JsonProperty("order_id")
         private long orderId;
@@ -39,7 +52,7 @@ public class CoinCheckTransactionsResponse {
         private String side;
     }
 
-    @Data()
+    @lombok.Data()
     @Builder
     @ToString
     public static class Funds {
@@ -47,21 +60,21 @@ public class CoinCheckTransactionsResponse {
         private BigDecimal jpy;
     }
 
-    public List<CoinCheckTransactionsResponse.Transaction> findOrdersWithinHours(Clock clock) {
-        return Objects.isNull(transactions) ? List.of() : transactions.stream()
-                .filter(transaction -> transaction.getCreatedAt().isAfter(clock.instant().minus(1, ChronoUnit.HOURS)))
+    public List<Data> findOrdersWithinHours(Clock clock) {
+        return Objects.isNull(data) ? List.of() : data.stream()
+                .filter(data -> data.getCreatedAt().isAfter(clock.instant().minus(1, ChronoUnit.HOURS)))
                 .collect(Collectors.toList());
     }
 
     public Funds sumFunds(Clock clock) {
         BigDecimal totalBtc = this.findOrdersWithinHours(clock).stream()
-                .filter(transaction -> Objects.nonNull(transaction.getFunds()) && Objects.nonNull(transaction.getFunds().getBtc()))
-                .map(transaction -> transaction.getFunds().getBtc())
+                .filter(data -> Objects.nonNull(data.getFunds()) && Objects.nonNull(data.getFunds().getBtc()))
+                .map(data -> data.getFunds().getBtc())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         BigDecimal totalJpy = this.findOrdersWithinHours(clock).stream()
-                .filter(transaction -> Objects.nonNull(transaction.getFunds()) && Objects.nonNull(transaction.getFunds().getJpy()))
-                .map(transaction -> transaction.getFunds().getJpy())
+                .filter(data -> Objects.nonNull(data.getFunds()) && Objects.nonNull(data.getFunds().getJpy()))
+                .map(data -> data.getFunds().getJpy())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         return Funds.builder().btc(totalBtc).jpy(totalJpy).build();

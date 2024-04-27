@@ -217,6 +217,8 @@ class CoinCheckRepositoryImplTest {
                 RestClient.builder().baseUrl(apiConfig.getHost()).build(), config, apiConfig);
         var response = repository.retrieveOrdersTransactions();
         System.out.println(response);
+        System.out.println(response.getData().size());
+        System.out.println(response.findOrdersWithinHours(clock).size());
         System.out.println(response.sumFunds(Clock.system(ZoneId.of("Asia/Tokyo"))));
         var ticker = repository.retrieveTicker(CoinCheckRequest.builder().pair(Pair.BTC_JPY).build());
         System.out.println(ticker);

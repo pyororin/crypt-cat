@@ -41,6 +41,12 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
         return restClient.get()
                 .uri("/api/ticker/?pair={rate}", request.getPair().getValue())
                 .retrieve()
+                .onStatus(HttpStatusCode::isError, (req, res) -> {
+                    log.error("{} {} {} {}",
+                            value("kind", "api"), value("uri", req.getURI()), value("status", res.getStatusText()),
+                            value("response", new Scanner(res.getBody()).useDelimiter("\\A").next().replaceAll("\\r\\n|\\r|\\n", "")));
+                    throw new RestClientException(res.getStatusCode().toString());
+                })
                 .toEntity(CoinCheckTickerResponse.class).getBody();
     }
 
@@ -56,10 +62,17 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
                     httpHeaders.set("ACCESS-SIGNATURE", HMAC_SHA256Encode(config.getSecret(), nonce + apiConfig.getHost() + "/api/accounts/balance"));
                 })
                 .retrieve()
+                .onStatus(HttpStatusCode::isError, (req, res) -> {
+                    log.error("{} {} {} {}",
+                            value("kind", "api"), value("uri", req.getURI()), value("status", res.getStatusText()),
+                            value("response", new Scanner(res.getBody()).useDelimiter("\\A").next().replaceAll("\\r\\n|\\r|\\n", "")));
+                    throw new RestClientException(res.getStatusCode().toString());
+                })
                 .toEntity(CoinCheckBalanceResponse.class).getBody();
     }
 
     @Override
+    @Retryable(retryFor = RuntimeException.class, maxAttempts = 5, backoff = @Backoff(delay = 1000, maxDelay = 5000))
     public CoinCheckOpensOrdersResponse retrieveOpensOrders() {
         String nonce = String.valueOf(System.currentTimeMillis() / 1000L);
         return restClient.get()
@@ -70,10 +83,17 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
                     httpHeaders.set("ACCESS-SIGNATURE", HMAC_SHA256Encode(config.getSecret(), nonce + apiConfig.getHost() + "/api/exchange/orders/opens"));
                 })
                 .retrieve()
+                .onStatus(HttpStatusCode::isError, (req, res) -> {
+                    log.error("{} {} {} {}",
+                            value("kind", "api"), value("uri", req.getURI()), value("status", res.getStatusText()),
+                            value("response", new Scanner(res.getBody()).useDelimiter("\\A").next().replaceAll("\\r\\n|\\r|\\n", "")));
+                    throw new RestClientException(res.getStatusCode().toString());
+                })
                 .toEntity(CoinCheckOpensOrdersResponse.class).getBody();
     }
 
     @Override
+    @Retryable(retryFor = RuntimeException.class, maxAttempts = 5, backoff = @Backoff(delay = 1000, maxDelay = 5000))
     public CoinCheckTransactionsResponse retrieveOrdersTransactions() {
         String nonce = String.valueOf(System.currentTimeMillis() / 1000L);
         return restClient.get()
@@ -85,9 +105,16 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
                             + String.format("/api/exchange/orders/transactions_pagination?limit=%d", 200)));
                 })
                 .retrieve()
+                .onStatus(HttpStatusCode::isError, (req, res) -> {
+                    log.error("{} {} {} {}",
+                            value("kind", "api"), value("uri", req.getURI()), value("status", res.getStatusText()),
+                            value("response", new Scanner(res.getBody()).useDelimiter("\\A").next().replaceAll("\\r\\n|\\r|\\n", "")));
+                    throw new RestClientException(res.getStatusCode().toString());
+                })
                 .toEntity(CoinCheckTransactionsResponse.class).getBody();
     }
 
+    @Override
     @Retryable(retryFor = RuntimeException.class, maxAttempts = 5, backoff = @Backoff(delay = 1000, maxDelay = 5000))
     public void exchangeBuy(CoinCheckRequest request) {
         var jsonBody = new JSONObject();
@@ -106,6 +133,7 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
                 value("group", request.getGroup()));
     }
 
+    @Override
     @Retryable(retryFor = RuntimeException.class, maxAttempts = 5, backoff = @Backoff(delay = 1000, maxDelay = 5000))
     public void exchangeSell(CoinCheckRequest request) {
         var jsonBody = new JSONObject();
@@ -125,6 +153,7 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
     }
 
     @Override
+    @Retryable(retryFor = RuntimeException.class, maxAttempts = 5, backoff = @Backoff(delay = 1000, maxDelay = 5000))
     public void exchangeCancel(long id) {
         String nonce = String.valueOf(System.currentTimeMillis() / 1000L);
         restClient.delete()
@@ -136,9 +165,15 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
                             nonce + apiConfig.getHost() + "/api/exchange/orders/" + id));
                 })
                 .retrieve()
-                .onStatus(HttpStatusCode::is2xxSuccessful, (req, res) -> log.info("{} {} {} {}",
-                        value("kind", "api"), value("status", "ok"), value("id", id),
+                .onStatus(HttpStatusCode::is2xxSuccessful, (req, res) -> log.info("{} {} {} {} {}",
+                        value("kind", "api"), value("uri", req.getURI()), value("status", "ok"), value("id", id),
                         value("response", new Scanner(res.getBody()).useDelimiter("\\A").next().replaceAll("\\r\\n|\\r|\\n", ""))))
+                .onStatus(HttpStatusCode::isError, (req, res) -> {
+                    log.error("{} {} {} {}",
+                            value("kind", "api"), value("status", res.getStatusText()), value("id", id),
+                            value("response", new Scanner(res.getBody()).useDelimiter("\\A").next().replaceAll("\\r\\n|\\r|\\n", "")));
+                    throw new RestClientException(res.getStatusCode().toString());
+                })
                 .toBodilessEntity();
     }
 
@@ -160,8 +195,8 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
                         value("kind", "api"), value("status", "ok"), value("request-body", jsonBody.toString()),
                         value("response", new Scanner(res.getBody()).useDelimiter("\\A").next().replaceAll("\\r\\n|\\r|\\n", ""))))
                 .onStatus(HttpStatusCode::isError, (req, res) -> {
-                    log.error("{} {} {} {}",
-                            value("kind", "api"), value("status", res.getStatusText()), value("request-body", jsonBody.toString()),
+                    log.error("{} {} {} {} {}",
+                            value("kind", "api"), value("uri", req.getURI()), value("status", res.getStatusText()), value("request-body", jsonBody.toString()),
                             value("response", new Scanner(res.getBody()).useDelimiter("\\A").next().replaceAll("\\r\\n|\\r|\\n", "")));
                     throw new RestClientException(res.getStatusCode().toString());
                 })

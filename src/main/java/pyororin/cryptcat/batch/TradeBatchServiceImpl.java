@@ -76,9 +76,11 @@ public class TradeBatchServiceImpl {
         var sumFunds = response.sumFunds(clock);
         var jpyToBtc = sumFunds.getJpy().divide(ticker.getLast(), 9, RoundingMode.HALF_EVEN);
         var btcToJpy = sumFunds.getBtc().multiply(ticker.getLast());
-        log.info("{} {} {} {} {} {} {}",
+        log.info("{} {} {} {} {} {} {} {} {}",
                 value("kind", "transactions"),
                 value("count", response.findOrdersWithinHours(clock).size()),
+                value("sell-count", response.findOrdersWithinHours(clock, "sell").size()),
+                value("buy-count", response.findOrdersWithinHours(clock, "buy").size()),
                 value("jpy", sumFunds.getJpy()),
                 value("btc", sumFunds.getBtc()),
                 value("rate", ticker.getLast()),

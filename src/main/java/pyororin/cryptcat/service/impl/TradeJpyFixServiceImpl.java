@@ -28,6 +28,7 @@ import static net.logstash.logback.argument.StructuredArguments.value;
 @Service
 @RequiredArgsConstructor
 public class TradeJpyFixServiceImpl implements TradeService {
+    private final TradeRateLogicService tradeRateLogicService;
     private final CoinCheckRepository repository;
     private final CoinCheckApiConfig apiConfig;
 
@@ -57,28 +58,29 @@ public class TradeJpyFixServiceImpl implements TradeService {
 
     @Retryable(retryFor = RestClientException.class, maxAttempts = 5, backoff = @Backoff(delay = 6000))
     private BigDecimal exchange(Pair pair, OrderRequest orderRequest) {
-        var tickerResponse = repository.retrieveTicker(CoinCheckRequest.builder().pair(pair).build());
         if (orderRequest.isBuy()) {
+            var buyPrice = tradeRateLogicService.getFairBuyPrice(pair);
             /* 市場最終価格(ticker.last or ticker.ask) = rate */
             /* 固定金額(JPY) / 市場最終価格(ticker.last or ticker.ask) = amount */
-            var amount = apiConfig.getPrice().divide(tickerResponse.getFairBuyPrice(apiConfig.getOrderLogic()), 9, RoundingMode.HALF_EVEN);
+            var amount = apiConfig.getPrice().divide(buyPrice, 9, RoundingMode.HALF_EVEN);
             repository.exchangeBuy(CoinCheckRequest.builder()
                     .pair(pair)
                     .price(apiConfig.getPrice())
                     .amount(amount)
-                    .rate(tickerResponse.getFairBuyPrice(apiConfig.getOrderLogic()))
+                    .rate(buyPrice)
                     .group(orderRequest.getGroup())
                     .build());
             return amount;
         } else {
+            var sellPrice = tradeRateLogicService.getFairSellPrice(pair);
             /* 市場最終価格(ticker.last or ticker.ask) = rate */
             /* 固定金額(JPY) / 市場最終価格(ticker.last or ticker.ask) = amount */
-            var amount = apiConfig.getPrice().divide(tickerResponse.getFairSellPrice(apiConfig.getOrderLogic()), 9, RoundingMode.HALF_EVEN);
+            var amount = apiConfig.getPrice().divide(sellPrice, 9, RoundingMode.HALF_EVEN);
             repository.exchangeSell(CoinCheckRequest.builder()
                     .pair(pair)
                     .price(apiConfig.getPrice())
                     .amount(amount)
-                    .rate(tickerResponse.getFairSellPrice(apiConfig.getOrderLogic()))
+                    .rate(sellPrice)
                     .group(orderRequest.getGroup())
                     .build());
             return amount;

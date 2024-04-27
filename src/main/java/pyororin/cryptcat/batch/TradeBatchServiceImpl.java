@@ -69,7 +69,7 @@ public class TradeBatchServiceImpl {
         log.info("{} {}", value("kind", "cancel-batch"), value("status", "end"));
     }
 
-    @Scheduled(cron = "45 59 * * * *")
+    @Scheduled(cron = "15 0 * * * *")
     public void orders() {
         var ticker = repository.retrieveTicker(CoinCheckRequest.builder().pair(Pair.BTC_JPY).build());
         var response = repository.retrieveOrdersTransactions();

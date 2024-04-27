@@ -20,6 +20,7 @@ import java.util.stream.LongStream;
 @Service
 @RequiredArgsConstructor
 public class TradeBtcFixServiceImpl implements TradeService {
+    private final TradeRateLogicService tradeRateLogicService;
     private final CoinCheckRepository repository;
     private final CoinCheckApiConfig apiConfig;
 
@@ -49,28 +50,29 @@ public class TradeBtcFixServiceImpl implements TradeService {
     }
 
     private BigDecimal exchange(Pair pair, OrderRequest orderRequest) {
-        var tickerResponse = repository.retrieveTicker(CoinCheckRequest.builder().pair(pair).build());
         if (orderRequest.isBuy()) {
+            var buyPrice = tradeRateLogicService.getFairBuyPrice(pair);
             /* 市場最終価格(ticker.last or ticker.ask) = rate */
             /* 固定注文量 * アラート別レシオ = amount */
-            var marketBuyPrice = tickerResponse.getFairBuyPrice(apiConfig.getOrderLogic()).multiply(apiConfig.getAmount());
+            var marketBuyPrice = buyPrice.multiply(apiConfig.getAmount());
             repository.exchangeBuy(CoinCheckRequest.builder()
                     .pair(pair)
                     .price(marketBuyPrice)
                     .amount(apiConfig.getAmount())
-                    .rate(tickerResponse.getFairBuyPrice(apiConfig.getOrderLogic()))
+                    .rate(buyPrice)
                     .group(orderRequest.getGroup())
                     .build());
             return marketBuyPrice;
         } else {
+            var sellPrice = tradeRateLogicService.getFairSellPrice(pair);
             /* 市場最終価格(ticker.last or ticker.ask) = rate */
             /* 固定注文量 = amount */
-            var marketSellPrice = tickerResponse.getFairSellPrice(apiConfig.getOrderLogic()).multiply(apiConfig.getAmount());
+            var marketSellPrice = sellPrice.multiply(apiConfig.getAmount());
             repository.exchangeSell(CoinCheckRequest.builder()
                     .pair(pair)
                     .price(marketSellPrice)
                     .amount(apiConfig.getAmount())
-                    .rate(tickerResponse.getFairSellPrice(apiConfig.getOrderLogic()))
+                    .rate(sellPrice)
                     .group(orderRequest.getGroup())
                     .build());
             return marketSellPrice;

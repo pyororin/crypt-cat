@@ -16,6 +16,7 @@ import pyororin.cryptcat.config.CoinCheckRequestConfig;
 import pyororin.cryptcat.repository.impl.CoinCheckRepositoryImpl;
 import pyororin.cryptcat.repository.model.CoinCheckRequest;
 import pyororin.cryptcat.repository.model.Pair;
+import pyororin.cryptcat.service.impl.TradeRateLogicService;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -46,6 +47,9 @@ class CoinCheckRepositoryImplTest {
 
     @MockBean
     RestClient restClient;
+
+    @Autowired
+    TradeRateLogicService tradeRateLogicService;
 
     @Disabled
     @Test
@@ -156,8 +160,7 @@ class CoinCheckRepositoryImplTest {
     void exchangeBuy() {
         var repository = new CoinCheckRepositoryImpl(
                 RestClient.builder().baseUrl(apiConfig.getHost()).build(), config, apiConfig);
-        var response = repository.retrieveTicker(CoinCheckRequest.builder().pair(Pair.BTC_JPY).build());
-        var rate = response.getFairBuyPrice(apiConfig.getOrderLogic());
+        var rate = tradeRateLogicService.getFairBuyPrice(Pair.BTC_JPY);
         var amount = BigDecimal.valueOf(0.0055);
         repository.exchangeBuy(CoinCheckRequest.builder().pair(Pair.BTC_JPY).price(rate).amount(amount).build());
     }
@@ -165,8 +168,7 @@ class CoinCheckRepositoryImplTest {
     @Disabled
     @Test
     void exchangeSell() {
-        var response = repository.retrieveTicker(CoinCheckRequest.builder().pair(Pair.BTC_JPY).build());
-        var rate = response.getFairSellPrice(apiConfig.getOrderLogic());
+        var rate = tradeRateLogicService.getFairSellPrice(Pair.BTC_JPY);
         var amount = BigDecimal.valueOf(0.0055);
         repository.exchangeSell(CoinCheckRequest.builder().pair(Pair.BTC_JPY).price(rate).amount(amount).build());
     }

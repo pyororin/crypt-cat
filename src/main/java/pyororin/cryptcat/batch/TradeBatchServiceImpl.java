@@ -66,19 +66,19 @@ public class TradeBatchServiceImpl {
                         value("order_time", order.getCreatedAt()),
                         value("stop_loss_rate", order.getStopLossRate()),
                         value("id", order.getId()));
-            }, 5, TimeUnit.SECONDS);
+            }, apiConfig.getInterval(), TimeUnit.SECONDS);
             executorService.shutdown();
         });
         log.info("{} {}", value("kind", "opens"), value("count", opensOrders.findOrdersWithinHours(clock).size()));
         log.info("{} {}", value("kind", "cancel-batch"), value("status", "end"));
     }
 
-    @Scheduled(cron = "30 * * * * *")
+    @Scheduled(cron = "30 */5 * * * *")
     public void cancelRetry() {
         if (apiConfig.isOrderRetry()) {
             log.info("{} {}", value("kind", "cancel-retry-batch"), value("status", "start"));
             var opensOrders = repository.retrieveOpensOrders();
-            opensOrders.findOrdersWithinMinuits(clock, 1).forEach(order -> {
+            opensOrders.findOrdersWithinMinuits(clock, 5).forEach(order -> {
                 var executorService = Executors.newScheduledThreadPool(1);
                 executorService.schedule(() -> {
                     repository.exchangeCancel(order.getId());
@@ -118,7 +118,7 @@ public class TradeBatchServiceImpl {
                                 .build());
                     }
 
-                }, 3, TimeUnit.SECONDS);
+                }, apiConfig.getInterval(), TimeUnit.SECONDS);
                 executorService.shutdown();
             });
             log.info("{} {}", value("kind", "cancel-retry-batch"), value("status", "end"));
@@ -127,18 +127,18 @@ public class TradeBatchServiceImpl {
         }
     }
 
-    @Scheduled(cron = "15 0 * * * *")
+    @Scheduled(cron = "15 */10 * * * *")
     public void orders() {
         var ticker = repository.retrieveTicker(CoinCheckRequest.builder().pair(Pair.BTC_JPY).build());
         var response = repository.retrieveOrdersTransactions();
-        var sumFunds = response.sumFunds(clock);
+        var sumFunds = response.sumFunds(clock, 10);
         var jpyToBtc = sumFunds.getJpy().divide(ticker.getLast(), 9, RoundingMode.HALF_EVEN);
         var btcToJpy = sumFunds.getBtc().multiply(ticker.getLast());
         log.info("{} {} {} {} {} {} {} {} {}",
                 value("kind", "transactions"),
-                value("count", response.findOrdersWithinHours(clock).size()),
-                value("sell-count", response.findOrdersWithinHours(clock, "sell").size()),
-                value("buy-count", response.findOrdersWithinHours(clock, "buy").size()),
+                value("count", response.findOrdersWithinMinutes(clock, 10).size()),
+                value("sell-count", response.findOrdersWithinMinutes(clock, 10, "sell").size()),
+                value("buy-count", response.findOrdersWithinMinutes(clock, 10, "buy").size()),
                 value("jpy", sumFunds.getJpy()),
                 value("btc", sumFunds.getBtc()),
                 value("rate", ticker.getLast()),

@@ -220,12 +220,12 @@ class CoinCheckRepositoryImplTest {
         var response = repository.retrieveOrdersTransactions();
         System.out.println(response);
         System.out.println(response.getData().size());
-        System.out.println(response.findOrdersWithinHours(clock).size());
-        System.out.println(response.sumFunds(Clock.system(ZoneId.of("Asia/Tokyo"))));
+        System.out.println(response.findOrdersWithinMinutes(clock, 10).size());
+        System.out.println(response.sumFunds(Clock.system(ZoneId.of("Asia/Tokyo")), 10));
         var ticker = repository.retrieveTicker(CoinCheckRequest.builder().pair(Pair.BTC_JPY).build());
         System.out.println(ticker);
-        var jpyToBtc = response.sumFunds(clock).getJpy().divide(ticker.getLast(), 9, RoundingMode.HALF_EVEN);
+        var jpyToBtc = response.sumFunds(clock, 10).getJpy().divide(ticker.getLast(), 9, RoundingMode.HALF_EVEN);
         System.out.println(jpyToBtc);
-        System.out.println(response.sumFunds(clock).getBtc().add(jpyToBtc));
+        System.out.println(response.sumFunds(clock, 10).getBtc().add(jpyToBtc));
     }
 }

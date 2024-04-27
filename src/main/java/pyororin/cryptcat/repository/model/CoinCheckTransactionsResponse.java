@@ -60,26 +60,26 @@ public class CoinCheckTransactionsResponse {
         private BigDecimal jpy;
     }
 
-    public List<Data> findOrdersWithinHours(Clock clock) {
+    public List<Data> findOrdersWithinMinutes(Clock clock, int minutes) {
         return Objects.isNull(data) ? List.of() : data.stream()
-                .filter(data -> data.getCreatedAt().isAfter(clock.instant().minus(1, ChronoUnit.HOURS)))
+                .filter(data -> data.getCreatedAt().isAfter(clock.instant().minus(minutes, ChronoUnit.MINUTES)))
                 .collect(Collectors.toList());
     }
 
-    public List<Data> findOrdersWithinHours(Clock clock, String side) {
+    public List<Data> findOrdersWithinMinutes(Clock clock, int minutes, String side) {
         return Objects.isNull(data) ? List.of() : data.stream()
-                .filter(data -> data.getCreatedAt().isAfter(clock.instant().minus(1, ChronoUnit.HOURS)))
+                .filter(data -> data.getCreatedAt().isAfter(clock.instant().minus(minutes, ChronoUnit.MINUTES)))
                 .filter(data -> data.getSide().equals(side))
                 .collect(Collectors.toList());
     }
 
-    public Funds sumFunds(Clock clock) {
-        BigDecimal totalBtc = this.findOrdersWithinHours(clock).stream()
+    public Funds sumFunds(Clock clock, int minutes) {
+        BigDecimal totalBtc = this.findOrdersWithinMinutes(clock, minutes).stream()
                 .filter(data -> Objects.nonNull(data.getFunds()) && Objects.nonNull(data.getFunds().getBtc()))
                 .map(data -> data.getFunds().getBtc())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        BigDecimal totalJpy = this.findOrdersWithinHours(clock).stream()
+        BigDecimal totalJpy = this.findOrdersWithinMinutes(clock, minutes).stream()
                 .filter(data -> Objects.nonNull(data.getFunds()) && Objects.nonNull(data.getFunds().getJpy()))
                 .map(data -> data.getFunds().getJpy())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);

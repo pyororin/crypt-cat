@@ -1,5 +1,5 @@
 package pyororin.cryptcat.config;
 
 public enum OrderLogic {
-    HIGH, MIDIUM, LOW, EVEN
+    HIGH, MIDIUM, LOW, EVEN, TREND
 }

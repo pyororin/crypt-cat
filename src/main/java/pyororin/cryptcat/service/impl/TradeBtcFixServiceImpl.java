@@ -36,11 +36,8 @@ public class TradeBtcFixServiceImpl implements TradeService {
         // 5秒ごとにタスクを実行する
         LongStream.range(0, orderRequest.getRatio().longValue())
                 .forEach(i -> executor.schedule(() -> exchange(pair, orderRequest), i * apiConfig.getInterval(), TimeUnit.SECONDS));
-
-        // すべてのタスクが完了したらシャットダウン
-        executor.shutdown();
         try {
-            if (!executor.awaitTermination(5, TimeUnit.MINUTES)) {
+            if (!executor.awaitTermination((orderRequest.getRatio().longValue() + 1) * apiConfig.getInterval(), TimeUnit.SECONDS)) {
                 executor.shutdownNow();
             }
         } catch (InterruptedException e) {

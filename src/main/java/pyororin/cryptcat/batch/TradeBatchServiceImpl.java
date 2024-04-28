@@ -127,7 +127,7 @@ public class TradeBatchServiceImpl {
 
                 }, apiConfig.getInterval(), TimeUnit.SECONDS);
                 try {
-                    if (!executorService.awaitTermination(apiConfig.getInterval() * opensOrders.size(), TimeUnit.MINUTES)) {
+                    if (!executorService.awaitTermination(apiConfig.getInterval() * opensOrders.size(), TimeUnit.SECONDS)) {
                         executorService.shutdownNow();
                     }
                 } catch (InterruptedException e) {

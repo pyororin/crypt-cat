@@ -51,7 +51,6 @@ public class TradeBatchServiceImpl {
 
     @Scheduled(cron = "0 1 * * * *")
     public void cancel() {
-        log.info("{} {}", value("kind", "cancel-batch"), value("status", "start"));
         var opensOrders = repository.retrieveOpensOrders();
         log.info("{} {}", value("kind", "cancel-batch"), value("count", opensOrders.getOrders().size()));
         opensOrders.findOrdersOver24Hours(clock).forEach(order -> {
@@ -71,13 +70,11 @@ public class TradeBatchServiceImpl {
             executorService.shutdown();
         });
         log.info("{} {}", value("kind", "opens"), value("count", opensOrders.findOrdersWithinHours(clock).size()));
-        log.info("{} {}", value("kind", "cancel-batch"), value("status", "end"));
     }
 
     @Scheduled(cron = "30 */${coincheck.retry.interval-min} * * * *")
     public void cancelRetry() {
         if (apiConfig.isOrderRetry()) {
-            log.info("{} {}", value("kind", "cancel-retry-batch"), value("status", "start"));
             var opensOrders = repository.retrieveOpensOrders().findOrdersWithinMinuets(
                     clock, retry.getDelayMin(), retry.getDelayMin() + retry.getIntervalMin());
             opensOrders.forEach(order -> {
@@ -135,7 +132,6 @@ public class TradeBatchServiceImpl {
                     Thread.currentThread().interrupt();
                 }
             });
-            log.info("{} {}", value("kind", "cancel-retry-batch"), value("status", "end"));
         } else {
             log.info("{} {}", value("kind", "cancel-retry-batch"), value("status", "skip"));
         }

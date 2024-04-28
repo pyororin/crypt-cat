@@ -27,6 +27,6 @@ public class CoinCheckApiConfig {
     @ConfigurationProperties(prefix = "coincheck.retry")
     public static class Retry {
         private long intervalMin;
-        private long waitRangeMin;
+        private long delayMin;
     }
 }

@@ -79,7 +79,7 @@ public class TradeBatchServiceImpl {
         if (apiConfig.isOrderRetry()) {
             log.info("{} {}", value("kind", "cancel-retry-batch"), value("status", "start"));
             var opensOrders = repository.retrieveOpensOrders().findOrdersWithinMinuets(
-                    clock, retry.getWaitRangeMin(), retry.getIntervalMin() + retry.getWaitRangeMin());
+                    clock, retry.getDelayMin(), retry.getDelayMin() + retry.getIntervalMin());
             opensOrders.forEach(order -> {
                 var executorService = Executors.newScheduledThreadPool(1);
                 executorService.schedule(() -> {

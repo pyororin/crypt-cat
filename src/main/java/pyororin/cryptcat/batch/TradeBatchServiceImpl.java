@@ -93,6 +93,11 @@ public class TradeBatchServiceImpl {
                             value("order_time", order.getCreatedAt()),
                             value("stop_loss_rate", order.getStopLossRate()),
                             value("id", order.getId()));
+                    try {
+                        Thread.sleep(TimeUnit.MILLISECONDS.toMillis(100));
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
                     if (order.getOrderType().equals("sell")) {
                         var sellPrice = tradeRateLogicService.getFairSellPrice(Pair.fromValue(order.getPair()));
                         /* 市場最終価格(ticker.last or ticker.ask) = rate */

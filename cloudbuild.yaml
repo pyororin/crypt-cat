@@ -8,6 +8,7 @@ steps:
             "--build-arg","_SELL_BUY_PRICE=$_SELL_BUY_PRICE",
             "--build-arg","_IS_ORDER_RETRY=$_IS_ORDER_RETRY",
             "--build-arg","_RETRY_DELAY=$_RETRY_DELAY",
+            "--build-arg","_RETRY_INTERVAL=$_RETRY_INTERVAL",
             '.' ]
   # DockerイメージをContainer RegistryへPush
   - name: 'gcr.io/cloud-builders/docker'

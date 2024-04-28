@@ -25,6 +25,7 @@ import static net.logstash.logback.argument.StructuredArguments.value;
 public class TradeBatchServiceImpl {
     private final Clock clock;
     private final CoinCheckApiConfig apiConfig;
+    private final CoinCheckApiConfig.Retry retry;
     private final TradeRateLogicService tradeRateLogicService;
     private final CoinCheckRepository repository;
 
@@ -73,12 +74,13 @@ public class TradeBatchServiceImpl {
         log.info("{} {}", value("kind", "cancel-batch"), value("status", "end"));
     }
 
-    @Scheduled(cron = "30 */5 * * * *")
+    @Scheduled(cron = "30 */${coincheck.retry.interval-min} * * * *")
     public void cancelRetry() {
         if (apiConfig.isOrderRetry()) {
             log.info("{} {}", value("kind", "cancel-retry-batch"), value("status", "start"));
-            var opensOrders = repository.retrieveOpensOrders();
-            opensOrders.findOrdersWithinMinuits(clock, 5).forEach(order -> {
+            var opensOrders = repository.retrieveOpensOrders().findOrdersWithinMinuets(
+                    clock, retry.getWaitRangeMin(), retry.getIntervalMin() + retry.getWaitRangeMin());
+            opensOrders.forEach(order -> {
                 var executorService = Executors.newScheduledThreadPool(1);
                 executorService.schedule(() -> {
                     repository.exchangeCancel(order.getId());
@@ -119,7 +121,14 @@ public class TradeBatchServiceImpl {
                     }
 
                 }, apiConfig.getInterval(), TimeUnit.SECONDS);
-                executorService.shutdown();
+                try {
+                    if (!executorService.awaitTermination(apiConfig.getInterval() * opensOrders.size(), TimeUnit.MINUTES)) {
+                        executorService.shutdownNow();
+                    }
+                } catch (InterruptedException e) {
+                    executorService.shutdownNow();
+                    Thread.currentThread().interrupt();
+                }
             });
             log.info("{} {}", value("kind", "cancel-retry-batch"), value("status", "end"));
         } else {

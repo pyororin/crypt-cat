@@ -46,9 +46,10 @@ public class CoinCheckOpensOrdersResponse {
                 .collect(Collectors.toList());
     }
 
-    public List<CoinCheckOpensOrdersResponse.Order> findOrdersWithinMinuits(Clock clock, long minuits) {
+    public List<CoinCheckOpensOrdersResponse.Order> findOrdersWithinMinuets(Clock clock, long startMinuets, long endMinuets) {
         return Objects.isNull(orders) ? List.of() : orders.stream()
-                .filter(order -> order.getCreatedAt().isAfter(clock.instant().minus(minuits, ChronoUnit.MINUTES)))
+                .filter(order -> order.getCreatedAt().isBefore(clock.instant().minus(startMinuets, ChronoUnit.MINUTES)))
+                .filter(order -> order.getCreatedAt().isAfter(clock.instant().minus(endMinuets, ChronoUnit.MINUTES)))
                 .collect(Collectors.toList());
     }
 

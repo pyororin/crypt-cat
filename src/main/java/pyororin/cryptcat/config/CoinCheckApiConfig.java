@@ -17,7 +17,16 @@ public class CoinCheckApiConfig {
     private BigDecimal amount;
     private BigDecimal price;
     private String actually;
-    private int interval;
+    private long interval;
     private OrderLogic orderLogic;
     private boolean orderRetry;
+
+    @Data
+    @ToString
+    @Component
+    @ConfigurationProperties(prefix = "coincheck.retry")
+    public static class Retry {
+        private long intervalMin;
+        private long waitRangeMin;
+    }
 }

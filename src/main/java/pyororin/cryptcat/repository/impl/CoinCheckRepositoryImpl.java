@@ -14,6 +14,7 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 import pyororin.cryptcat.config.CoinCheckApiConfig;
 import pyororin.cryptcat.config.CoinCheckRequestConfig;
+import pyororin.cryptcat.repository.AfterWait;
 import pyororin.cryptcat.repository.CoinCheckRepository;
 import pyororin.cryptcat.repository.model.*;
 
@@ -52,6 +53,7 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
 
     @Override
     @Retryable(retryFor = RuntimeException.class, maxAttempts = 5, backoff = @Backoff(delay = 1000, maxDelay = 5000))
+    @AfterWait
     public CoinCheckBalanceResponse retrieveBalance() {
         String nonce = String.valueOf(System.currentTimeMillis() / 1000L);
         return restClient.get()
@@ -73,6 +75,7 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
 
     @Override
     @Retryable(retryFor = RuntimeException.class, maxAttempts = 5, backoff = @Backoff(delay = 1000, maxDelay = 5000))
+    @AfterWait
     public CoinCheckOpensOrdersResponse retrieveOpensOrders() {
         String nonce = String.valueOf(System.currentTimeMillis() / 1000L);
         return restClient.get()
@@ -94,6 +97,7 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
 
     @Override
     @Retryable(retryFor = RuntimeException.class, maxAttempts = 5, backoff = @Backoff(delay = 1000, maxDelay = 5000))
+    @AfterWait
     public CoinCheckTransactionsResponse retrieveOrdersTransactions() {
         String nonce = String.valueOf(System.currentTimeMillis() / 1000L);
         return restClient.get()
@@ -116,6 +120,7 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
 
     @Override
     @Retryable(retryFor = RuntimeException.class, maxAttempts = 5, backoff = @Backoff(delay = 1000, maxDelay = 5000))
+    @AfterWait
     public void exchangeBuy(CoinCheckRequest request) {
         var jsonBody = new JSONObject();
         jsonBody.put("pair", request.getPair().getValue());
@@ -135,6 +140,7 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
 
     @Override
     @Retryable(retryFor = RuntimeException.class, maxAttempts = 5, backoff = @Backoff(delay = 1000, maxDelay = 5000))
+    @AfterWait
     public void exchangeSell(CoinCheckRequest request) {
         var jsonBody = new JSONObject();
         jsonBody.put("pair", request.getPair().getValue());
@@ -153,7 +159,8 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
     }
 
     @Override
-    @Retryable(retryFor = RuntimeException.class, maxAttempts = 5, backoff = @Backoff(delay = 1000, maxDelay = 5000))
+    @Retryable(retryFor = RuntimeException.class, maxAttempts = 2, backoff = @Backoff(delay = 1000, maxDelay = 5000))
+    @AfterWait
     public void exchangeCancel(long id) {
         String nonce = String.valueOf(System.currentTimeMillis() / 1000L);
         restClient.delete()

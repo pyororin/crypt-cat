@@ -176,14 +176,20 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
                         value("kind", "api"), value("uri", req.getURI().getPath()), value("status", "ok"), value("id", id),
                         value("response", new Scanner(res.getBody()).useDelimiter("\\A").next().replaceAll("\\r\\n|\\r|\\n", ""))))
                 .onStatus(HttpStatusCode::isError, (req, res) -> {
-                    log.error("{} {} {} {} {}",
-                            value("kind", "api"), value("uri", req.getURI().getPath()), value("status", res.getStatusText()), value("id", id),
-                            value("response", new Scanner(res.getBody()).useDelimiter("\\A").next().replaceAll("\\r\\n|\\r|\\n", "")));
-                    throw new RestClientException(res.getStatusCode().toString());
+                    var message = new Scanner(res.getBody()).useDelimiter("\\A").next().replaceAll("\\r\\n|\\r|\\n", "");
+                    if (message.contains("Failed to cancel the order.")) {
+                        log.error("{} {} {} {} {}",
+                                value("kind", "api"), value("uri", req.getURI().getPath()), value("status", res.getStatusText()), value("id", id),
+                                value("response", message));
+                    } else {
+                        log.error("{} {} {} {} {}",
+                                value("kind", "api"), value("uri", req.getURI().getPath()), value("status", res.getStatusText()), value("id", id),
+                                value("response", message));
+                        throw new RestClientException(res.getStatusCode().toString());
+                    }
                 })
                 .toBodilessEntity();
     }
-
 
     private void exchange(JSONObject jsonBody) {
         String nonce = String.valueOf(System.currentTimeMillis() / 1000L);

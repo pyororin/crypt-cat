@@ -56,8 +56,7 @@ class CoinCheckRepositoryImplTest {
     void retrieveTicker() {
         var restClient = RestClient.builder().baseUrl(apiConfig.getHost()).build();
         var repository = new CoinCheckRepositoryImpl(restClient, config, apiConfig);
-        var response = repository.retrieveTicker(CoinCheckRequest.builder().pair(Pair.BTC_JPY).build());
-        System.out.println(response);
+        System.out.println(repository.retrieveTicker(CoinCheckRequest.builder().pair(Pair.BTC_JPY).build()));
     }
 
     @Test

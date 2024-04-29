@@ -1,8 +1,8 @@
 package pyororin.cryptcat.repository;
 
 import lombok.extern.slf4j.Slf4j;
-import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Before;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.TimeUnit;
@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class WaitAspects {
 
-    @After("execution(public * pyororin.cryptcat.repository.impl.CoinCheckRepositoryImpl.*(..)) && @annotation(pyororin.cryptcat.repository.AfterWait)")
+    @Before("execution(public * pyororin.cryptcat.repository.impl.CoinCheckRepositoryImpl.*(..)) && @annotation(pyororin.cryptcat.repository.AfterWait)")
     public void sleepForAfterApi() {
         try {
             TimeUnit.MILLISECONDS.sleep(50);

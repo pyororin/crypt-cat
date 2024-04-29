@@ -38,13 +38,14 @@ public class TradeJpyFixServiceImpl implements TradeService {
             log.warn("BodyパラメータにorderTypeが無いか、buy|sell ではありません");
             return;
         }
+        exchange(pair, orderRequest);
 
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
         // 指定した秒ごとにタスクを実行する
-        LongStream.range(0, orderRequest.getRatio().longValue())
+        LongStream.range(0, orderRequest.getRatio().longValue() - 1)
                 .forEach(i -> executor.schedule(() -> exchange(pair, orderRequest), i * apiConfig.getInterval(), TimeUnit.SECONDS));
         try {
-            if (!executor.awaitTermination((orderRequest.getRatio().longValue() + 1) * apiConfig.getInterval(), TimeUnit.SECONDS)) {
+            if (!executor.awaitTermination((orderRequest.getRatio().longValue()) * apiConfig.getInterval(), TimeUnit.SECONDS)) {
                 executor.shutdownNow();
             }
         } catch (InterruptedException e) {

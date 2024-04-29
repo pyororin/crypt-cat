@@ -79,53 +79,41 @@ public class TradeBatchServiceImpl {
                     clock, retry.getDelayMin(), retry.getDelayMin() + (retry.getIntervalMin() * 3));
             log.info("{} {}", value("kind", "cancel-retry-batch"), value("count", opensOrders.size()));
             opensOrders.forEach(order -> {
-                var executorService = Executors.newScheduledThreadPool(1);
-                executorService.schedule(() -> {
-                    repository.exchangeCancel(order.getId());
-                    log.info("{} {} {} {} {} {} {} {}",
-                            value("kind", "cancel"),
-                            value("pair", order.getPair()),
-                            value("pending_amount", order.getPendingAmount()),
-                            value("pending_market_buy_amount", order.getPendingMarketBuyAmount()),
-                            value("order_rate", order.getOrderType()),
-                            value("order_time", order.getCreatedAt()),
-                            value("stop_loss_rate", order.getStopLossRate()),
-                            value("id", order.getId()));
-                    if (order.getOrderType().equals("sell")) {
-                        var sellPrice = tradeRateLogicService.getFairSellPrice(Pair.fromValue(order.getPair()));
-                        /* 市場最終価格(ticker.last or ticker.ask) = rate */
-                        /* 固定金額(JPY) / 市場最終価格(ticker.last or ticker.ask) = amount */
-                        var amount = apiConfig.getPrice().divide(sellPrice, 9, RoundingMode.HALF_EVEN);
-                        repository.exchangeSell(CoinCheckRequest.builder()
-                                .pair(Pair.fromValue(order.getPair()))
-                                .price(apiConfig.getPrice())
-                                .amount(amount)
-                                .rate(sellPrice)
-                                .group("Cancel-Retry")
-                                .build());
-                    }
-                    if (order.getOrderType().equals("buy")) {
-                        var buyPrice = tradeRateLogicService.getFairBuyPrice(Pair.fromValue(order.getPair()));
-                        /* 市場最終価格(ticker.last or ticker.ask) = rate */
-                        /* 固定金額(JPY) / 市場最終価格(ticker.last or ticker.ask) = amount */
-                        var amount = apiConfig.getPrice().divide(buyPrice, 9, RoundingMode.HALF_EVEN);
-                        repository.exchangeBuy(CoinCheckRequest.builder()
-                                .pair(Pair.fromValue(order.getPair()))
-                                .price(apiConfig.getPrice())
-                                .amount(amount)
-                                .rate(buyPrice)
-                                .group("Cancel-Retry")
-                                .build());
-                    }
-
-                }, apiConfig.getInterval(), TimeUnit.SECONDS);
-                try {
-                    if (!executorService.awaitTermination(apiConfig.getInterval() * opensOrders.size(), TimeUnit.SECONDS)) {
-                        executorService.shutdownNow();
-                    }
-                } catch (InterruptedException e) {
-                    executorService.shutdownNow();
-                    Thread.currentThread().interrupt();
+                repository.exchangeCancel(order.getId());
+                log.info("{} {} {} {} {} {} {} {}",
+                        value("kind", "cancel"),
+                        value("pair", order.getPair()),
+                        value("pending_amount", order.getPendingAmount()),
+                        value("pending_market_buy_amount", order.getPendingMarketBuyAmount()),
+                        value("order_rate", order.getOrderType()),
+                        value("order_time", order.getCreatedAt()),
+                        value("stop_loss_rate", order.getStopLossRate()),
+                        value("id", order.getId()));
+                if (order.getOrderType().equals("sell")) {
+                    var sellPrice = tradeRateLogicService.getFairSellPrice(Pair.fromValue(order.getPair()));
+                    /* 市場最終価格(ticker.last or ticker.ask) = rate */
+                    /* 固定金額(JPY) / 市場最終価格(ticker.last or ticker.ask) = amount */
+                    var amount = apiConfig.getPrice().divide(sellPrice, 9, RoundingMode.HALF_EVEN);
+                    repository.exchangeSell(CoinCheckRequest.builder()
+                            .pair(Pair.fromValue(order.getPair()))
+                            .price(apiConfig.getPrice())
+                            .amount(amount)
+                            .rate(sellPrice)
+                            .group("Cancel-Retry")
+                            .build());
+                }
+                if (order.getOrderType().equals("buy")) {
+                    var buyPrice = tradeRateLogicService.getFairBuyPrice(Pair.fromValue(order.getPair()));
+                    /* 市場最終価格(ticker.last or ticker.ask) = rate */
+                    /* 固定金額(JPY) / 市場最終価格(ticker.last or ticker.ask) = amount */
+                    var amount = apiConfig.getPrice().divide(buyPrice, 9, RoundingMode.HALF_EVEN);
+                    repository.exchangeBuy(CoinCheckRequest.builder()
+                            .pair(Pair.fromValue(order.getPair()))
+                            .price(apiConfig.getPrice())
+                            .amount(amount)
+                            .rate(buyPrice)
+                            .group("Cancel-Retry")
+                            .build());
                 }
             });
         } else {

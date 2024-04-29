@@ -69,7 +69,6 @@ public class TradeBatchServiceImpl {
             }, apiConfig.getInterval(), TimeUnit.SECONDS);
             executorService.shutdown();
         });
-        log.info("{} {}", value("kind", "opens"), value("count", opensOrders.findOrdersWithinHours(clock).size()));
     }
 
     @Scheduled(cron = "30 */${coincheck.retry.interval-min} * * * *")

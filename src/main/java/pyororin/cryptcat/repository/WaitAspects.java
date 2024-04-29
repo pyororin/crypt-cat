@@ -7,14 +7,17 @@ import org.springframework.stereotype.Component;
 
 import java.util.concurrent.TimeUnit;
 
+import static net.logstash.logback.argument.StructuredArguments.value;
+
 @Aspect
 @Component
 @Slf4j
 public class WaitAspects {
 
-    @Before("execution(public * pyororin.cryptcat.repository.impl.CoinCheckRepositoryImpl.*(..)) && @annotation(pyororin.cryptcat.repository.AfterWait)")
+    @Before("execution(public * pyororin.cryptcat.repository.impl.*CheckRepositoryImpl.*(..)) && @annotation(pyororin.cryptcat.repository.AfterWait)")
     public void sleepForAfterApi() {
         try {
+            log.info("{} {}", value("kind", "sleep"), value("value", "50ms"));
             TimeUnit.MILLISECONDS.sleep(50);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);

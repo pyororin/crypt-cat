@@ -53,7 +53,7 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
     @Override
     @Retryable(retryFor = RuntimeException.class, maxAttempts = 5, backoff = @Backoff(delay = 1000, maxDelay = 5000))
     public CoinCheckBalanceResponse retrieveBalance() {
-        String nonce = String.valueOf(System.currentTimeMillis() / 1000L);
+        String nonce = String.valueOf(System.currentTimeMillis());
         return restClient.get()
                 .uri("/api/accounts/balance")
                 .headers(httpHeaders -> {
@@ -74,7 +74,7 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
     @Override
     @Retryable(retryFor = RuntimeException.class, maxAttempts = 5, backoff = @Backoff(delay = 1000, maxDelay = 5000))
     public CoinCheckOpensOrdersResponse retrieveOpensOrders() {
-        String nonce = String.valueOf(System.currentTimeMillis() / 1000L);
+        String nonce = String.valueOf(System.currentTimeMillis());
         return restClient.get()
                 .uri("/api/exchange/orders/opens")
                 .headers(httpHeaders -> {
@@ -95,7 +95,7 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
     @Override
     @Retryable(retryFor = RuntimeException.class, maxAttempts = 5, backoff = @Backoff(delay = 1000, maxDelay = 5000))
     public CoinCheckTransactionsResponse retrieveOrdersTransactions() {
-        String nonce = String.valueOf(System.currentTimeMillis() / 1000L);
+        String nonce = String.valueOf(System.currentTimeMillis());
         return restClient.get()
                 .uri("/api/exchange/orders/transactions_pagination?limit={limit}", 100)
                 .headers(httpHeaders -> {
@@ -155,7 +155,7 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
     @Override
     @Retryable(retryFor = RuntimeException.class, maxAttempts = 5, backoff = @Backoff(delay = 1000, maxDelay = 5000))
     public void exchangeCancel(long id) {
-        String nonce = String.valueOf(System.currentTimeMillis() / 1000L);
+        String nonce = String.valueOf(System.currentTimeMillis());
         restClient.delete()
                 .uri("/api/exchange/orders/{id}", id)
                 .headers(httpHeaders -> {

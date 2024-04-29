@@ -92,7 +92,7 @@ public class TradeBatchServiceImpl {
                             value("stop_loss_rate", order.getStopLossRate()),
                             value("id", order.getId()));
                     try {
-                        Thread.sleep(TimeUnit.MILLISECONDS.toMillis(100));
+                        Thread.sleep(TimeUnit.MILLISECONDS.toMillis(10));
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }

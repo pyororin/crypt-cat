@@ -72,7 +72,7 @@ public class TradeJpyFixServiceV2Impl implements TradeService {
                     .build());
 
             Executors.newScheduledThreadPool(1).schedule(() -> {
-                var opensOrders = repository.retrieveOpensOrders().findOrdersWithinMinuets(clock, retry.getDelayMin(), retry.getDelayMin() * 2);
+                var opensOrders = repository.retrieveOpensOrders().findOrdersWithinMinuets(clock, 0, retry.getDelayMin() * 2);
                 if (opensOrders.stream().anyMatch(order -> response.getId() == order.getId())) {
                     log.info("{} {}", value("kind", "order-retry"), value("id", response.getId()));
                     repository.exchangeCancel(response.getId());
@@ -96,7 +96,7 @@ public class TradeJpyFixServiceV2Impl implements TradeService {
                     .group(orderRequest.getGroup())
                     .build());
             Executors.newScheduledThreadPool(1).schedule(() -> {
-                var opensOrders = repository.retrieveOpensOrders().findOrdersWithinMinuets(clock, retry.getDelayMin(), retry.getDelayMin() * 2);
+                var opensOrders = repository.retrieveOpensOrders().findOrdersWithinMinuets(clock, 0, retry.getDelayMin() * 2);
                 if (opensOrders.stream().anyMatch(order -> response.getId() == order.getId())) {
                     log.info("{} {}", value("kind", "order-retry"), value("id", response.getId()));
                     repository.exchangeCancel(response.getId());

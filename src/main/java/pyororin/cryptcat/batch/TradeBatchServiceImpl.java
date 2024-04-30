@@ -115,8 +115,6 @@ public class TradeBatchServiceImpl {
                             .build());
                 }
             });
-        } else {
-            log.info("{} {}", value("kind", "cancel-retry-batch"), value("status", "skip"));
         }
     }
 

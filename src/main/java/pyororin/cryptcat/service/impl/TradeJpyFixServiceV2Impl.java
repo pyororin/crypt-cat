@@ -75,8 +75,8 @@ public class TradeJpyFixServiceV2Impl implements TradeService {
                     // 指値amount - 成行amount
                     var tickerResponse = repository.retrieveTicker(CoinCheckRequest.builder().pair(pair).build());
                     var marketAmount = apiConfig.getPrice().divide(tickerResponse.getAsk(), 9, RoundingMode.HALF_EVEN);
-                    log.info("{} {} {} {}", value("kind", "retry-diff"),
-                            value("limit-amount", amount), value("market-amount", marketAmount), value("diff-amount", amount.subtract(marketAmount)));
+                    log.info("{} {} {} {}", value("kind", "retry-buy-diff"),
+                            value("market-amount", marketAmount), value("limit-amount", amount), value("diff-amount", marketAmount.subtract(amount)));
                     repository.exchangeCancel(response.getId());
                     repository.exchangeBuyMarket(CoinCheckRequest.builder()
                             .pair(pair)
@@ -107,7 +107,7 @@ public class TradeJpyFixServiceV2Impl implements TradeService {
                     // 指値amount - 成行amount
                     var tickerResponse = repository.retrieveTicker(CoinCheckRequest.builder().pair(pair).build());
                     var marketAmount = apiConfig.getPrice().divide(tickerResponse.getBid(), 9, RoundingMode.HALF_EVEN);
-                    log.info("{} {} {} {}", value("kind", "retry-diff"),
+                    log.info("{} {} {} {}", value("kind", "retry-sell-diff"),
                             value("limit-amount", amount), value("market-amount", marketAmount), value("diff-amount", amount.subtract(marketAmount)));
                     repository.exchangeCancel(response.getId());
                     repository.exchangeSellMarket(CoinCheckRequest.builder()

@@ -229,7 +229,7 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
 
     private CoinCheckResponse exchange(JSONObject jsonBody) {
         String nonce = String.valueOf(System.currentTimeMillis() / 1000L);
-        return restClient.post()
+        var response = restClient.post()
                 .uri("/api/exchange/orders")
                 .contentType(APPLICATION_JSON)
                 .headers(httpHeaders -> {
@@ -240,9 +240,6 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
                 })
                 .body(jsonBody.toString())
                 .retrieve()
-                .onStatus(HttpStatusCode::is2xxSuccessful, (req, res) ->
-                        log.info("{} {} {} {}",
-                        value("kind", "api"), value("uri", req.getURI().getPath()), value("status", "ok"), value("request-body", jsonBody.toString())))
                 .onStatus(HttpStatusCode::isError, (req, res) -> {
                     log.error("{} {} {} {} {}",
                             value("kind", "api"), value("uri", req.getURI().getPath()), value("status", res.getStatusText()), value("request-body", jsonBody.toString()),
@@ -250,6 +247,9 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
                     throw new RestClientException(res.getStatusCode().toString());
                 })
                 .toEntity(CoinCheckResponse.class).getBody();
+        log.info("{} {} {} {}",
+                value("kind", "api"), value("uri", "/api/exchange/orders"), value("status", "ok"), value("request-body", jsonBody.toString()));
+        return response;
     }
 
     private static String HMAC_SHA256Encode(String secretKey, String message) {

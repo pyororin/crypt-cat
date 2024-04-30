@@ -52,7 +52,7 @@ public class TradeBtcFixServiceImpl implements TradeService {
             /* 市場最終価格(ticker.last or ticker.ask) = rate */
             /* 固定注文量 * アラート別レシオ = amount */
             var marketBuyPrice = buyPrice.multiply(apiConfig.getAmount());
-            repository.exchangeBuy(CoinCheckRequest.builder()
+            repository.exchangeBuyLimit(CoinCheckRequest.builder()
                     .pair(pair)
                     .price(marketBuyPrice)
                     .amount(apiConfig.getAmount())
@@ -65,7 +65,7 @@ public class TradeBtcFixServiceImpl implements TradeService {
             /* 市場最終価格(ticker.last or ticker.ask) = rate */
             /* 固定注文量 = amount */
             var marketSellPrice = sellPrice.multiply(apiConfig.getAmount());
-            repository.exchangeSell(CoinCheckRequest.builder()
+            repository.exchangeSellLimit(CoinCheckRequest.builder()
                     .pair(pair)
                     .price(marketSellPrice)
                     .amount(apiConfig.getAmount())

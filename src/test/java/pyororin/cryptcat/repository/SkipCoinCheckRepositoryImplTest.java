@@ -78,7 +78,7 @@ class SkipCoinCheckRepositoryImplTest {
                         """, MediaType.APPLICATION_JSON));
         var restClient = restClientBuilder.build();
         var repository = new SkipCoinCheckRepositoryImpl(restClient);
-        repository.exchangeBuy(CoinCheckRequest.builder().pair(Pair.BTC_JPY).price(BigDecimal.valueOf(30010.0)).amount(BigDecimal.valueOf(1.3)).build());
+        repository.exchangeBuyLimit(CoinCheckRequest.builder().pair(Pair.BTC_JPY).price(BigDecimal.valueOf(30010.0)).amount(BigDecimal.valueOf(1.3)).build());
         mockServer.verify();
     }
 
@@ -98,7 +98,7 @@ class SkipCoinCheckRepositoryImplTest {
 
         var restClient = restClientBuilder.build();
         var repository = new SkipCoinCheckRepositoryImpl(restClient);
-        repository.exchangeBuy(CoinCheckRequest.builder().pair(Pair.BTC_JPY).price(BigDecimal.valueOf(30010.0)).amount(BigDecimal.valueOf(1.3)).build());
+        repository.exchangeBuyLimit(CoinCheckRequest.builder().pair(Pair.BTC_JPY).price(BigDecimal.valueOf(30010.0)).amount(BigDecimal.valueOf(1.3)).build());
         mockServer.verify();
     }
 }

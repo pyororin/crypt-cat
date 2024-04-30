@@ -121,12 +121,53 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
     @Override
     @Retryable(retryFor = RuntimeException.class, maxAttempts = 5, backoff = @Backoff(delay = 1000, maxDelay = 5000))
     @BeforeWait
-    public void exchangeBuy(CoinCheckRequest request) {
+    public CoinCheckResponse exchangeBuyLimit(CoinCheckRequest request) {
         var jsonBody = new JSONObject();
         jsonBody.put("pair", request.getPair().getValue());
         jsonBody.put("order_type", "buy");
         jsonBody.put("rate", request.getRate().longValue());
         jsonBody.put("amount", request.getAmount());
+        var response = exchange(jsonBody);
+        log.info("{} {} {} {} {} {} {}",
+                value("kind", "exchange"),
+                value("pair", request.getPair().getValue()),
+                value("order_type", "buy"),
+                value("market_buy_amount", request.getAmount()),
+                value("market_buy_price", request.getPrice()),
+                value("order_rate", request.getRate()),
+                value("group", request.getGroup()));
+        return response;
+    }
+
+    @Override
+    @Retryable(retryFor = RuntimeException.class, maxAttempts = 5, backoff = @Backoff(delay = 1000, maxDelay = 5000))
+    @BeforeWait
+    public CoinCheckResponse exchangeSellLimit(CoinCheckRequest request) {
+        var jsonBody = new JSONObject();
+        jsonBody.put("pair", request.getPair().getValue());
+        jsonBody.put("order_type", "sell");
+        jsonBody.put("rate", request.getRate().longValue());
+        jsonBody.put("amount", request.getAmount());
+        var response = exchange(jsonBody);
+        log.info("{} {} {} {} {} {} {}",
+                value("kind", "exchange"),
+                value("pair", request.getPair().getValue()),
+                value("order_type", "sell"),
+                value("market_sell_amount", request.getAmount()),
+                value("market_sell_price", request.getPrice()),
+                value("order_rate", request.getRate()),
+                value("group", request.getGroup()));
+        return response;
+    }
+
+    @Override
+    @Retryable(retryFor = RuntimeException.class, maxAttempts = 5, backoff = @Backoff(delay = 1000, maxDelay = 5000))
+    @BeforeWait
+    public void exchangeBuyMarket(CoinCheckRequest request) {
+        var jsonBody = new JSONObject();
+        jsonBody.put("pair", request.getPair().getValue());
+        jsonBody.put("order_type", "market_buy");
+        jsonBody.put("market_buy_amount", request.getPrice());
         exchange(jsonBody);
         log.info("{} {} {} {} {} {} {}",
                 value("kind", "exchange"),
@@ -141,11 +182,10 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
     @Override
     @Retryable(retryFor = RuntimeException.class, maxAttempts = 5, backoff = @Backoff(delay = 1000, maxDelay = 5000))
     @BeforeWait
-    public void exchangeSell(CoinCheckRequest request) {
+    public void exchangeSellMarket(CoinCheckRequest request) {
         var jsonBody = new JSONObject();
         jsonBody.put("pair", request.getPair().getValue());
-        jsonBody.put("order_type", "sell");
-        jsonBody.put("rate", request.getRate().longValue());
+        jsonBody.put("order_type", "market_sell");
         jsonBody.put("amount", request.getAmount());
         exchange(jsonBody);
         log.info("{} {} {} {} {} {} {}",
@@ -177,23 +217,19 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
                         value("response", new Scanner(res.getBody()).useDelimiter("\\A").next().replaceAll("\\r\\n|\\r|\\n", ""))))
                 .onStatus(HttpStatusCode::isError, (req, res) -> {
                     var message = new Scanner(res.getBody()).useDelimiter("\\A").next().replaceAll("\\r\\n|\\r|\\n", "");
-                    if (message.contains("Failed to cancel the order.")) {
+                    if (!message.contains("Failed to cancel the order.")) {
                         log.error("{} {} {} {} {}",
                                 value("kind", "api"), value("uri", req.getURI().getPath()), value("status", res.getStatusText()), value("id", id),
                                 value("response", message));
-                    } else {
-                        log.error("{} {} {} {} {}",
-                                value("kind", "api"), value("uri", req.getURI().getPath()), value("status", res.getStatusText()), value("id", id),
-                                value("response", message));
-                        throw new RestClientException(res.getStatusCode().toString());
                     }
+                    throw new RestClientException(res.getStatusCode().toString());
                 })
                 .toBodilessEntity();
     }
 
-    private void exchange(JSONObject jsonBody) {
+    private CoinCheckResponse exchange(JSONObject jsonBody) {
         String nonce = String.valueOf(System.currentTimeMillis() / 1000L);
-        restClient.post()
+        return restClient.post()
                 .uri("/api/exchange/orders")
                 .contentType(APPLICATION_JSON)
                 .headers(httpHeaders -> {
@@ -213,7 +249,7 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
                             value("response", new Scanner(res.getBody()).useDelimiter("\\A").next().replaceAll("\\r\\n|\\r|\\n", "")));
                     throw new RestClientException(res.getStatusCode().toString());
                 })
-                .toBodilessEntity();
+                .toEntity(CoinCheckResponse.class).getBody();
     }
 
     private static String HMAC_SHA256Encode(String secretKey, String message) {

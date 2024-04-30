@@ -6,6 +6,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import pyororin.cryptcat.controller.model.OrderRequest;
 import pyororin.cryptcat.repository.CoinCheckRepository;
+import pyororin.cryptcat.repository.model.CoinCheckResponse;
 import pyororin.cryptcat.repository.model.CoinCheckTickerResponse;
 import pyororin.cryptcat.repository.model.Pair;
 import pyororin.cryptcat.service.TradeService;
@@ -30,10 +31,10 @@ class TradeBtcFixServiceImplTest {
         request.setRatio(BigDecimal.valueOf(2));
         when(repository.retrieveTicker(any()))
                 .thenReturn(CoinCheckTickerResponse.builder().last(new BigDecimal(1000)).bid(new BigDecimal(999)).build());
-        doNothing().when(repository).exchangeSell(any());
+        doReturn(CoinCheckResponse.builder().build()).when(repository).exchangeSellLimit(any());
         tradeBtcFixServiceImpl.order(Pair.BTC_JPY, request);
-        verify(repository, times(2)).exchangeSell(any());
-        verify(repository, never()).exchangeBuy(any());
+        verify(repository, times(2)).exchangeSellLimit(any());
+        verify(repository, never()).exchangeBuyLimit(any());
     }
 
     @Test
@@ -43,10 +44,10 @@ class TradeBtcFixServiceImplTest {
         request.setRatio(BigDecimal.valueOf(2));
         when(repository.retrieveTicker(any()))
                 .thenReturn(CoinCheckTickerResponse.builder().last(new BigDecimal(1000)).ask(new BigDecimal(1001)).build());
-        doNothing().when(repository).exchangeBuy(any());
+        doReturn(CoinCheckResponse.builder().build()).when(repository).exchangeBuyLimit(any());
         tradeBtcFixServiceImpl.order(Pair.BTC_JPY, request);
-        verify(repository, times(2)).exchangeBuy(any());
-        verify(repository, never()).exchangeSell(any());
+        verify(repository, times(2)).exchangeBuyLimit(any());
+        verify(repository, never()).exchangeSellLimit(any());
     }
 
     @Test
@@ -56,9 +57,9 @@ class TradeBtcFixServiceImplTest {
         request.setRatio(BigDecimal.valueOf(2));
         when(repository.retrieveTicker(any()))
                 .thenReturn(CoinCheckTickerResponse.builder().last(new BigDecimal(1000)).bid(new BigDecimal(999)).ask(new BigDecimal(1001)).build());
-        doNothing().when(repository).exchangeBuy(any());
+        doReturn(CoinCheckResponse.builder().build()).when(repository).exchangeBuyLimit(any());
         tradeBtcFixServiceImpl.order(Pair.BTC_JPY, request);
-        verify(repository, never()).exchangeSell(any());
-        verify(repository, never()).exchangeBuy(any());
+        verify(repository, never()).exchangeSellLimit(any());
+        verify(repository, never()).exchangeBuyLimit(any());
     }
 }

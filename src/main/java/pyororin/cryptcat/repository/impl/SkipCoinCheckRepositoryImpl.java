@@ -46,7 +46,7 @@ public class SkipCoinCheckRepositoryImpl implements CoinCheckRepository {
     }
 
     @Override
-    public void exchangeBuy(CoinCheckRequest request) {
+    public CoinCheckResponse exchangeBuyLimit(CoinCheckRequest request) {
         log.info("{} {} {} {} {} {} {}",
                 value("kind", "exchange-skip"),
                 value("pair", request.getPair().getValue()),
@@ -55,14 +55,40 @@ public class SkipCoinCheckRepositoryImpl implements CoinCheckRepository {
                 value("market_buy_price", request.getPrice()),
                 value("order_rate", request.getRate()),
                 value("group", request.getGroup()));
+        return CoinCheckResponse.builder().build();
     }
 
     @Override
-    public void exchangeSell(CoinCheckRequest request) {
+    public CoinCheckResponse exchangeSellLimit(CoinCheckRequest request) {
         log.info("{} {} {} {} {} {} {}",
                 value("kind", "exchange-skip"),
                 value("pair", request.getPair().getValue()),
                 value("order_type", "sell"),
+                value("market_sell_amount", request.getAmount()),
+                value("market_sell_price", request.getPrice()),
+                value("order_rate", request.getRate()),
+                value("group", request.getGroup()));
+        return CoinCheckResponse.builder().build();
+    }
+
+    @Override
+    public void exchangeBuyMarket(CoinCheckRequest request) {
+        log.info("{} {} {} {} {} {} {}",
+                value("kind", "exchange-skip"),
+                value("pair", request.getPair().getValue()),
+                value("order_type", "market_buy"),
+                value("market_buy_amount", request.getAmount()),
+                value("market_buy_price", request.getPrice()),
+                value("order_rate", request.getRate()),
+                value("group", request.getGroup()));
+    }
+
+    @Override
+    public void exchangeSellMarket(CoinCheckRequest request) {
+        log.info("{} {} {} {} {} {} {}",
+                value("kind", "exchange-skip"),
+                value("pair", request.getPair().getValue()),
+                value("order_type", "market_sell"),
                 value("market_sell_amount", request.getAmount()),
                 value("market_sell_price", request.getPrice()),
                 value("order_rate", request.getRate()),

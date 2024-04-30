@@ -15,6 +15,7 @@ import pyororin.cryptcat.service.TradeService;
 public class OrderController {
     private final TradeService tradeBtcFixServiceImpl;
     private final TradeService tradeJpyFixServiceImpl;
+    private final TradeService tradeJpyFixServiceV2Impl;
 
     @PostMapping("/order/btcfix/{pair}")
     public ResponseEntity<String> strategySplit(@PathVariable String pair, @RequestBody @Validated OrderRequest orderRequest) {
@@ -25,6 +26,11 @@ public class OrderController {
     @PostMapping("/order/jpyfix/{pair}")
     public ResponseEntity<String> jpyFix(@PathVariable String pair, @RequestBody @Validated OrderRequest orderRequest) {
         tradeJpyFixServiceImpl.order(Pair.fromValue(pair), orderRequest);
+        return ResponseEntity.ok("OK");
+    }
+    @PostMapping("/v2/order/jpyfix/{pair}")
+    public ResponseEntity<String> jpyFixV2(@PathVariable String pair, @RequestBody @Validated OrderRequest orderRequest) {
+        tradeJpyFixServiceV2Impl.order(Pair.fromValue(pair), orderRequest);
         return ResponseEntity.ok("OK");
     }
 

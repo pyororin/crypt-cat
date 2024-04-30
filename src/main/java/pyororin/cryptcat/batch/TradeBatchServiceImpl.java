@@ -93,7 +93,7 @@ public class TradeBatchServiceImpl {
                     /* 市場最終価格(ticker.last or ticker.ask) = rate */
                     /* 固定金額(JPY) / 市場最終価格(ticker.last or ticker.ask) = amount */
                     var amount = apiConfig.getPrice().divide(sellPrice, 9, RoundingMode.HALF_EVEN);
-                    repository.exchangeSell(CoinCheckRequest.builder()
+                    repository.exchangeSellLimit(CoinCheckRequest.builder()
                             .pair(Pair.fromValue(order.getPair()))
                             .price(apiConfig.getPrice())
                             .amount(amount)
@@ -106,7 +106,7 @@ public class TradeBatchServiceImpl {
                     /* 市場最終価格(ticker.last or ticker.ask) = rate */
                     /* 固定金額(JPY) / 市場最終価格(ticker.last or ticker.ask) = amount */
                     var amount = apiConfig.getPrice().divide(buyPrice, 9, RoundingMode.HALF_EVEN);
-                    repository.exchangeBuy(CoinCheckRequest.builder()
+                    repository.exchangeBuyLimit(CoinCheckRequest.builder()
                             .pair(Pair.fromValue(order.getPair()))
                             .price(apiConfig.getPrice())
                             .amount(amount)

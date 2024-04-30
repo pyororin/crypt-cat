@@ -7,6 +7,8 @@ import org.springframework.stereotype.Component;
 
 import java.util.concurrent.TimeUnit;
 
+import static net.logstash.logback.argument.StructuredArguments.value;
+
 
 @Aspect
 @Component
@@ -16,6 +18,7 @@ public class WaitAspects {
     @Before("execution(public * pyororin.cryptcat.repository.impl.*CheckRepositoryImpl.*(..)) && @annotation(pyororin.cryptcat.repository.BeforeWait)")
     public void sleepForBeforeApi() {
         try {
+            log.info("{} {}", value("kind", "sleep"), value("value", 100));
             TimeUnit.MILLISECONDS.sleep(100);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);

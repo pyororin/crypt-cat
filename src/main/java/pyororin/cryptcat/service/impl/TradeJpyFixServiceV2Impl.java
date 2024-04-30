@@ -71,6 +71,12 @@ public class TradeJpyFixServiceV2Impl implements TradeService {
                         .stream().map(CoinCheckOpensOrdersResponse.Order::getId).toList();
                 log.info("{} {} {}", value("kind", "order-retry"), value("order-id", response.getId()), value("opens-ids", opensOrdersIds));
                 if (opensOrdersIds.contains(response.getId())) {
+                    // 本来の価格差分算出
+                    // 指値amount - 成行amount
+                    var tickerResponse = repository.retrieveTicker(CoinCheckRequest.builder().pair(pair).build());
+                    var marketAmount = apiConfig.getPrice().divide(tickerResponse.getAsk(), 9, RoundingMode.HALF_EVEN);
+                    log.info("{} {} {} {}", value("kind", "retry-diff"),
+                            value("limit-amount", amount), value("market-amount", marketAmount), value("diff-amount", amount.subtract(marketAmount)));
                     repository.exchangeCancel(response.getId());
                     repository.exchangeBuyMarket(CoinCheckRequest.builder()
                             .pair(pair)
@@ -78,6 +84,7 @@ public class TradeJpyFixServiceV2Impl implements TradeService {
                             .group("order-retry")
                             .build());
                 }
+
             }, retry.getDelayMin(), TimeUnit.MINUTES);
         } else {
             var sellPrice = tradeRateLogicService.getFairSellPrice(pair);
@@ -96,6 +103,12 @@ public class TradeJpyFixServiceV2Impl implements TradeService {
                         .stream().map(CoinCheckOpensOrdersResponse.Order::getId).toList();
                 log.info("{} {} {}", value("kind", "order-retry"), value("order-id", response.getId()), value("opens-ids", opensOrdersIds));
                 if (opensOrdersIds.contains(response.getId())) {
+                    // 本来の価格差分算出
+                    // 指値amount - 成行amount
+                    var tickerResponse = repository.retrieveTicker(CoinCheckRequest.builder().pair(pair).build());
+                    var marketAmount = apiConfig.getPrice().divide(tickerResponse.getBid(), 9, RoundingMode.HALF_EVEN);
+                    log.info("{} {} {} {}", value("kind", "retry-diff"),
+                            value("limit-amount", amount), value("market-amount", marketAmount), value("diff-amount", amount.subtract(marketAmount)));
                     repository.exchangeCancel(response.getId());
                     repository.exchangeSellMarket(CoinCheckRequest.builder()
                             .pair(pair)

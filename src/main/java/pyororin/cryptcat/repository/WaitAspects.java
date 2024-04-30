@@ -13,8 +13,8 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class WaitAspects {
 
-    @Before("execution(public * pyororin.cryptcat.repository.impl.*CheckRepositoryImpl.*(..)) && @annotation(pyororin.cryptcat.repository.AfterWait)")
-    public void sleepForAfterApi() {
+    @Before("execution(public * pyororin.cryptcat.repository.impl.*CheckRepositoryImpl.*(..)) && @annotation(pyororin.cryptcat.repository.BeforeWait)")
+    public void sleepForBeforeApi() {
         try {
             TimeUnit.MILLISECONDS.sleep(100);
         } catch (InterruptedException e) {

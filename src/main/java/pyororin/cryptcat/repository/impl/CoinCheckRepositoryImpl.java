@@ -212,9 +212,6 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
                             nonce + apiConfig.getHost() + "/api/exchange/orders/" + id));
                 })
                 .retrieve()
-                .onStatus(HttpStatusCode::is2xxSuccessful, (req, res) -> log.info("{} {} {} {} {}",
-                        value("kind", "api"), value("uri", req.getURI().getPath()), value("status", "ok"), value("id", id),
-                        value("response", new Scanner(res.getBody()).useDelimiter("\\A").next().replaceAll("\\r\\n|\\r|\\n", ""))))
                 .onStatus(HttpStatusCode::isError, (req, res) -> {
                     var message = new Scanner(res.getBody()).useDelimiter("\\A").next().replaceAll("\\r\\n|\\r|\\n", "");
                     if (!message.contains("Failed to cancel the order.")) {
@@ -225,6 +222,8 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
                     throw new RestClientException(res.getStatusCode().toString());
                 })
                 .toBodilessEntity();
+        log.info("{} {} {} {}",
+                value("kind", "api"), value("uri", "/api/exchange/orders/"), value("status", "ok"), value("id", id));
     }
 
     private CoinCheckResponse exchange(JSONObject jsonBody) {

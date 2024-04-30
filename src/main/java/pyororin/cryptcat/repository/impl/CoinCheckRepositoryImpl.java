@@ -46,7 +46,7 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
                     log.error("{} {} {} {}",
                             value("kind", "api"), value("uri", req.getURI().getPath()), value("status", res.getStatusText()),
                             value("response", new Scanner(res.getBody()).useDelimiter("\\A").next().replaceAll("\\r\\n|\\r|\\n", "")));
-                    throw new RestClientException(res.getStatusCode().toString());
+                    throw new RestClientException(String.format("%s:%s", req.getURI().getPath(), res.getStatusCode()));
                 })
                 .toEntity(CoinCheckTickerResponse.class).getBody();
     }
@@ -68,7 +68,7 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
                     log.error("{} {} {} {}",
                             value("kind", "api"), value("uri", req.getURI().getPath()), value("status", res.getStatusText()),
                             value("response", new Scanner(res.getBody()).useDelimiter("\\A").next().replaceAll("\\r\\n|\\r|\\n", "")));
-                    throw new RestClientException(res.getStatusCode().toString());
+                    throw new RestClientException(String.format("%s:%s", req.getURI().getPath(), res.getStatusCode()));
                 })
                 .toEntity(CoinCheckBalanceResponse.class).getBody();
     }
@@ -90,7 +90,7 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
                     log.error("{} {} {} {}",
                             value("kind", "api"), value("uri", req.getURI().getPath()), value("status", res.getStatusText()),
                             value("response", new Scanner(res.getBody()).useDelimiter("\\A").next().replaceAll("\\r\\n|\\r|\\n", "")));
-                    throw new RestClientException(res.getStatusCode().toString());
+                    throw new RestClientException(String.format("%s:%s", req.getURI().getPath(), res.getStatusCode()));
                 })
                 .toEntity(CoinCheckOpensOrdersResponse.class).getBody();
     }
@@ -113,7 +113,7 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
                     log.error("{} {} {} {}",
                             value("kind", "api"), value("uri", req.getURI().getPath()), value("status", res.getStatusText()),
                             value("response", new Scanner(res.getBody()).useDelimiter("\\A").next().replaceAll("\\r\\n|\\r|\\n", "")));
-                    throw new RestClientException(res.getStatusCode().toString());
+                    throw new RestClientException(String.format("%s:%s", req.getURI().getPath(), res.getStatusCode()));
                 })
                 .toEntity(CoinCheckTransactionsResponse.class).getBody();
     }
@@ -199,7 +199,7 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
     }
 
     @Override
-    @Retryable(retryFor = RuntimeException.class, maxAttempts = 2, backoff = @Backoff(delay = 1000, maxDelay = 5000))
+    @Retryable(retryFor = RuntimeException.class, maxAttempts = 5, backoff = @Backoff(delay = 1000, maxDelay = 5000))
     @BeforeWait
     public void exchangeCancel(long id) {
         String nonce = String.valueOf(System.currentTimeMillis() / 1000L);
@@ -219,7 +219,7 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
                                 value("kind", "api"), value("uri", req.getURI().getPath()), value("status", res.getStatusText()), value("id", id),
                                 value("response", message));
                     }
-                    throw new RestClientException(res.getStatusCode().toString());
+                    throw new RestClientException(String.format("%s:%s", req.getURI().getPath(), res.getStatusCode()));
                 })
                 .toBodilessEntity();
         log.info("{} {} {} {}",
@@ -243,7 +243,7 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
                     log.error("{} {} {} {} {}",
                             value("kind", "api"), value("uri", req.getURI().getPath()), value("status", res.getStatusText()), value("request-body", jsonBody.toString()),
                             value("response", new Scanner(res.getBody()).useDelimiter("\\A").next().replaceAll("\\r\\n|\\r|\\n", "")));
-                    throw new RestClientException(res.getStatusCode().toString());
+                    throw new RestClientException(String.format("%s:%s", req.getURI().getPath(), res.getStatusCode()));
                 })
                 .toEntity(CoinCheckResponse.class).getBody();
         log.info("{} {} {} {}",

@@ -240,9 +240,9 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
                 })
                 .body(jsonBody.toString())
                 .retrieve()
-                .onStatus(HttpStatusCode::is2xxSuccessful, (req, res) -> log.info("{} {} {} {} {}",
-                        value("kind", "api"), value("uri", req.getURI().getPath()), value("status", "ok"), value("request-body", jsonBody.toString()),
-                        value("response", new Scanner(res.getBody()).useDelimiter("\\A").next().replaceAll("\\r\\n|\\r|\\n", ""))))
+                .onStatus(HttpStatusCode::is2xxSuccessful, (req, res) ->
+                        log.info("{} {} {} {}",
+                        value("kind", "api"), value("uri", req.getURI().getPath()), value("status", "ok"), value("request-body", jsonBody.toString())))
                 .onStatus(HttpStatusCode::isError, (req, res) -> {
                     log.error("{} {} {} {} {}",
                             value("kind", "api"), value("uri", req.getURI().getPath()), value("status", res.getStatusText()), value("request-body", jsonBody.toString()),

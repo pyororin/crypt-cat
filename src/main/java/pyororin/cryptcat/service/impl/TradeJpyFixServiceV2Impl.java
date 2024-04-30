@@ -68,7 +68,7 @@ public class TradeJpyFixServiceV2Impl implements TradeService {
 
             Executors.newScheduledThreadPool(1).schedule(() -> {
                 var opensOrders = repository.retrieveOpensOrders().findOrdersWithinMinuets(clock, 0, retry.getDelayMin() * 2);
-                log.info("{} {} {}", value("kind", "order-retry"), value("order-id", response.getId()), value("opens-ids", opensOrders.stream().map(CoinCheckOpensOrdersResponse.Order::getId)));
+                log.info("{} {} {}", value("kind", "order-retry"), value("order-id", response.getId()), value("opens-ids", opensOrders.stream().map(CoinCheckOpensOrdersResponse.Order::getId).toList()));
                 if (opensOrders.stream().anyMatch(order -> response.getId() == order.getId())) {
                     repository.exchangeCancel(response.getId());
                     repository.exchangeBuyMarket(CoinCheckRequest.builder()
@@ -92,7 +92,7 @@ public class TradeJpyFixServiceV2Impl implements TradeService {
                     .build());
             Executors.newScheduledThreadPool(1).schedule(() -> {
                 var opensOrders = repository.retrieveOpensOrders().findOrdersWithinMinuets(clock, 0, retry.getDelayMin() * 2);
-                log.info("{} {} {}", value("kind", "order-retry"), value("order-id", response.getId()), value("opens-ids", opensOrders.stream().map(CoinCheckOpensOrdersResponse.Order::getId)));
+                log.info("{} {} {}", value("kind", "order-retry"), value("order-id", response.getId()), value("opens-ids", opensOrders.stream().map(CoinCheckOpensOrdersResponse.Order::getId).toList()));
                 if (opensOrders.stream().anyMatch(order -> response.getId() == order.getId())) {
                     repository.exchangeCancel(response.getId());
                     repository.exchangeSellMarket(CoinCheckRequest.builder()

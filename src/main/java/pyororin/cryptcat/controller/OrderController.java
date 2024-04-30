@@ -28,6 +28,7 @@ public class OrderController {
         tradeJpyFixServiceImpl.order(Pair.fromValue(pair), orderRequest);
         return ResponseEntity.ok("OK");
     }
+
     @PostMapping("/v2/order/jpyfix/{pair}")
     public ResponseEntity<String> jpyFixV2(@PathVariable String pair, @RequestBody @Validated OrderRequest orderRequest) {
         tradeJpyFixServiceV2Impl.order(Pair.fromValue(pair), orderRequest);

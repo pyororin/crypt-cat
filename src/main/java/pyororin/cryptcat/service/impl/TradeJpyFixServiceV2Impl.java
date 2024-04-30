@@ -67,9 +67,10 @@ public class TradeJpyFixServiceV2Impl implements TradeService {
                     .build());
 
             Executors.newScheduledThreadPool(1).schedule(() -> {
-                var opensOrders = repository.retrieveOpensOrders().findOrdersWithinMinuets(clock, 0, retry.getDelayMin() * 2);
-                log.info("{} {} {}", value("kind", "order-retry"), value("order-id", response.getId()), value("opens-ids", opensOrders.stream().map(CoinCheckOpensOrdersResponse.Order::getId).toList()));
-                if (opensOrders.stream().anyMatch(order -> response.getId() == order.getId())) {
+                var opensOrdersIds = repository.retrieveOpensOrders().findOrdersWithinMinuets(clock, 0, retry.getDelayMin() * 2)
+                        .stream().map(CoinCheckOpensOrdersResponse.Order::getId).toList();
+                log.info("{} {} {}", value("kind", "order-retry"), value("order-id", response.getId()), value("opens-ids", opensOrdersIds));
+                if (opensOrdersIds.contains(response.getId())) {
                     repository.exchangeCancel(response.getId());
                     repository.exchangeBuyMarket(CoinCheckRequest.builder()
                             .pair(pair)
@@ -91,9 +92,10 @@ public class TradeJpyFixServiceV2Impl implements TradeService {
                     .group(orderRequest.getGroup())
                     .build());
             Executors.newScheduledThreadPool(1).schedule(() -> {
-                var opensOrders = repository.retrieveOpensOrders().findOrdersWithinMinuets(clock, 0, retry.getDelayMin() * 2);
-                log.info("{} {} {}", value("kind", "order-retry"), value("order-id", response.getId()), value("opens-ids", opensOrders.stream().map(CoinCheckOpensOrdersResponse.Order::getId).toList()));
-                if (opensOrders.stream().anyMatch(order -> response.getId() == order.getId())) {
+                var opensOrdersIds = repository.retrieveOpensOrders().findOrdersWithinMinuets(clock, 0, retry.getDelayMin() * 2)
+                        .stream().map(CoinCheckOpensOrdersResponse.Order::getId).toList();
+                log.info("{} {} {}", value("kind", "order-retry"), value("order-id", response.getId()), value("opens-ids", opensOrdersIds));
+                if (opensOrdersIds.contains(response.getId())) {
                     repository.exchangeCancel(response.getId());
                     repository.exchangeSellMarket(CoinCheckRequest.builder()
                             .pair(pair)

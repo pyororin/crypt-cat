@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import pyororin.cryptcat.config.CoinCheckApiConfig;
 import pyororin.cryptcat.controller.model.OrderRequest;
 import pyororin.cryptcat.repository.CoinCheckRepository;
+import pyororin.cryptcat.repository.model.CoinCheckOpensOrdersResponse;
 import pyororin.cryptcat.repository.model.CoinCheckRequest;
 import pyororin.cryptcat.repository.model.Pair;
 import pyororin.cryptcat.service.TradeService;
@@ -67,10 +68,8 @@ public class TradeJpyFixServiceV2Impl implements TradeService {
 
             Executors.newScheduledThreadPool(1).schedule(() -> {
                 var opensOrders = repository.retrieveOpensOrders().findOrdersWithinMinuets(clock, 0, retry.getDelayMin() * 2);
-                log.info("{} {}", value("kind", "order-retry"), value("order", response));
-                log.info("{} {}", value("kind", "order-retry"), value("opens", opensOrders));
+                log.info("{} {} {}", value("kind", "order-retry"), value("order-id", response.getId()), value("opens-ids", opensOrders.stream().map(CoinCheckOpensOrdersResponse.Order::getId)));
                 if (opensOrders.stream().anyMatch(order -> response.getId() == order.getId())) {
-                    log.info("{} {}", value("kind", "order-retry"), value("id", response.getId()));
                     repository.exchangeCancel(response.getId());
                     repository.exchangeBuyMarket(CoinCheckRequest.builder()
                             .pair(pair)
@@ -93,10 +92,8 @@ public class TradeJpyFixServiceV2Impl implements TradeService {
                     .build());
             Executors.newScheduledThreadPool(1).schedule(() -> {
                 var opensOrders = repository.retrieveOpensOrders().findOrdersWithinMinuets(clock, 0, retry.getDelayMin() * 2);
-                log.info("{} {}", value("kind", "order-retry"), value("order", response));
-                log.info("{} {}", value("kind", "order-retry"), value("opens", opensOrders));
+                log.info("{} {} {}", value("kind", "order-retry"), value("order-id", response.getId()), value("opens-ids", opensOrders.stream().map(CoinCheckOpensOrdersResponse.Order::getId)));
                 if (opensOrders.stream().anyMatch(order -> response.getId() == order.getId())) {
-                    log.info("{} {}", value("kind", "order-retry"), value("id", response.getId()));
                     repository.exchangeCancel(response.getId());
                     repository.exchangeSellMarket(CoinCheckRequest.builder()
                             .pair(pair)

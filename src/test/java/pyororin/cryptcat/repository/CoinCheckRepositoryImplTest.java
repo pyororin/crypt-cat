@@ -7,6 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.retry.ExhaustedRetryException;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestClient;
@@ -106,7 +107,7 @@ class CoinCheckRepositoryImplTest {
 
         var restClient = restClientBuilder.build();
         var repository = new CoinCheckRepositoryImpl(restClient, config, apiConfig);
-        repository.exchangeBuy(CoinCheckRequest.builder()
+        repository.exchangeBuyLimit(CoinCheckRequest.builder()
                 .pair(Pair.BTC_JPY)
                 .price(BigDecimal.valueOf(30010.0))
                 .amount(BigDecimal.valueOf(1.3))
@@ -130,7 +131,7 @@ class CoinCheckRepositoryImplTest {
 
         var restClient = restClientBuilder.build();
         var repository = new CoinCheckRepositoryImpl(restClient, config, apiConfig);
-        repository.exchangeBuy(CoinCheckRequest.builder()
+        repository.exchangeBuyLimit(CoinCheckRequest.builder()
                 .pair(Pair.BTC_JPY)
                 .price(BigDecimal.valueOf(30010.0))
                 .amount(BigDecimal.valueOf(1.3))
@@ -161,7 +162,7 @@ class CoinCheckRepositoryImplTest {
                 RestClient.builder().baseUrl(apiConfig.getHost()).build(), config, apiConfig);
         var rate = tradeRateLogicService.getFairBuyPrice(Pair.BTC_JPY);
         var amount = BigDecimal.valueOf(0.0055);
-        repository.exchangeBuy(CoinCheckRequest.builder().pair(Pair.BTC_JPY).price(rate).amount(amount).build());
+        repository.exchangeBuyLimit(CoinCheckRequest.builder().pair(Pair.BTC_JPY).price(rate).amount(amount).build());
     }
 
     @Disabled
@@ -169,7 +170,7 @@ class CoinCheckRepositoryImplTest {
     void exchangeSell() {
         var rate = tradeRateLogicService.getFairSellPrice(Pair.BTC_JPY);
         var amount = BigDecimal.valueOf(0.0055);
-        repository.exchangeSell(CoinCheckRequest.builder().pair(Pair.BTC_JPY).price(rate).amount(amount).build());
+        repository.exchangeSellLimit(CoinCheckRequest.builder().pair(Pair.BTC_JPY).price(rate).amount(amount).build());
     }
 
     @Test
@@ -200,8 +201,8 @@ class CoinCheckRepositoryImplTest {
                         """, MediaType.APPLICATION_JSON));
 
         doThrow(new RuntimeException("Test")).when(restClient).post();
-        assertThrows(RestClientException.class, () -> {
-            repository.exchangeBuy(CoinCheckRequest.builder()
+        assertThrows(ExhaustedRetryException.class, () -> {
+            repository.exchangeBuyLimit(CoinCheckRequest.builder()
                     .pair(Pair.BTC_JPY)
                     .price(BigDecimal.valueOf(30010.0))
                     .amount(BigDecimal.valueOf(1.3))

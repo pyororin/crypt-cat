@@ -11,9 +11,13 @@ public interface CoinCheckRepository {
 
     CoinCheckTransactionsResponse retrieveOrdersTransactions();
 
-    void exchangeBuy(CoinCheckRequest request);
+    CoinCheckResponse exchangeBuyLimit(CoinCheckRequest request);
 
-    void exchangeSell(CoinCheckRequest request);
+    CoinCheckResponse exchangeSellLimit(CoinCheckRequest request);
+
+    void exchangeBuyMarket(CoinCheckRequest request);
+
+    void exchangeSellMarket(CoinCheckRequest request);
 
     void exchangeCancel(long id);
 }

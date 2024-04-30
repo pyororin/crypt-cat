@@ -15,8 +15,8 @@ import pyororin.cryptcat.repository.model.CoinCheckRequest;
 import pyororin.cryptcat.repository.model.Pair;
 import pyororin.cryptcat.service.TradeService;
 
-import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Clock;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -27,10 +27,12 @@ import static net.logstash.logback.argument.StructuredArguments.value;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class TradeJpyFixServiceImpl implements TradeService {
+public class TradeJpyFixServiceV2Impl implements TradeService {
+    private final Clock clock;
     private final TradeRateLogicService tradeRateLogicService;
     private final CoinCheckRepository repository;
     private final CoinCheckApiConfig apiConfig;
+    private final CoinCheckApiConfig.Retry retry;
 
     @Override
     public void order(Pair pair, OrderRequest orderRequest) {
@@ -55,33 +57,56 @@ public class TradeJpyFixServiceImpl implements TradeService {
     }
 
     @Retryable(retryFor = RestClientException.class, maxAttempts = 5, backoff = @Backoff(delay = 6000))
-    private BigDecimal exchange(Pair pair, OrderRequest orderRequest) {
+    private void exchange(Pair pair, OrderRequest orderRequest) {
         if (orderRequest.isBuy()) {
             var buyPrice = tradeRateLogicService.getFairBuyPrice(pair);
             /* 市場最終価格(ticker.last or ticker.ask) = rate */
             /* 固定金額(JPY) / 市場最終価格(ticker.last or ticker.ask) = amount */
             var amount = apiConfig.getPrice().divide(buyPrice, 9, RoundingMode.HALF_EVEN);
-            repository.exchangeBuyLimit(CoinCheckRequest.builder()
+            var response = repository.exchangeBuyLimit(CoinCheckRequest.builder()
                     .pair(pair)
                     .price(apiConfig.getPrice())
                     .amount(amount)
                     .rate(buyPrice)
                     .group(orderRequest.getGroup())
                     .build());
-            return amount;
+
+            Executors.newScheduledThreadPool(1).schedule(() -> {
+                var opensOrders = repository.retrieveOpensOrders().findOrdersWithinMinuets(clock, retry.getDelayMin(), retry.getDelayMin() * 2);
+                if (opensOrders.stream().anyMatch(order -> response.getId() == order.getId())) {
+                    log.info("{} {}", value("kind", "order-retry"), value("id", response.getId()));
+                    repository.exchangeCancel(response.getId());
+                    repository.exchangeBuyMarket(CoinCheckRequest.builder()
+                            .pair(pair)
+                            .price(apiConfig.getPrice())
+                            .group("order-retry")
+                            .build());
+                }
+            }, retry.getDelayMin(), TimeUnit.MINUTES);
         } else {
             var sellPrice = tradeRateLogicService.getFairSellPrice(pair);
             /* 市場最終価格(ticker.last or ticker.ask) = rate */
             /* 固定金額(JPY) / 市場最終価格(ticker.last or ticker.ask) = amount */
             var amount = apiConfig.getPrice().divide(sellPrice, 9, RoundingMode.HALF_EVEN);
-            repository.exchangeSellLimit(CoinCheckRequest.builder()
+            var response = repository.exchangeSellLimit(CoinCheckRequest.builder()
                     .pair(pair)
                     .price(apiConfig.getPrice())
                     .amount(amount)
                     .rate(sellPrice)
                     .group(orderRequest.getGroup())
                     .build());
-            return amount;
+            Executors.newScheduledThreadPool(1).schedule(() -> {
+                var opensOrders = repository.retrieveOpensOrders().findOrdersWithinMinuets(clock, retry.getDelayMin(), retry.getDelayMin() * 2);
+                if (opensOrders.stream().anyMatch(order -> response.getId() == order.getId())) {
+                    log.info("{} {}", value("kind", "order-retry"), value("id", response.getId()));
+                    repository.exchangeCancel(response.getId());
+                    repository.exchangeSellMarket(CoinCheckRequest.builder()
+                            .pair(pair)
+                            .amount(apiConfig.getPrice().divide(tradeRateLogicService.getFairSellPrice(pair), 9, RoundingMode.HALF_EVEN))
+                            .group("order-retry")
+                            .build());
+                }
+            }, retry.getDelayMin(), TimeUnit.MINUTES);
         }
     }
 

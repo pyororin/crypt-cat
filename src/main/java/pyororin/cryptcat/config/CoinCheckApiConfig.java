@@ -28,5 +28,6 @@ public class CoinCheckApiConfig {
     public static class Retry {
         private long intervalMin;
         private long delayMin;
+        private long delaySec;
     }
 }

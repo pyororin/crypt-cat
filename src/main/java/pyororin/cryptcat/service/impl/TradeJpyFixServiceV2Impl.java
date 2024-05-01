@@ -85,7 +85,7 @@ public class TradeJpyFixServiceV2Impl implements TradeService {
                             .build());
                 }
 
-            }, retry.getDelayMin(), TimeUnit.MINUTES);
+            }, retry.getDelaySec(), TimeUnit.SECONDS);
         } else {
             var sellPrice = tradeRateLogicService.getFairSellPrice(pair);
             /* 市場最終価格(ticker.last or ticker.ask) = rate */
@@ -116,7 +116,7 @@ public class TradeJpyFixServiceV2Impl implements TradeService {
                             .group("order-retry")
                             .build());
                 }
-            }, retry.getDelayMin(), TimeUnit.MINUTES);
+            }, retry.getDelaySec(), TimeUnit.SECONDS);
         }
     }
 }

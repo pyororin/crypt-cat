@@ -68,6 +68,7 @@ public class TradeJpyFixServiceV3Impl implements TradeService {
                         .stream().map(CoinCheckOpensOrdersResponse.Order::getId).toList();
                 log.info("{} {} {}", value("kind", "limit-retry"), value("order-id", response.get().getId()), value("opens-ids", opensOrdersIds));
                 if (hop.get() > 0 && opensOrdersIds.contains(response.get().getId())) {
+                    repository.exchangeCancel(response.get().getId());
                     var buyPriceRetry = tradeRateLogicService.getFairBuyPrice(pair);
                     /* 市場最終価格(ticker.last or ticker.ask) = rate */
                     /* 固定金額(JPY) / 市場最終価格(ticker.last or ticker.ask) = amount */
@@ -85,7 +86,7 @@ public class TradeJpyFixServiceV3Impl implements TradeService {
             }, retry.getDelaySec(), retry.getDelaySec(), TimeUnit.SECONDS);
 
             try {
-                if (!executors.awaitTermination(retry.getDelaySec() * retry.getLimitCount(), TimeUnit.SECONDS)) {
+                if (!executors.awaitTermination(retry.getDelaySec() * (retry.getLimitCount() + 1), TimeUnit.SECONDS)) {
                     executors.shutdown();
                 }
             } catch(InterruptedException ie) {
@@ -134,6 +135,7 @@ public class TradeJpyFixServiceV3Impl implements TradeService {
                         .stream().map(CoinCheckOpensOrdersResponse.Order::getId).toList();
                 log.info("{} {} {}", value("kind", "limit-retry"), value("order-id", response.get().getId()), value("opens-ids", opensOrdersIds));
                 if (hop.get() > 0 && opensOrdersIds.contains(response.get().getId())) {
+                    repository.exchangeCancel(response.get().getId());
                     var sellPriceRetry = tradeRateLogicService.getFairSellPrice(pair);
                     /* 市場最終価格(ticker.last or ticker.ask) = rate */
                     /* 固定金額(JPY) / 市場最終価格(ticker.last or ticker.ask) = amount */
@@ -151,7 +153,7 @@ public class TradeJpyFixServiceV3Impl implements TradeService {
             }, retry.getDelaySec(), retry.getDelaySec(), TimeUnit.SECONDS);
 
             try {
-                if (!executors.awaitTermination(retry.getDelaySec() * retry.getLimitCount(), TimeUnit.SECONDS)) {
+                if (!executors.awaitTermination(retry.getDelaySec() * (retry.getLimitCount() + 1), TimeUnit.SECONDS)) {
                     executors.shutdown();
                 }
             } catch(InterruptedException ie) {

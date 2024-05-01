@@ -19,15 +19,14 @@ public class CoinCheckApiConfig {
     private String actually;
     private long interval;
     private OrderLogic orderLogic;
-    private boolean orderRetry;
 
     @Data
     @ToString
     @Component
     @ConfigurationProperties(prefix = "coincheck.retry")
     public static class Retry {
-        private long intervalMin;
         private long delayMin;
         private long delaySec;
+        private int limitCount;
     }
 }

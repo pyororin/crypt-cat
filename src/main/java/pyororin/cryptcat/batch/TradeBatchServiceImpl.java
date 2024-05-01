@@ -9,7 +9,6 @@ import pyororin.cryptcat.config.CoinCheckApiConfig;
 import pyororin.cryptcat.repository.CoinCheckRepository;
 import pyororin.cryptcat.repository.model.CoinCheckRequest;
 import pyororin.cryptcat.repository.model.Pair;
-import pyororin.cryptcat.service.impl.TradeRateLogicService;
 
 import java.math.RoundingMode;
 import java.time.Clock;
@@ -25,8 +24,6 @@ import static net.logstash.logback.argument.StructuredArguments.value;
 public class TradeBatchServiceImpl {
     private final Clock clock;
     private final CoinCheckApiConfig apiConfig;
-    private final CoinCheckApiConfig.Retry retry;
-    private final TradeRateLogicService tradeRateLogicService;
     private final CoinCheckRepository repository;
 
     @Scheduled(cron = "0 0 * * * *")
@@ -69,53 +66,6 @@ public class TradeBatchServiceImpl {
             }, apiConfig.getInterval(), TimeUnit.SECONDS);
             executorService.shutdown();
         });
-    }
-
-    @Scheduled(cron = "30 */${coincheck.retry.interval-min} * * * *")
-    public void cancelRetry() {
-        if (apiConfig.isOrderRetry()) {
-            var opensOrders = repository.retrieveOpensOrders().findOrdersWithinMinuets(
-                    clock, retry.getDelayMin(), retry.getDelayMin() + (retry.getIntervalMin() * 3));
-            log.info("{} {}", value("kind", "cancel-retry-batch"), value("count", opensOrders.size()));
-            opensOrders.forEach(order -> {
-                repository.exchangeCancel(order.getId());
-                log.info("{} {} {} {} {} {} {} {}",
-                        value("kind", "cancel"),
-                        value("pair", order.getPair()),
-                        value("pending_amount", order.getPendingAmount()),
-                        value("pending_market_buy_amount", order.getPendingMarketBuyAmount()),
-                        value("order_rate", order.getOrderType()),
-                        value("order_time", order.getCreatedAt()),
-                        value("stop_loss_rate", order.getStopLossRate()),
-                        value("id", order.getId()));
-                if (order.getOrderType().equals("sell")) {
-                    var sellPrice = tradeRateLogicService.getFairSellPrice(Pair.fromValue(order.getPair()));
-                    /* 市場最終価格(ticker.last or ticker.ask) = rate */
-                    /* 固定金額(JPY) / 市場最終価格(ticker.last or ticker.ask) = amount */
-                    var amount = apiConfig.getPrice().divide(sellPrice, 9, RoundingMode.HALF_EVEN);
-                    repository.exchangeSellLimit(CoinCheckRequest.builder()
-                            .pair(Pair.fromValue(order.getPair()))
-                            .price(apiConfig.getPrice())
-                            .amount(amount)
-                            .rate(sellPrice)
-                            .group("Cancel-Retry")
-                            .build());
-                }
-                if (order.getOrderType().equals("buy")) {
-                    var buyPrice = tradeRateLogicService.getFairBuyPrice(Pair.fromValue(order.getPair()));
-                    /* 市場最終価格(ticker.last or ticker.ask) = rate */
-                    /* 固定金額(JPY) / 市場最終価格(ticker.last or ticker.ask) = amount */
-                    var amount = apiConfig.getPrice().divide(buyPrice, 9, RoundingMode.HALF_EVEN);
-                    repository.exchangeBuyLimit(CoinCheckRequest.builder()
-                            .pair(Pair.fromValue(order.getPair()))
-                            .price(apiConfig.getPrice())
-                            .amount(amount)
-                            .rate(buyPrice)
-                            .group("Cancel-Retry")
-                            .build());
-                }
-            });
-        }
     }
 
     @Scheduled(cron = "15 */10 * * * *")

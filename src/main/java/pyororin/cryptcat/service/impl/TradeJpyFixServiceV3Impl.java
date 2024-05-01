@@ -8,7 +8,6 @@ import pyororin.cryptcat.controller.model.OrderRequest;
 import pyororin.cryptcat.repository.CoinCheckRepository;
 import pyororin.cryptcat.repository.model.CoinCheckOpensOrdersResponse;
 import pyororin.cryptcat.repository.model.CoinCheckRequest;
-import pyororin.cryptcat.repository.model.CoinCheckResponse;
 import pyororin.cryptcat.repository.model.Pair;
 import pyororin.cryptcat.service.TradeService;
 
@@ -48,7 +47,7 @@ public class TradeJpyFixServiceV3Impl implements TradeService {
     }
 
     private void exchange(Pair pair, OrderRequest orderRequest) {
-        var hop = new AtomicInteger(2);
+        var hop = new AtomicInteger(retry.getLimitCount());
         if (orderRequest.isBuy()) {
             var buyPrice = tradeRateLogicService.getFairBuyPrice(pair);
             /* 市場最終価格(ticker.last or ticker.ask) = rate */

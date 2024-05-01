@@ -9,6 +9,7 @@ steps:
             "--build-arg","_IS_ORDER_RETRY=$_IS_ORDER_RETRY",
             "--build-arg","_RETRY_DELAY=$_RETRY_DELAY",
             "--build-arg","_RETRY_INTERVAL=$_RETRY_INTERVAL",
+            "--build-arg","_RETRY_DELAY_SEC=$_RETRY_DELAY_SEC",
             '.' ]
   # DockerイメージをContainer RegistryへPush
   - name: 'gcr.io/cloud-builders/docker'

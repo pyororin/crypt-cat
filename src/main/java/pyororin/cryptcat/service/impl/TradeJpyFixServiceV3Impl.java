@@ -84,6 +84,14 @@ public class TradeJpyFixServiceV3Impl implements TradeService {
                 }
             }, retry.getDelaySec(), retry.getDelaySec(), TimeUnit.SECONDS);
 
+            try {
+                if (!executors.awaitTermination(retry.getDelaySec() * retry.getLimitCount(), TimeUnit.SECONDS)) {
+                    executors.shutdown();
+                }
+            } catch(InterruptedException ie) {
+                executors.shutdown();
+            }
+
             // 成行リトライ
             Executors.newScheduledThreadPool(1).schedule(() -> {
                 var opensOrdersIds = repository.retrieveOpensOrders().findOrdersWithinMinuets(clock, 0, retry.getDelayMin() * 2)
@@ -141,6 +149,14 @@ public class TradeJpyFixServiceV3Impl implements TradeService {
                     executors.shutdown();
                 }
             }, retry.getDelaySec(), retry.getDelaySec(), TimeUnit.SECONDS);
+
+            try {
+                if (!executors.awaitTermination(retry.getDelaySec() * retry.getLimitCount(), TimeUnit.SECONDS)) {
+                    executors.shutdown();
+                }
+            } catch(InterruptedException ie) {
+                executors.shutdown();
+            }
 
             // 成行リトライ
             Executors.newScheduledThreadPool(1).schedule(() -> {

@@ -16,7 +16,7 @@ public class FilterConfig {
     public FilterRegistrationBean<RequestIntervalFilter> customFilterRegistration() {
         FilterRegistrationBean<RequestIntervalFilter> registration = new FilterRegistrationBean<>();
         registration.setFilter(new RequestIntervalFilter(ipCheckService));
-        registration.addUrlPatterns("/order/*");
+        registration.addUrlPatterns("*");
         return registration;
     }
 }

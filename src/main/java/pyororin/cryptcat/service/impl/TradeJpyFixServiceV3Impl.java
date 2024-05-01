@@ -2,6 +2,7 @@ package pyororin.cryptcat.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 import pyororin.cryptcat.config.CoinCheckApiConfig;
 import pyororin.cryptcat.controller.model.OrderRequest;
@@ -66,7 +67,7 @@ public class TradeJpyFixServiceV3Impl implements TradeService {
             executors.scheduleWithFixedDelay(() -> {
                 var opensOrdersIds = repository.retrieveOpensOrders().findOrdersWithinMinuets(clock, 0, retry.getDelayMin() * 2)
                         .stream().map(CoinCheckOpensOrdersResponse.Order::getId).toList();
-                log.info("{} {} {}", value("kind", "limit-retry"), value("order-id", response.get().getId()), value("opens-ids", opensOrdersIds));
+                log.info("{} {} {} {}", value("kind", "limit-retry"), value("trace-id", MDC.get("traceId")), value("order-id", response.get().getId()), value("opens-ids", opensOrdersIds));
                 if (hop.get() > 0 && opensOrdersIds.contains(response.get().getId())) {
                     repository.exchangeCancel(response.get().getId());
                     var buyPriceRetry = tradeRateLogicService.getFairBuyPrice(pair);
@@ -97,14 +98,15 @@ public class TradeJpyFixServiceV3Impl implements TradeService {
             Executors.newScheduledThreadPool(1).schedule(() -> {
                 var opensOrdersIds = repository.retrieveOpensOrders().findOrdersWithinMinuets(clock, 0, retry.getDelayMin() * 2)
                         .stream().map(CoinCheckOpensOrdersResponse.Order::getId).toList();
-                log.info("{} {} {}", value("kind", "market-retry"), value("order-id", response.get().getId()), value("opens-ids", opensOrdersIds));
+                log.info("{} {} {} {}", value("kind", "market-retry"), value("trace-id", MDC.get("traceId")),
+                        value("order-id", response.get().getId()), value("opens-ids", opensOrdersIds));
                 if (opensOrdersIds.contains(response.get().getId())) {
                     // 本来の価格差分算出
                     // 指値amount - 成行amount
                     var marketAmount = apiConfig.getPrice().divide(
                             repository.retrieveTicker(CoinCheckRequest.builder().pair(pair).build()).getAsk(),
                             9, RoundingMode.HALF_EVEN);
-                    log.info("{} {} {} {}", value("kind", "retry-buy-diff"),
+                    log.info("{} {} {} {} {}", value("kind", "retry-buy-diff"), value("trace-id", MDC.get("traceId")),
                             value("market-amount", marketAmount), value("limit-amount", amount), value("diff-amount", marketAmount.subtract(amount)));
                     repository.exchangeCancel(response.get().getId());
                     repository.exchangeBuyMarket(CoinCheckRequest.builder()
@@ -133,7 +135,8 @@ public class TradeJpyFixServiceV3Impl implements TradeService {
             executors.scheduleWithFixedDelay(() -> {
                 var opensOrdersIds = repository.retrieveOpensOrders().findOrdersWithinMinuets(clock, 0, retry.getDelayMin() * 2)
                         .stream().map(CoinCheckOpensOrdersResponse.Order::getId).toList();
-                log.info("{} {} {}", value("kind", "limit-retry"), value("order-id", response.get().getId()), value("opens-ids", opensOrdersIds));
+                log.info("{} {} {} {}", value("kind", "limit-retry"), value("trace-id", MDC.get("traceId")),
+                        value("order-id", response.get().getId()), value("opens-ids", opensOrdersIds));
                 if (hop.get() > 0 && opensOrdersIds.contains(response.get().getId())) {
                     repository.exchangeCancel(response.get().getId());
                     var sellPriceRetry = tradeRateLogicService.getFairSellPrice(pair);
@@ -164,14 +167,15 @@ public class TradeJpyFixServiceV3Impl implements TradeService {
             Executors.newScheduledThreadPool(1).schedule(() -> {
                 var opensOrdersIds = repository.retrieveOpensOrders().findOrdersWithinMinuets(clock, 0, retry.getDelayMin() * 2)
                         .stream().map(CoinCheckOpensOrdersResponse.Order::getId).toList();
-                log.info("{} {} {}", value("kind", "market-retry"), value("order-id", response.get().getId()), value("opens-ids", opensOrdersIds));
+                log.info("{} {} {} {}", value("kind", "market-retry"), value("trace-id", MDC.get("traceId")),
+                        value("order-id", response.get().getId()), value("opens-ids", opensOrdersIds));
                 if (opensOrdersIds.contains(response.get().getId())) {
                     // 本来の価格差分算出
                     // 指値amount - 成行amount
                     var marketAmount = apiConfig.getPrice().divide(
                             repository.retrieveTicker(CoinCheckRequest.builder().pair(pair).build()).getBid(),
                             9, RoundingMode.HALF_EVEN);
-                    log.info("{} {} {} {}", value("kind", "retry-sell-diff"),
+                    log.info("{} {} {} {} {}", value("kind", "retry-sell-diff"), value("trace-id", MDC.get("traceId")),
                             value("limit-amount", amount), value("market-amount", marketAmount), value("diff-amount", amount.subtract(marketAmount)));
                     repository.exchangeCancel(response.get().getId());
                     repository.exchangeSellMarket(CoinCheckRequest.builder()

@@ -72,9 +72,7 @@ public class TradeBatchServiceImpl {
     public void orders() {
         var ticker = repository.retrieveTicker(CoinCheckRequest.builder().pair(Pair.BTC_JPY).build());
         var response = repository.retrieveOrdersTransactions();
-        var sumFunds = response.sumFunds(clock, 10);
-        var jpyToBtc = sumFunds.getJpy().divide(ticker.getLast(), 9, RoundingMode.HALF_EVEN);
-        var btcToJpy = sumFunds.getBtc().multiply(ticker.getLast());
+        var sumFunds = response.sumFunds();
         log.info("{} {} {} {} {} {} {} {} {}",
                 value("kind", "transactions"),
                 value("count", response.findOrdersWithinMinutes(clock, 10).size()),
@@ -83,8 +81,8 @@ public class TradeBatchServiceImpl {
                 value("jpy", sumFunds.getJpy()),
                 value("btc", sumFunds.getBtc()),
                 value("rate", ticker.getLast()),
-                value("fix_jpy_btc", sumFunds.getBtc().add(jpyToBtc)),
-                value("fix_btc_jpy", sumFunds.getJpy().add(btcToJpy))
+                value("fix_jpy_btc", response.sumFundsToBtc()),
+                value("fix_btc_jpy", response.sumFundsToJpy())
         );
     }
 }

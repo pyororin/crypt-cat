@@ -91,7 +91,7 @@ public class TradeJpyFixServiceV3Impl implements TradeService {
                 if (!executors.awaitTermination(retry.getDelaySec() * (retry.getLimitCount() + 1), TimeUnit.SECONDS)) {
                     executors.shutdown();
                 }
-            } catch(InterruptedException ie) {
+            } catch (InterruptedException ie) {
                 executors.shutdown();
             }
 
@@ -160,7 +160,7 @@ public class TradeJpyFixServiceV3Impl implements TradeService {
                 if (!executors.awaitTermination(retry.getDelaySec() * (retry.getLimitCount() + 1), TimeUnit.SECONDS)) {
                     executors.shutdown();
                 }
-            } catch(InterruptedException ie) {
+            } catch (InterruptedException ie) {
                 executors.shutdown();
             }
 

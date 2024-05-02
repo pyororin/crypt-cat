@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.ToString;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -73,17 +74,36 @@ public class CoinCheckTransactionsResponse {
                 .collect(Collectors.toList());
     }
 
-    public Funds sumFunds(Clock clock, int minutes) {
-        BigDecimal totalBtc = this.findOrdersWithinMinutes(clock, minutes).stream()
+    public Funds sumFunds() {
+        return Funds.builder().btc(this.data.stream()
+                        .filter(data -> Objects.nonNull(data.getFunds()) && Objects.nonNull(data.getFunds().getBtc()))
+                        .map(data -> data.getFunds().getBtc())
+                        .reduce(BigDecimal.ZERO, BigDecimal::add))
+                .jpy(this.data.stream()
+                        .filter(data -> Objects.nonNull(data.getFunds()) && Objects.nonNull(data.getFunds().getJpy()))
+                        .map(data -> data.getFunds().getJpy())
+                        .reduce(BigDecimal.ZERO, BigDecimal::add)).build();
+    }
+
+    public BigDecimal sumFundsToBtc() {
+        return this.data.stream()
                 .filter(data -> Objects.nonNull(data.getFunds()) && Objects.nonNull(data.getFunds().getBtc()))
                 .map(data -> data.getFunds().getBtc())
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .add(this.data.stream()
+                        .filter(data -> Objects.nonNull(data.getFunds()) && Objects.nonNull(data.getFunds().getJpy()))
+                        .map(data -> data.getFunds().getJpy().divide(data.rate, 9, RoundingMode.HALF_EVEN))
+                        .reduce(BigDecimal.ZERO, BigDecimal::add));
+    }
 
-        BigDecimal totalJpy = this.findOrdersWithinMinutes(clock, minutes).stream()
+    public BigDecimal sumFundsToJpy() {
+        return this.data.stream()
                 .filter(data -> Objects.nonNull(data.getFunds()) && Objects.nonNull(data.getFunds().getJpy()))
                 .map(data -> data.getFunds().getJpy())
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        return Funds.builder().btc(totalBtc).jpy(totalJpy).build();
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .add(this.data.stream()
+                        .filter(data -> Objects.nonNull(data.getFunds()) && Objects.nonNull(data.getFunds().getBtc()))
+                        .map(data -> data.getFunds().getBtc().multiply(data.rate))
+                        .reduce(BigDecimal.ZERO, BigDecimal::add));
     }
 }

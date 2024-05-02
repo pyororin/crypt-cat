@@ -6,7 +6,6 @@ steps:
             "--build-arg","_IS_ACTUALLY_SELL_BUY=$_IS_ACTUALLY_SELL_BUY",
             "--build-arg","_SELL_BUY_AMOUNT=$_SELL_BUY_AMOUNT",
             "--build-arg","_SELL_BUY_PRICE=$_SELL_BUY_PRICE",
-            "--build-arg","_IS_ORDER_RETRY=$_IS_ORDER_RETRY",
             "--build-arg","_RETRY_DELAY_SEC=$_RETRY_DELAY_SEC",
             "--build-arg","_RETRY_LIMIT_COUNT=$_RETRY_LIMIT_COUNT",
             '.' ]

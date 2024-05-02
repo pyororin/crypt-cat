@@ -61,15 +61,15 @@ public class CoinCheckTransactionsResponse {
         private BigDecimal jpy;
     }
 
-    public List<Data> findOrdersWithinMinutes(Clock clock, int minutes) {
-        return Objects.isNull(data) ? List.of() : data.stream()
+    public CoinCheckTransactionsResponse withinMinutes(Clock clock, int minutes) {
+        this.data = Objects.isNull(data) ? List.of() : data.stream()
                 .filter(data -> data.getCreatedAt().isAfter(clock.instant().minus(minutes, ChronoUnit.MINUTES)))
                 .collect(Collectors.toList());
+        return this;
     }
 
-    public List<Data> findOrdersWithinMinutes(Clock clock, int minutes, String side) {
+    public List<Data> findBySide(String side) {
         return Objects.isNull(data) ? List.of() : data.stream()
-                .filter(data -> data.getCreatedAt().isAfter(clock.instant().minus(minutes, ChronoUnit.MINUTES)))
                 .filter(data -> data.getSide().equals(side))
                 .collect(Collectors.toList());
     }

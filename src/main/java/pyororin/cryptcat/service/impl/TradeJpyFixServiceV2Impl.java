@@ -67,7 +67,7 @@ public class TradeJpyFixServiceV2Impl implements TradeService {
                     .build());
 
             Executors.newScheduledThreadPool(1).schedule(() -> {
-                var opensOrdersIds = repository.retrieveOpensOrders().findOrdersWithinMinuets(clock, 0, retry.getDelayMin() * 2)
+                var opensOrdersIds = repository.retrieveOpensOrders().findOrdersWithinMinuets(clock, 0, 2)
                         .stream().map(CoinCheckOpensOrdersResponse.Order::getId).toList();
                 log.info("{} {} {}", value("kind", "order-retry"), value("order-id", response.getId()), value("opens-ids", opensOrdersIds));
                 if (opensOrdersIds.contains(response.getId())) {
@@ -99,7 +99,7 @@ public class TradeJpyFixServiceV2Impl implements TradeService {
                     .group(orderRequest.getGroup())
                     .build());
             Executors.newScheduledThreadPool(1).schedule(() -> {
-                var opensOrdersIds = repository.retrieveOpensOrders().findOrdersWithinMinuets(clock, 0, retry.getDelayMin() * 2)
+                var opensOrdersIds = repository.retrieveOpensOrders().findOrdersWithinMinuets(clock, 0, 2)
                         .stream().map(CoinCheckOpensOrdersResponse.Order::getId).toList();
                 log.info("{} {} {}", value("kind", "order-retry"), value("order-id", response.getId()), value("opens-ids", opensOrdersIds));
                 if (opensOrdersIds.contains(response.getId())) {

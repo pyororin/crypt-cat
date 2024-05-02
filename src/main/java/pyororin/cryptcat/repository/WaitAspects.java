@@ -1,8 +1,9 @@
 package pyororin.cryptcat.repository;
 
 import lombok.extern.slf4j.Slf4j;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Before;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.TimeUnit;
@@ -13,10 +14,13 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class WaitAspects {
 
-    @Before("execution(public * pyororin.cryptcat.repository.impl.*CheckRepositoryImpl.*(..)) && @annotation(pyororin.cryptcat.repository.BeforeWait)")
-    public void sleepForBeforeApi() {
+    @Around("execution(public * pyororin.cryptcat.repository.impl.*CheckRepositoryImpl.*(..)) && @annotation(pyororin.cryptcat.repository.BeforeWait)")
+    public Object sleepForBeforeApi(ProceedingJoinPoint pjp) throws Throwable {
         try {
-            TimeUnit.MILLISECONDS.sleep(200);
+            TimeUnit.MILLISECONDS.sleep(400);
+            var object = pjp.proceed();
+            TimeUnit.MILLISECONDS.sleep(400);
+            return object;
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }

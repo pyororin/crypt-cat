@@ -71,13 +71,13 @@ public class TradeBatchServiceImpl {
     @Scheduled(cron = "15 */10 * * * *")
     public void orders() {
         var ticker = repository.retrieveTicker(CoinCheckRequest.builder().pair(Pair.BTC_JPY).build());
-        var response = repository.retrieveOrdersTransactions();
+        var response = repository.retrieveOrdersTransactions().withinMinutes(clock, 10);
         var sumFunds = response.sumFunds();
         log.info("{} {} {} {} {} {} {} {} {}",
                 value("kind", "transactions"),
-                value("count", response.findOrdersWithinMinutes(clock, 10).size()),
-                value("sell-count", response.findOrdersWithinMinutes(clock, 10, "sell").size()),
-                value("buy-count", response.findOrdersWithinMinutes(clock, 10, "buy").size()),
+                value("count", response.getData().size()),
+                value("sell-count", response.findBySide("sell").size()),
+                value("buy-count", response.findBySide("buy").size()),
                 value("jpy", sumFunds.getJpy()),
                 value("btc", sumFunds.getBtc()),
                 value("rate", ticker.getLast()),

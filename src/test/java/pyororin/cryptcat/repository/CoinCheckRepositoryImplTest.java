@@ -174,7 +174,7 @@ class CoinCheckRepositoryImplTest {
 
     @Test
     void retryTicker() {
-        doThrow(new RuntimeException("Test")).when(restClient).get();
+        doThrow(new RestClientException("Test")).when(restClient).get();
         assertThrows(RestClientException.class, () -> repository.retrieveTicker(CoinCheckRequest.builder().pair(Pair.BTC_JPY).build()));
         verify(restClient, times(5)).get();
     }
@@ -199,7 +199,7 @@ class CoinCheckRepositoryImplTest {
                         }
                         """, MediaType.APPLICATION_JSON));
 
-        doThrow(new RuntimeException("Test")).when(restClient).post();
+        doThrow(new RestClientException("Test")).when(restClient).post();
         assertThrows(ExhaustedRetryException.class, () -> {
             repository.exchangeBuyLimit(CoinCheckRequest.builder()
                     .pair(Pair.BTC_JPY)

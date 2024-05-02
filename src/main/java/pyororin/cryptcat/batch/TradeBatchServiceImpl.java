@@ -68,7 +68,7 @@ public class TradeBatchServiceImpl {
         });
     }
 
-    @Scheduled(cron = "15 */10 * * * *")
+    @Scheduled(cron = "15 0,10,20,30,40,50 * * * *")
     public void orders() {
         var ticker = repository.retrieveTicker(CoinCheckRequest.builder().pair(Pair.BTC_JPY).build());
         var response = repository.retrieveOrdersTransactions().withinMinutes(clock, 10);

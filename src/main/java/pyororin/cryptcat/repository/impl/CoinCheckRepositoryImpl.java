@@ -37,7 +37,7 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
     private final CoinCheckApiConfig apiConfig;
 
     @Override
-    @Retryable(retryFor = RestClientException.class, maxAttempts = 2, backoff = @Backoff(delay = 1000, maxDelay = 2000))
+    @Retryable(retryFor = RestClientException.class, maxAttempts = 4, backoff = @Backoff(delay = 500, maxDelay = 2000))
     public CoinCheckTickerResponse retrieveTicker(CoinCheckRequest request) {
         return restClient.get()
                 .uri("/api/ticker/?pair={rate}", request.getPair().getValue())
@@ -52,10 +52,9 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
     }
 
     @Override
-    @Retryable(retryFor = RestClientException.class, maxAttempts = 4, backoff = @Backoff(delay = 1000, maxDelay = 2000))
-    @BeforeWait
+    @Retryable(retryFor = RestClientException.class, maxAttempts = 4, backoff = @Backoff(delay = 500, maxDelay = 2000))
     public CoinCheckBalanceResponse retrieveBalance() {
-        String nonce = String.valueOf(System.currentTimeMillis() / 1000L);
+        String nonce = String.valueOf(System.currentTimeMillis());
         return restClient.get()
                 .uri("/api/accounts/balance")
                 .headers(httpHeaders -> {
@@ -74,10 +73,9 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
     }
 
     @Override
-    @Retryable(retryFor = RestClientException.class, maxAttempts = 4, backoff = @Backoff(delay = 1000, maxDelay = 2000))
-    @BeforeWait
+    @Retryable(retryFor = RestClientException.class, maxAttempts = 4, backoff = @Backoff(delay = 500, maxDelay = 2000))
     public CoinCheckOpensOrdersResponse retrieveOpensOrders() {
-        String nonce = String.valueOf(System.currentTimeMillis() / 1000L);
+        String nonce = String.valueOf(System.currentTimeMillis());
         return restClient.get()
                 .uri("/api/exchange/orders/opens")
                 .headers(httpHeaders -> {
@@ -96,10 +94,9 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
     }
 
     @Override
-    @Retryable(retryFor = RestClientException.class, maxAttempts = 4, backoff = @Backoff(delay = 1000, maxDelay = 2000))
-    @BeforeWait
+    @Retryable(retryFor = RestClientException.class, maxAttempts = 4, backoff = @Backoff(delay = 500, maxDelay = 2000))
     public CoinCheckTransactionsResponse retrieveOrdersTransactions() {
-        String nonce = String.valueOf(System.currentTimeMillis() / 1000L);
+        String nonce = String.valueOf(System.currentTimeMillis());
         return restClient.get()
                 .uri("/api/exchange/orders/transactions_pagination?limit={limit}", 100)
                 .headers(httpHeaders -> {
@@ -119,8 +116,7 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
     }
 
     @Override
-    @Retryable(retryFor = RestClientException.class, maxAttempts = 8, backoff = @Backoff(delay = 1000, maxDelay = 2000))
-    @BeforeWait
+    @Retryable(retryFor = RestClientException.class, maxAttempts = 8, backoff = @Backoff(delay = 500, maxDelay = 2000))
     public CoinCheckResponse exchangeBuyLimit(CoinCheckRequest request) {
         var jsonBody = new JSONObject();
         jsonBody.put("pair", request.getPair().getValue());
@@ -140,8 +136,7 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
     }
 
     @Override
-    @Retryable(retryFor = RestClientException.class, maxAttempts = 8, backoff = @Backoff(delay = 1000, maxDelay = 2000))
-    @BeforeWait
+    @Retryable(retryFor = RestClientException.class, maxAttempts = 8, backoff = @Backoff(delay = 500, maxDelay = 2000))
     public CoinCheckResponse exchangeSellLimit(CoinCheckRequest request) {
         var jsonBody = new JSONObject();
         jsonBody.put("pair", request.getPair().getValue());
@@ -161,8 +156,7 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
     }
 
     @Override
-    @Retryable(retryFor = RestClientException.class, maxAttempts = 8, backoff = @Backoff(delay = 1000, maxDelay = 2000))
-    @BeforeWait
+    @Retryable(retryFor = RestClientException.class, maxAttempts = 8, backoff = @Backoff(delay = 500, maxDelay = 2000))
     public void exchangeBuyMarket(CoinCheckRequest request) {
         var jsonBody = new JSONObject();
         jsonBody.put("pair", request.getPair().getValue());
@@ -180,8 +174,7 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
     }
 
     @Override
-    @Retryable(retryFor = RuntimeException.class, maxAttempts = 5, backoff = @Backoff(delay = 1000, maxDelay = 2000))
-    @BeforeWait
+    @Retryable(retryFor = RuntimeException.class, maxAttempts = 8, backoff = @Backoff(delay = 500, maxDelay = 2000))
     public void exchangeSellMarket(CoinCheckRequest request) {
         var jsonBody = new JSONObject();
         jsonBody.put("pair", request.getPair().getValue());
@@ -199,10 +192,9 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
     }
 
     @Override
-    @Retryable(retryFor = RestClientException.class, maxAttempts = 8, backoff = @Backoff(delay = 1000, maxDelay = 2000))
-    @BeforeWait
+    @Retryable(retryFor = RestClientException.class, maxAttempts = 8, backoff = @Backoff(delay = 500, maxDelay = 2000))
     public void exchangeCancel(long id) {
-        String nonce = String.valueOf(System.currentTimeMillis() / 1000L);
+        String nonce = String.valueOf(System.currentTimeMillis());
         restClient.delete()
                 .uri("/api/exchange/orders/{id}", id)
                 .headers(httpHeaders -> {
@@ -227,7 +219,7 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
     }
 
     private CoinCheckResponse exchange(JSONObject jsonBody) {
-        String nonce = String.valueOf(System.currentTimeMillis() / 1000L);
+        String nonce = String.valueOf(System.currentTimeMillis());
         var response = restClient.post()
                 .uri("/api/exchange/orders")
                 .contentType(APPLICATION_JSON)

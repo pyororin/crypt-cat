@@ -14,7 +14,6 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 import pyororin.cryptcat.config.CoinCheckApiConfig;
 import pyororin.cryptcat.config.CoinCheckRequestConfig;
-import pyororin.cryptcat.repository.BeforeWait;
 import pyororin.cryptcat.repository.CoinCheckRepository;
 import pyororin.cryptcat.repository.model.*;
 

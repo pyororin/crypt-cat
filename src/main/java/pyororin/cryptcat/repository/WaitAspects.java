@@ -16,10 +16,11 @@ public class WaitAspects {
 
     @Around("execution(public * pyororin.cryptcat.repository.impl.*CheckRepositoryImpl.*(..)) && @annotation(pyororin.cryptcat.repository.BeforeWait)")
     public Object sleepForBeforeApi(ProceedingJoinPoint pjp) throws Throwable {
+        // Rate Limit 6回/sec
         try {
-            TimeUnit.MILLISECONDS.sleep(400);
+            TimeUnit.MILLISECONDS.sleep(1000 / 6 / 2);
             var object = pjp.proceed();
-            TimeUnit.MILLISECONDS.sleep(400);
+            TimeUnit.MILLISECONDS.sleep(1000 / 6 / 2);
             return object;
         } catch (InterruptedException e) {
             throw new RuntimeException(e);

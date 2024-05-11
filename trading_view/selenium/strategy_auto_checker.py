@@ -38,7 +38,7 @@ class TestStrategytest():
     options.add_argument('--profile-directory=Profile1')
     options.binary_location = "C:/Program Files/Google/Chrome/Application/chrome.exe"
     self.driver = webdriver.Chrome(options=options)
-    self.driver.implicitly_wait(5)
+    self.driver.implicitly_wait(8)
     self.driver.add_cookie({"name": "sessionid", "value": strategy_parameter.BROWSER_SESSIONID, "domain": ".tradingview.com"})
 
   def teardown_method(self, method):
@@ -64,8 +64,9 @@ class TestStrategytest():
     self.driver.find_element(By.CSS_SELECTOR, ".apply-common-tooltip:nth-child(1) > .icon-bYDQcOkp > svg").click()
 
     # ファイルに追記
-    logFileName = "./log/{0}-strategy-{1}.tsv".format(
+    logFileName = "./log/{0}-{1}-strategy-{2}.tsv".format(
       datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=9), 'JST')).strftime('%Y%m%d-%H%M%S'),
+      self.driver.find_element(By.XPATH, '//*[@id="header-toolbar-intervals"]/button/div/div').text,
       self.driver.find_element(By.XPATH, '//*[@id="overlap-manager-root"]/div/div/div[1]/div/div[1]/div/div').text)
 
     print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}".format(
@@ -99,8 +100,7 @@ class TestStrategytest():
           time.sleep(3)
 
         # パフォーマンス結果取得
-        if (self.driver.find_elements(By.XPATH, '//*[@id="bottom-area"]/div[4]/div/div[2]/div[1]/div[2]') == 0
-                or self.driver.find_element(By.XPATH, '//*[@id="bottom-area"]/div[4]/div/div[2]/div[1]/div[2]').text == 'データなし') :
+        if len(self.driver.find_elements(By.XPATH, '//*[@id="bottom-area"]/div[4]/div/div[2]/div[2]')) > 0 :
           print("{0}\t{1}".format(
             j, i
           ), file=codecs.open(logFileName, 'a', 'utf-8'))

@@ -62,8 +62,13 @@ public class CoinCheckTransactionsResponse {
     }
 
     public CoinCheckTransactionsResponse withinMinutes(Clock clock, int minutes) {
+        var now = clock.instant();
         this.data = Objects.isNull(data) ? List.of() : data.stream()
-                .filter(data -> data.getCreatedAt().isAfter(clock.instant().minus(minutes, ChronoUnit.MINUTES)))
+                .filter(data -> {
+                    Instant createdAt = data.getCreatedAt();
+                    return !createdAt.isBefore(now.truncatedTo(ChronoUnit.MINUTES).minus(minutes, ChronoUnit.MINUTES))
+                            && createdAt.isBefore(now.truncatedTo(ChronoUnit.MINUTES));
+                })
                 .collect(Collectors.toList());
         return this;
     }
@@ -72,6 +77,19 @@ public class CoinCheckTransactionsResponse {
         return Objects.isNull(data) ? List.of() : data.stream()
                 .filter(data -> data.getSide().equals(side))
                 .collect(Collectors.toList());
+    }
+
+    public BigDecimal avgRate() {
+        // ユニークなレートのリストを取得し重複を省く
+        var uniqueRates = this.data.stream()
+                .map(Data::getRate)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+
+        // ユニークなレートの数で合計を割って平均値を求める
+        return uniqueRates.stream().reduce(BigDecimal.ZERO, BigDecimal::add)
+                .divide(BigDecimal.valueOf(uniqueRates.size()), 2, RoundingMode.HALF_EVEN);
     }
 
     public Funds sumFunds() {

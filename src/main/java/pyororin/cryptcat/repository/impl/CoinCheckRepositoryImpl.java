@@ -97,12 +97,12 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
     public CoinCheckTransactionsResponse retrieveOrdersTransactions() {
         String nonce = String.valueOf(System.currentTimeMillis());
         return restClient.get()
-                .uri("/api/exchange/orders/transactions_pagination?limit={limit}", 100)
+                .uri("/api/exchange/orders/transactions_pagination?limit={limit}", 33)
                 .headers(httpHeaders -> {
                     httpHeaders.set("ACCESS-KEY", config.getAccessKey());
                     httpHeaders.set("ACCESS-NONCE", nonce);
                     httpHeaders.set("ACCESS-SIGNATURE", HMAC_SHA256Encode(config.getSecret(), nonce + apiConfig.getHost()
-                            + String.format("/api/exchange/orders/transactions_pagination?limit=%d", 100)));
+                            + String.format("/api/exchange/orders/transactions_pagination?limit=%d", 33)));
                 })
                 .retrieve()
                 .onStatus(HttpStatusCode::isError, (req, res) -> {

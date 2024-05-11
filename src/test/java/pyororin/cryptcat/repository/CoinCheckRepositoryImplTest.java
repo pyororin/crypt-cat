@@ -16,6 +16,7 @@ import pyororin.cryptcat.config.CoinCheckApiConfig;
 import pyororin.cryptcat.config.CoinCheckRequestConfig;
 import pyororin.cryptcat.repository.impl.CoinCheckRepositoryImpl;
 import pyororin.cryptcat.repository.model.CoinCheckRequest;
+import pyororin.cryptcat.repository.model.CoinCheckTransactionsResponse;
 import pyororin.cryptcat.repository.model.Pair;
 import pyororin.cryptcat.service.impl.TradeRateLogicService;
 
@@ -221,10 +222,10 @@ class CoinCheckRepositoryImplTest {
         System.out.println(response.getData().size());
         System.out.println(response.withinMinutes(clock, 10).getData().size());
         System.out.println(response.withinMinutes(clock, 10).sumFunds());
-        var ticker = repository.retrieveTicker(CoinCheckRequest.builder().pair(Pair.BTC_JPY).build());
-        System.out.println(ticker);
-        var jpyToBtc = response.sumFunds().getJpy().divide(ticker.getLast(), 9, RoundingMode.HALF_EVEN);
-        System.out.println(jpyToBtc);
-        System.out.println(response.withinMinutes(clock, 10).sumFunds().getBtc().add(jpyToBtc));
+
+        System.out.println(response.withinMinutes(clock, 10).getData().stream().map(CoinCheckTransactionsResponse.Data::getRate).toList());
+        var rate = response.avgRate();
+        System.out.println(rate);
+        System.out.println(response.withinMinutes(clock, 10).sumFunds().getJpy().divide(rate, 9, RoundingMode.HALF_EVEN));
     }
 }

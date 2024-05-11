@@ -70,7 +70,6 @@ public class TradeBatchServiceImpl {
 
     @Scheduled(cron = "15 0,10,20,30,40,50 * * * *")
     public void orders() {
-        var ticker = repository.retrieveTicker(CoinCheckRequest.builder().pair(Pair.BTC_JPY).build());
         var response = repository.retrieveOrdersTransactions().withinMinutes(clock, 10);
         var sumFunds = response.sumFunds();
         log.info("{} {} {} {} {} {} {} {} {}",
@@ -80,7 +79,7 @@ public class TradeBatchServiceImpl {
                 value("buy-count", response.findBySide("buy").size()),
                 value("jpy", sumFunds.getJpy()),
                 value("btc", sumFunds.getBtc()),
-                value("rate", ticker.getLast()),
+                value("rate", response.avgRate()),
                 value("fix_jpy_btc", response.sumFundsToBtc()),
                 value("fix_btc_jpy", response.sumFundsToJpy())
         );

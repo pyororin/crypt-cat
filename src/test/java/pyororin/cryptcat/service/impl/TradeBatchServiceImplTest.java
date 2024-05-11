@@ -35,7 +35,7 @@ class TradeBatchServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        when(clock.instant()).thenReturn(Instant.parse("2016-02-23T13:14:50.000Z"));
+        when(clock.instant()).thenReturn(Instant.parse("2016-02-23T13:04:50.000Z"));
     }
 
     @Test

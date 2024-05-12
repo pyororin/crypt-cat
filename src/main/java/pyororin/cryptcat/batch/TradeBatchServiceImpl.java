@@ -80,8 +80,8 @@ public class TradeBatchServiceImpl {
                 value("jpy", sumFunds.getJpy()),
                 value("btc", sumFunds.getBtc()),
                 value("rate", response.avgRate()),
-                value("fix_jpy_btc", response.sumFundsToBtc()),
-                value("fix_btc_jpy", response.sumFundsToJpy())
+                value("buy-rate", response.getRateBySide("buy")),
+                value("sell-rate", response.getRateBySide("sell"))
         );
     }
 }

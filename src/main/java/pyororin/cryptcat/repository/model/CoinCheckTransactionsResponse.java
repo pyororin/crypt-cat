@@ -103,25 +103,17 @@ public class CoinCheckTransactionsResponse {
                         .reduce(BigDecimal.ZERO, BigDecimal::add)).build();
     }
 
-    public BigDecimal sumFundsToBtc() {
-        return this.data.stream()
-                .filter(data -> Objects.nonNull(data.getFunds()) && Objects.nonNull(data.getFunds().getBtc()))
-                .map(data -> data.getFunds().getBtc())
-                .reduce(BigDecimal.ZERO, BigDecimal::add)
-                .add(this.data.stream()
-                        .filter(data -> Objects.nonNull(data.getFunds()) && Objects.nonNull(data.getFunds().getJpy()))
-                        .map(data -> data.getFunds().getJpy().divide(data.rate, 9, RoundingMode.HALF_EVEN))
-                        .reduce(BigDecimal.ZERO, BigDecimal::add));
-    }
+    public BigDecimal getRateBySide(String side) {
 
-    public BigDecimal sumFundsToJpy() {
-        return this.data.stream()
-                .filter(data -> Objects.nonNull(data.getFunds()) && Objects.nonNull(data.getFunds().getJpy()))
-                .map(data -> data.getFunds().getJpy())
-                .reduce(BigDecimal.ZERO, BigDecimal::add)
-                .add(this.data.stream()
-                        .filter(data -> Objects.nonNull(data.getFunds()) && Objects.nonNull(data.getFunds().getBtc()))
-                        .map(data -> data.getFunds().getBtc().multiply(data.rate))
-                        .reduce(BigDecimal.ZERO, BigDecimal::add));
+        // ユニークなレートのリストを取得し重複を省く
+        var uniqueRates = this.data.stream()
+                .filter(data -> data.getSide().equals(side))
+                .distinct()
+                .map(Data::getRate)
+                .toList();
+
+        // ユニークなレートの数で合計を割って平均値を求める
+        return uniqueRates.stream().reduce(BigDecimal.ZERO, BigDecimal::add)
+                .divide(BigDecimal.valueOf(uniqueRates.size()), 2, RoundingMode.HALF_EVEN);
     }
 }

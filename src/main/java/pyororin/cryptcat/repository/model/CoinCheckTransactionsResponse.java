@@ -88,8 +88,12 @@ public class CoinCheckTransactionsResponse {
                 .toList();
 
         // ユニークなレートの数で合計を割って平均値を求める
-        return uniqueRates.stream().reduce(BigDecimal.ZERO, BigDecimal::add)
-                .divide(BigDecimal.valueOf(uniqueRates.size()), 2, RoundingMode.HALF_EVEN);
+        if (uniqueRates.isEmpty()) {
+            return BigDecimal.ZERO;
+        } else {
+            return uniqueRates.stream().reduce(BigDecimal.ZERO, BigDecimal::add)
+                    .divide(BigDecimal.valueOf(uniqueRates.size()), 2, RoundingMode.HALF_EVEN);
+        }
     }
 
     public Funds sumFunds() {
@@ -113,7 +117,11 @@ public class CoinCheckTransactionsResponse {
                 .toList();
 
         // ユニークなレートの数で合計を割って平均値を求める
-        return uniqueRates.stream().reduce(BigDecimal.ZERO, BigDecimal::add)
-                .divide(BigDecimal.valueOf(uniqueRates.size()), 2, RoundingMode.HALF_EVEN);
+        if (uniqueRates.isEmpty()) {
+            return BigDecimal.ZERO;
+        } else {
+            return uniqueRates.stream().reduce(BigDecimal.ZERO, BigDecimal::add)
+                    .divide(BigDecimal.valueOf(uniqueRates.size()), 2, RoundingMode.HALF_EVEN);
+        }
     }
 }

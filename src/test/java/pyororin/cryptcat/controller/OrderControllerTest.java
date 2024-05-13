@@ -9,6 +9,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+import pyororin.cryptcat.batch.TradeBatchServiceImpl;
 import pyororin.cryptcat.controller.filter.RequestIntervalFilter;
 import pyororin.cryptcat.repository.model.Pair;
 import pyororin.cryptcat.service.IPCheckService;
@@ -41,11 +42,31 @@ class OrderControllerTest {
     @MockBean(name = "tradeJpyFixServiceV3Impl")
     TradeService tradeJpyFixServiceV3Impl;
 
+    @MockBean(name = "tradeBatchServiceImpl")
+    TradeBatchServiceImpl tradeBatchServiceImpl;
+
     @Mock
     IPCheckService ipCheckService;
 
     @Test
-    void filter() throws Exception {
+    void filterOK() throws Exception {
+        var filterMok = MockMvcBuilders.webAppContextSetup(this.context)
+                .addFilter(new RequestIntervalFilter(ipCheckService), "/order/*").build();
+        when(ipCheckService.isNotAllowedIPAddress(any())).thenReturn(false);
+        var response = filterMok.perform(
+                        post("/order/btcfix/{id}", Pair.LSK_JPY.getValue())
+                                .header("x-forwarded-for", "127.0.0.1")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                            {"reason": "test-reason", "group": "test-group1", "range": 1, "order_type": "sell", "ratio": 2.0}
+                                        """)
+                )
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        assertEquals("OK", response);
+    }
+
+    @Test
+    void filterNG() throws Exception {
         var filterMok = MockMvcBuilders.webAppContextSetup(this.context)
                 .addFilter(new RequestIntervalFilter(ipCheckService), "/order/*").build();
         when(ipCheckService.isNotAllowedIPAddress(any())).thenReturn(true);

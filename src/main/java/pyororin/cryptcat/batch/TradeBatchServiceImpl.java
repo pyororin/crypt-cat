@@ -2,31 +2,23 @@ package pyororin.cryptcat.batch;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import pyororin.cryptcat.config.CoinCheckApiConfig;
 import pyororin.cryptcat.repository.CoinCheckRepository;
 import pyororin.cryptcat.repository.model.CoinCheckRequest;
 import pyororin.cryptcat.repository.model.Pair;
 
 import java.math.RoundingMode;
 import java.time.Clock;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import static net.logstash.logback.argument.StructuredArguments.value;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@ConditionalOnProperty(name = "coincheck.actually", havingValue = "true")
 public class TradeBatchServiceImpl {
     private final Clock clock;
-    private final CoinCheckApiConfig apiConfig;
     private final CoinCheckRepository repository;
 
-    @Scheduled(cron = "0 0 * * * *")
     public void balance() {
         var ticker = repository.retrieveTicker(CoinCheckRequest.builder().pair(Pair.BTC_JPY).build());
         var balance = repository.retrieveBalance();
@@ -46,30 +38,7 @@ public class TradeBatchServiceImpl {
         );
     }
 
-    @Scheduled(cron = "0 1 * * * *")
-    public void cancel() {
-        var opensOrders = repository.retrieveOpensOrders();
-        log.info("{} {}", value("kind", "cancel-batch"), value("count", opensOrders.getOrders().size()));
-        opensOrders.findOrdersOver24Hours(clock).forEach(order -> {
-            var executorService = Executors.newScheduledThreadPool(1);
-            executorService.schedule(() -> {
-                repository.exchangeCancel(order.getId());
-                log.info("{} {} {} {} {} {} {} {}",
-                        value("kind", "cancel"),
-                        value("pair", order.getPair()),
-                        value("pending_amount", order.getPendingAmount()),
-                        value("pending_market_buy_amount", order.getPendingMarketBuyAmount()),
-                        value("order_rate", order.getOrderType()),
-                        value("order_time", order.getCreatedAt()),
-                        value("stop_loss_rate", order.getStopLossRate()),
-                        value("id", order.getId()));
-            }, apiConfig.getInterval(), TimeUnit.SECONDS);
-            executorService.shutdown();
-        });
-    }
-
-    @Scheduled(cron = "15 0,10,20,30,40,50 * * * *")
-    public void orders() {
+    public void transactions() {
         var response = repository.retrieveOrdersTransactions().withinMinutes(clock, 10);
         var sumFunds = response.sumFunds();
         log.info("{} {} {} {} {} {} {} {} {}",

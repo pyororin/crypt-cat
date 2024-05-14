@@ -209,8 +209,8 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
                         log.error("{} {} {} {} {}",
                                 value("kind", "api"), value("uri", req.getURI().getPath()), value("status", res.getStatusText()), value("id", id),
                                 value("response", message));
+                        throw new RestClientException(String.format("%s:%s", req.getURI().getPath(), res.getStatusCode()));
                     }
-                    throw new RestClientException(String.format("%s:%s", req.getURI().getPath(), res.getStatusCode()));
                 })
                 .toBodilessEntity();
         log.info("{} {} {} {}",

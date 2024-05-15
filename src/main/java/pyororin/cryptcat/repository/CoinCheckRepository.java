@@ -19,5 +19,5 @@ public interface CoinCheckRepository {
 
     void exchangeSellMarket(CoinCheckRequest request);
 
-    void exchangeCancel(long id);
+    boolean exchangeCancel(long id);
 }

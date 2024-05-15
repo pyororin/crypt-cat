@@ -70,18 +70,19 @@ public class TradeJpyFixServiceV3Impl implements TradeService {
                         .stream().map(CoinCheckOpensOrdersResponse.Order::getId).toList();
                 log.info("{} {} {} {}", value("kind", "limit-retry"), value("trace-id", uuid), value("order-id", response.get().getId()), value("opens-ids", opensOrdersIds));
                 if (hop.get() > 0 && opensOrdersIds.contains(response.get().getId())) {
-                    repository.exchangeCancel(response.get().getId());
-                    var buyPriceRetry = tradeRateLogicService.getFairBuyPrice(pair);
-                    /* 市場最終価格(ticker.last or ticker.ask) = rate */
-                    /* 固定金額(JPY) / 市場最終価格(ticker.last or ticker.ask) = amount */
-                    response.set(repository.exchangeBuyLimit(CoinCheckRequest.builder()
-                            .pair(pair)
-                            .price(apiConfig.getPrice())
-                            .amount(apiConfig.getPrice().divide(buyPriceRetry, 9, RoundingMode.HALF_EVEN))
-                            .rate(buyPriceRetry)
-                            .group("limit-retry")
-                            .build()));
-                    hop.getAndDecrement();
+                    if (repository.exchangeCancel(response.get().getId())) {
+                        var buyPriceRetry = tradeRateLogicService.getFairBuyPrice(pair);
+                        /* 市場最終価格(ticker.last or ticker.ask) = rate */
+                        /* 固定金額(JPY) / 市場最終価格(ticker.last or ticker.ask) = amount */
+                        response.set(repository.exchangeBuyLimit(CoinCheckRequest.builder()
+                                .pair(pair)
+                                .price(apiConfig.getPrice())
+                                .amount(apiConfig.getPrice().divide(buyPriceRetry, 9, RoundingMode.HALF_EVEN))
+                                .rate(buyPriceRetry)
+                                .group("limit-retry")
+                                .build()));
+                        hop.getAndDecrement();
+                    }
                 } else {
                     executors.shutdown();
                 }
@@ -109,12 +110,13 @@ public class TradeJpyFixServiceV3Impl implements TradeService {
                             9, RoundingMode.HALF_EVEN);
                     log.info("{} {} {} {} {}", value("kind", "retry-buy-diff"), value("trace-id", uuid),
                             value("market-amount", marketAmount), value("limit-amount", amount), value("diff-amount", marketAmount.subtract(amount)));
-                    repository.exchangeCancel(response.get().getId());
-                    repository.exchangeBuyMarket(CoinCheckRequest.builder()
-                            .pair(pair)
-                            .price(apiConfig.getPrice())
-                            .group("market-retry")
-                            .build());
+                    if (repository.exchangeCancel(response.get().getId())) {
+                        repository.exchangeBuyMarket(CoinCheckRequest.builder()
+                                .pair(pair)
+                                .price(apiConfig.getPrice())
+                                .group("market-retry")
+                                .build());
+                    }
                 }
 
             }, retry.getDelaySec(), TimeUnit.SECONDS);
@@ -139,18 +141,19 @@ public class TradeJpyFixServiceV3Impl implements TradeService {
                 log.info("{} {} {} {}", value("kind", "limit-retry"), value("trace-id", uuid),
                         value("order-id", response.get().getId()), value("opens-ids", opensOrdersIds));
                 if (hop.get() > 0 && opensOrdersIds.contains(response.get().getId())) {
-                    repository.exchangeCancel(response.get().getId());
-                    var sellPriceRetry = tradeRateLogicService.getFairSellPrice(pair);
-                    /* 市場最終価格(ticker.last or ticker.ask) = rate */
-                    /* 固定金額(JPY) / 市場最終価格(ticker.last or ticker.ask) = amount */
-                    response.set(repository.exchangeSellLimit(CoinCheckRequest.builder()
-                            .pair(pair)
-                            .price(apiConfig.getPrice())
-                            .amount(apiConfig.getPrice().divide(sellPriceRetry, 9, RoundingMode.HALF_EVEN))
-                            .rate(sellPriceRetry)
-                            .group("limit-retry")
-                            .build()));
-                    hop.getAndDecrement();
+                    if (repository.exchangeCancel(response.get().getId())) {
+                        var sellPriceRetry = tradeRateLogicService.getFairSellPrice(pair);
+                        /* 市場最終価格(ticker.last or ticker.ask) = rate */
+                        /* 固定金額(JPY) / 市場最終価格(ticker.last or ticker.ask) = amount */
+                        response.set(repository.exchangeSellLimit(CoinCheckRequest.builder()
+                                .pair(pair)
+                                .price(apiConfig.getPrice())
+                                .amount(apiConfig.getPrice().divide(sellPriceRetry, 9, RoundingMode.HALF_EVEN))
+                                .rate(sellPriceRetry)
+                                .group("limit-retry")
+                                .build()));
+                        hop.getAndDecrement();
+                    }
                 } else {
                     executors.shutdown();
                 }
@@ -178,12 +181,13 @@ public class TradeJpyFixServiceV3Impl implements TradeService {
                             9, RoundingMode.HALF_EVEN);
                     log.info("{} {} {} {} {}", value("kind", "retry-sell-diff"), value("trace-id", uuid),
                             value("limit-amount", amount), value("market-amount", marketAmount), value("diff-amount", amount.subtract(marketAmount)));
-                    repository.exchangeCancel(response.get().getId());
-                    repository.exchangeSellMarket(CoinCheckRequest.builder()
-                            .pair(pair)
-                            .amount(apiConfig.getPrice().divide(tradeRateLogicService.getFairSellPrice(pair), 9, RoundingMode.HALF_EVEN))
-                            .group("market-retry")
-                            .build());
+                    if (repository.exchangeCancel(response.get().getId())) {
+                        repository.exchangeSellMarket(CoinCheckRequest.builder()
+                                .pair(pair)
+                                .amount(apiConfig.getPrice().divide(tradeRateLogicService.getFairSellPrice(pair), 9, RoundingMode.HALF_EVEN))
+                                .group("market-retry")
+                                .build());
+                    }
                 }
             }, retry.getDelaySec(), TimeUnit.SECONDS);
         }

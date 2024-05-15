@@ -96,9 +96,10 @@ public class SkipCoinCheckRepositoryImpl implements CoinCheckRepository {
     }
 
     @Override
-    public void exchangeCancel(long id) {
+    public boolean exchangeCancel(long id) {
         log.info("{} {} {}",
                 value("kind", "cancel-skip"), value("status", "ok"), value("id", id));
+        return true;
     }
 
     @Recover

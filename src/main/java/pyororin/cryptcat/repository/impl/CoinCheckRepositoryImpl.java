@@ -22,6 +22,7 @@ import javax.crypto.spec.SecretKeySpec;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Scanner;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static net.logstash.logback.argument.StructuredArguments.value;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -192,8 +193,9 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
 
     @Override
     @Retryable(retryFor = RestClientException.class, maxAttempts = 8, backoff = @Backoff(delay = 500, maxDelay = 2000))
-    public void exchangeCancel(long id) {
+    public boolean exchangeCancel(long id) {
         String nonce = String.valueOf(System.currentTimeMillis());
+        AtomicBoolean isSuccessCancel = new AtomicBoolean(true);
         restClient.delete()
                 .uri("/api/exchange/orders/{id}", id)
                 .headers(httpHeaders -> {
@@ -205,7 +207,11 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
                 .retrieve()
                 .onStatus(HttpStatusCode::isError, (req, res) -> {
                     var message = new Scanner(res.getBody()).useDelimiter("\\A").next().replaceAll("\\r\\n|\\r|\\n", "");
-                    if (!message.contains("Failed to cancel the order.")) {
+                    if (message.contains("Failed to cancel the order.")) {
+                        log.info("{} {} {} {}",
+                                value("kind", "api"), value("uri", "/api/exchange/orders/"), value("status", "skip"), value("id", id));
+                        isSuccessCancel.set(false);
+                    } else {
                         log.error("{} {} {} {} {}",
                                 value("kind", "api"), value("uri", req.getURI().getPath()), value("status", res.getStatusText()), value("id", id),
                                 value("response", message));
@@ -215,6 +221,7 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
                 .toBodilessEntity();
         log.info("{} {} {} {}",
                 value("kind", "api"), value("uri", "/api/exchange/orders/"), value("status", "ok"), value("id", id));
+        return isSuccessCancel.get();
     }
 
     private CoinCheckResponse exchange(JSONObject jsonBody) {

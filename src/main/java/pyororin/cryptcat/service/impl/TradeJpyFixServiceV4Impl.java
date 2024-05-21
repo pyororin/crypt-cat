@@ -52,7 +52,7 @@ public class TradeJpyFixServiceV4Impl implements TradeService {
         CoinCheckResponse response;
         if (orderRequest.isBuy()) {
             if (orderTransactions.get(orderRequest.getGroup()).isBuySkip()) {
-                log.debug("{} {} {} {}", value("kind", "order-v4"), value("trace-id", uuid),
+                log.info("{} {} {} {}", value("kind", "order-v4"), value("trace-id", uuid),
                         value("action", "skip-buy"),
                         value("order-transaction", orderTransactions.get(orderRequest.getGroup())));
                 return;
@@ -77,7 +77,7 @@ public class TradeJpyFixServiceV4Impl implements TradeService {
             }
         } else {
             if (orderTransactions.get(orderRequest.getGroup()).isSellSkip()) {
-                log.debug("{} {} {} {}", value("kind", "order-v4"), value("trace-id", uuid),
+                log.info("{} {} {} {}", value("kind", "order-v4"), value("trace-id", uuid),
                         value("action", "skip-sell"),
                         value("order-transaction", orderTransactions.get(orderRequest.getGroup())));
                 return;
@@ -108,7 +108,7 @@ public class TradeJpyFixServiceV4Impl implements TradeService {
         executors.scheduleWithFixedDelay(() -> {
             var opensOrdersIds = repository.retrieveOpensOrders().findOrdersWithinMinuets(clock, 0, 2)
                     .stream().map(CoinCheckOpensOrdersResponse.Order::getId).toList();
-            log.debug("{} {} {} {} {}", value("kind", "order-v4"), value("trace-id", uuid),
+            log.info("{} {} {} {} {}", value("kind", "order-v4"), value("trace-id", uuid),
                     value("action", "opens-orders"),
                     value("order-id", response.getId()), value("opens-ids", opensOrdersIds));
             if (!opensOrdersIds.contains(response.getId())) {

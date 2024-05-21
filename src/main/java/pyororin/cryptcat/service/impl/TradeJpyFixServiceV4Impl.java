@@ -40,6 +40,11 @@ public class TradeJpyFixServiceV4Impl implements TradeService {
             return;
         }
         exchange(pair, orderRequest);
+
+        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+        // 指定した秒ごとにタスクを実行する
+        LongStream.range(0, orderRequest.getRatio().longValue() - 1)
+                .forEach(i -> executor.schedule(() -> exchange(pair, orderRequest), i * apiConfig.getInterval(), TimeUnit.SECONDS));
     }
 
     private void exchange(Pair pair, OrderRequest orderRequest) {
@@ -55,10 +60,10 @@ public class TradeJpyFixServiceV4Impl implements TradeService {
                 var buyPrice = tradeRateLogicService.getFairBuyPrice(pair);
                 /* 市場最終価格(ticker.last or ticker.ask) = rate */
                 /* 固定金額(JPY) / 市場最終価格(ticker.last or ticker.ask) = amount */
-                var amount = apiConfig.getPrice().divide(buyPrice, 9, RoundingMode.HALF_EVEN);
+                var amount = apiConfig.getPrice().multiply(orderRequest.getRatio()).divide(buyPrice, 9, RoundingMode.HALF_EVEN);
                 response = repository.exchangeBuyLimit(CoinCheckRequest.builder()
                         .pair(pair)
-                        .price(apiConfig.getPrice())
+                        .price(apiConfig.getPrice().multiply(orderRequest.getRatio()))
                         .amount(amount)
                         .rate(buyPrice)
                         .group(orderRequest.getGroup())
@@ -80,10 +85,10 @@ public class TradeJpyFixServiceV4Impl implements TradeService {
                 var sellPrice = tradeRateLogicService.getFairSellPrice(pair);
                 /* 市場最終価格(ticker.last or ticker.ask) = rate */
                 /* 固定金額(JPY) / 市場最終価格(ticker.last or ticker.ask) = amount */
-                var amount = apiConfig.getPrice().divide(sellPrice, 9, RoundingMode.HALF_EVEN);
+                var amount = apiConfig.getPrice().multiply(orderRequest.getRatio()).divide(sellPrice, 9, RoundingMode.HALF_EVEN);
                 response = repository.exchangeSellLimit(CoinCheckRequest.builder()
                         .pair(pair)
-                        .price(apiConfig.getPrice())
+                        .price(apiConfig.getPrice().multiply(orderRequest.getRatio()))
                         .amount(amount)
                         .rate(sellPrice)
                         .group(orderRequest.getGroup())

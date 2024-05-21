@@ -14,7 +14,7 @@ public class OrderRequest {
     private String reason;
     @NotNull
     private String group;
-    private int range;
+    private BigDecimal price;
     @NotNull
     private BigDecimal ratio = BigDecimal.valueOf(1);
 

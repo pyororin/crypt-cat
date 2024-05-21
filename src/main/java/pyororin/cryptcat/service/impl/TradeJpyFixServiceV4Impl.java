@@ -40,11 +40,6 @@ public class TradeJpyFixServiceV4Impl implements TradeService {
             return;
         }
         exchange(pair, orderRequest);
-
-        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-        // 指定した秒ごとにタスクを実行する
-        LongStream.range(0, orderRequest.getRatio().longValue() - 1)
-                .forEach(i -> executor.schedule(() -> exchange(pair, orderRequest), i * apiConfig.getInterval(), TimeUnit.SECONDS));
     }
 
     private void exchange(Pair pair, OrderRequest orderRequest) {

@@ -106,7 +106,7 @@ public class TradeJpyFixServiceV4Impl implements TradeService {
         var executors = Executors.newScheduledThreadPool(1);
         var isNeedCancel = new AtomicBoolean(true);
         executors.scheduleWithFixedDelay(() -> {
-            var opensOrdersIds = repository.retrieveOpensOrders().findOrdersWithinMinuets(clock, 0, 2)
+            var opensOrdersIds = repository.retrieveOpensOrders().findOrdersWithinMinuets(clock, 0, 10)
                     .stream().map(CoinCheckOpensOrdersResponse.Order::getId).toList();
             log.info("{} {} {} {} {}", value("kind", "order-v4"), value("trace-id", uuid),
                     value("action", "opens-orders"),
@@ -119,7 +119,7 @@ public class TradeJpyFixServiceV4Impl implements TradeService {
                         value("action", "completed"),
                         value("order-transaction", response));
             }
-        }, 10, 10, TimeUnit.SECONDS);
+        }, 30, 30, TimeUnit.SECONDS);
 
         // 一定時間経過後キャンセル
         executors.schedule(() -> {
@@ -129,6 +129,7 @@ public class TradeJpyFixServiceV4Impl implements TradeService {
                         value("action", "cancel"),
                         value("order-transaction", response));
             }
+            executors.shutdown();
         }, 600, TimeUnit.SECONDS);
     }
 }

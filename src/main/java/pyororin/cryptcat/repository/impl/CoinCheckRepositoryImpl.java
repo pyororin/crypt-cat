@@ -220,7 +220,7 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
                 })
                 .toBodilessEntity();
         log.info("{} {} {} {}",
-                value("kind", "api"), value("uri", "/api/exchange/orders/"), value("status", "ok"), value("id", id));
+                value("kind", "api"), value("uri", "/api/exchange/orders/" + id), value("status", "ok"), value("id", id));
         return isSuccessCancel.get();
     }
 

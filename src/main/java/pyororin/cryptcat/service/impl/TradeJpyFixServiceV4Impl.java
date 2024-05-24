@@ -16,10 +16,8 @@ import java.math.RoundingMode;
 import java.time.Clock;
 import java.util.UUID;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.LongStream;
 
 import static net.logstash.logback.argument.StructuredArguments.value;
 
@@ -40,11 +38,6 @@ public class TradeJpyFixServiceV4Impl implements TradeService {
             return;
         }
         exchange(pair, orderRequest);
-
-        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-        // 指定した秒ごとにタスクを実行する
-        LongStream.range(0, orderRequest.getRatio().longValue() - 1)
-                .forEach(i -> executor.schedule(() -> exchange(pair, orderRequest), i * apiConfig.getInterval(), TimeUnit.SECONDS));
     }
 
     private void exchange(Pair pair, OrderRequest orderRequest) {

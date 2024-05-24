@@ -47,7 +47,7 @@ public class TradeJpyFixServiceV4Impl implements TradeService {
             if (orderTransactions.get(orderRequest.getGroup()).isBuySkip()) {
                 log.info("{} {} {} {}", value("kind", "order-v4"), value("trace-id", uuid),
                         value("action", "skip-buy"),
-                        value("order-transaction", orderTransactions.get(orderRequest.getGroup())));
+                        value("order-transaction", orderTransactions));
                 return;
             } else {
                 var buyPrice = tradeRateLogicService.getFairBuyPrice(pair);
@@ -72,7 +72,7 @@ public class TradeJpyFixServiceV4Impl implements TradeService {
             if (orderTransactions.get(orderRequest.getGroup()).isSellSkip()) {
                 log.info("{} {} {} {}", value("kind", "order-v4"), value("trace-id", uuid),
                         value("action", "skip-sell"),
-                        value("order-transaction", orderTransactions.get(orderRequest.getGroup())));
+                        value("order-transaction", orderTransactions));
                 return;
             } else {
                 var sellPrice = tradeRateLogicService.getFairSellPrice(pair);

@@ -2,7 +2,10 @@ package pyororin.cryptcat.batch;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import pyororin.cryptcat.config.OrderStatus;
+import pyororin.cryptcat.config.OrderTransactions;
 import pyororin.cryptcat.repository.CoinCheckRepository;
 import pyororin.cryptcat.repository.model.CoinCheckRequest;
 import pyororin.cryptcat.repository.model.Pair;
@@ -17,6 +20,7 @@ import static net.logstash.logback.argument.StructuredArguments.value;
 @RequiredArgsConstructor
 public class TradeBatchServiceImpl {
     private final Clock clock;
+    private final OrderTransactions orderTransactions;
     private final CoinCheckRepository repository;
 
     public void balance() {
@@ -52,5 +56,14 @@ public class TradeBatchServiceImpl {
                 value("buy-rate", response.getRateBySide("buy")),
                 value("sell-rate", response.getRateBySide("sell"))
         );
+    }
+
+    @Scheduled(cron = "0 0,10,20,30,40,50 * * * *")
+    public void clearTransactions() {
+        orderTransactions.getOrderTransactions().entrySet()
+                .removeIf(stringOrderTransactionEntry ->
+                        stringOrderTransactionEntry.getValue().isCreatedAtMoreThanMinutesAgo(10)
+                                && stringOrderTransactionEntry.getValue().getOrderStatus() == OrderStatus.ORDERED);
+        log.info("{} {}", value("kind", "clear-transactions"), value("transactions", orderTransactions));
     }
 }

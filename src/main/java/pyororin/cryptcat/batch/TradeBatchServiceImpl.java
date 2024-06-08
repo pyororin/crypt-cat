@@ -61,10 +61,12 @@ public class TradeBatchServiceImpl {
     }
 
     public void clearTransactions(int minutes) throws ExecutionException, InterruptedException {
-        firestore.getAll().entrySet()
-                .removeIf(stringOrderTransactionEntry ->
-                        stringOrderTransactionEntry.getValue().isCreatedAtMoreThanMinutesAgo(minutes)
-                                && stringOrderTransactionEntry.getValue().getOrderStatus() == OrderStatus.ORDERED);
+        firestore.getAll().forEach((documentId, orderTransaction) -> {
+            if (orderTransaction.isCreatedAtMoreThanMinutesAgo(minutes) && orderTransaction.getOrderStatus() == OrderStatus.ORDERED) {
+                log.info("{} {}", value("kind", "clear-transaction"), value("transaction", orderTransaction));
+                firestore.remove(documentId);
+            }
+        });
         log.info("{} {}", value("kind", "clear-transactions"), value("transactions", orderTransactionService));
     }
 }

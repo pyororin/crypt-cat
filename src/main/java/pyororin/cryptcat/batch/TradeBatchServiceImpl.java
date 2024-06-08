@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import pyororin.cryptcat.config.OrderStatus;
 import pyororin.cryptcat.repository.CoinCheckRepository;
-import pyororin.cryptcat.repository.FirestoreRepository;
+import pyororin.cryptcat.repository.impl.FirestoreRepositoryImpl;
 import pyororin.cryptcat.repository.model.CoinCheckRequest;
 import pyororin.cryptcat.repository.model.Pair;
 import pyororin.cryptcat.service.impl.OrderTransactionService;
@@ -23,7 +23,7 @@ public class TradeBatchServiceImpl {
     private final Clock clock;
     private final OrderTransactionService orderTransactionService;
     private final CoinCheckRepository repository;
-    private final FirestoreRepository firestore;
+    private final FirestoreRepositoryImpl firestore;
 
     public void balance() {
         var ticker = repository.retrieveTicker(CoinCheckRequest.builder().pair(Pair.BTC_JPY).build());

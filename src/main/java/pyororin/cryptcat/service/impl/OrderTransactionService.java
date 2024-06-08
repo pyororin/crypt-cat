@@ -3,7 +3,7 @@ package pyororin.cryptcat.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import pyororin.cryptcat.repository.FirestoreRepository;
+import pyororin.cryptcat.repository.impl.FirestoreRepositoryImpl;
 import pyororin.cryptcat.repository.model.OrderTransaction;
 
 import java.util.concurrent.ExecutionException;
@@ -12,7 +12,7 @@ import java.util.concurrent.ExecutionException;
 @Service
 @RequiredArgsConstructor
 public class OrderTransactionService {
-    private final FirestoreRepository repository;
+    private final FirestoreRepositoryImpl repository;
 
     public OrderTransaction get(String group) {
         try {

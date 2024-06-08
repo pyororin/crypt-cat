@@ -26,7 +26,7 @@ public class OrderTransactionService {
         repository.remove(group);
     }
 
-    public void put(String group, OrderTransaction orderTransaction) {
-        repository.put(group, orderTransaction);
+    public void set(String group, OrderTransaction orderTransaction) {
+        repository.set(group, orderTransaction);
     }
 }

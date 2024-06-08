@@ -21,7 +21,7 @@ public class FirestoreConfiguration {
     Firestore database() throws IOException {
         return FirestoreOptions.getDefaultInstance().toBuilder()
                 .setProjectId(projectId)
-                .setDatabaseId("crypt-cat")
+                .setDatabaseId("firestore-856304")
                 .setCredentials(GoogleCredentials.getApplicationDefault())
                 .build().getService();
     }

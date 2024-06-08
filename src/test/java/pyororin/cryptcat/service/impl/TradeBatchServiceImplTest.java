@@ -1,6 +1,7 @@
 package pyororin.cryptcat.service.impl;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -15,6 +16,7 @@ import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -73,5 +75,11 @@ class TradeBatchServiceImplTest {
                                         .build()
                         )).build());
         tradeBatchService.transactions();
+    }
+
+    @Test
+    @Disabled
+    void clearTransaction() throws ExecutionException, InterruptedException {
+        tradeBatchService.clearTransactions(360);
     }
 }

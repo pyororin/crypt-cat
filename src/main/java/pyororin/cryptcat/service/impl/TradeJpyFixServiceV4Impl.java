@@ -12,6 +12,8 @@ import pyororin.cryptcat.service.TradeService;
 
 import java.math.RoundingMode;
 import java.time.Clock;
+import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -62,7 +64,9 @@ public class TradeJpyFixServiceV4Impl implements TradeService {
                 orderTransactionService.set(orderRequest.getGroup(), OrderTransaction.builder()
                         .orderId(response.getId())
                         .orderStatus(OrderStatus.ORDERED)
-                        .createdAt(response.getCreatedAt())
+                        .createdAt(Objects.isNull(response.getCreatedAt())
+                                ? DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").format(clock.instant())
+                                : response.getCreatedAt())
                         .orderType(OrderType.BUY)
                         .build());
             }
@@ -87,7 +91,9 @@ public class TradeJpyFixServiceV4Impl implements TradeService {
                 orderTransactionService.set(orderRequest.getGroup(), OrderTransaction.builder()
                         .orderId(response.getId())
                         .orderStatus(OrderStatus.ORDERED)
-                        .createdAt(response.getCreatedAt())
+                        .createdAt(Objects.isNull(response.getCreatedAt())
+                                ? DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").format(clock.instant())
+                                : response.getCreatedAt())
                         .orderType(OrderType.SELL)
                         .build());
             }

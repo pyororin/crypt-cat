@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import pyororin.cryptcat.config.OrderStatus;
-import pyororin.cryptcat.repository.impl.FirestoreRepositoryImpl;
 import pyororin.cryptcat.repository.model.OrderTransaction;
 import pyororin.cryptcat.repository.model.OrderType;
 
@@ -15,7 +14,7 @@ import java.util.concurrent.ExecutionException;
 class FirestoreRepositoryTest {
 
     @Autowired
-    FirestoreRepositoryImpl repository;
+    FirestoreRepository repository;
 
     @Test
     @Disabled

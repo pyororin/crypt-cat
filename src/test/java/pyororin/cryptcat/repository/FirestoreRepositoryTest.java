@@ -26,7 +26,7 @@ class FirestoreRepositoryTest {
                 .orderStatus(OrderStatus.ORDERED)
                 .build();
         System.out.println(records);
-        repository.put("test-group", records);
+        repository.set("test-group2", records);
     }
 
     @Test

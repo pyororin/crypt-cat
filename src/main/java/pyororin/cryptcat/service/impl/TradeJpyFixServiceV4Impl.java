@@ -59,7 +59,7 @@ public class TradeJpyFixServiceV4Impl implements TradeService {
                         .rate(buyPrice)
                         .group(orderRequest.getGroup())
                         .build());
-                orderTransactionService.put(orderRequest.getGroup(), OrderTransaction.builder()
+                orderTransactionService.set(orderRequest.getGroup(), OrderTransaction.builder()
                         .orderId(response.getId())
                         .orderStatus(OrderStatus.ORDERED)
                         .createdAt(response.getCreatedAt())
@@ -84,7 +84,7 @@ public class TradeJpyFixServiceV4Impl implements TradeService {
                         .rate(sellPrice)
                         .group(orderRequest.getGroup())
                         .build());
-                orderTransactionService.put(orderRequest.getGroup(), OrderTransaction.builder()
+                orderTransactionService.set(orderRequest.getGroup(), OrderTransaction.builder()
                         .orderId(response.getId())
                         .orderStatus(OrderStatus.ORDERED)
                         .createdAt(response.getCreatedAt())
@@ -115,7 +115,12 @@ public class TradeJpyFixServiceV4Impl implements TradeService {
         // 一定時間経過後キャンセル
         executors.schedule(() -> {
             if (isNeedCancel.get() && repository.exchangeCancel(response.getId())) {
-                orderTransactionService.get(orderRequest.getGroup()).setOrderStatus(OrderStatus.CANCEL);
+                orderTransactionService.set(orderRequest.getGroup(), OrderTransaction.builder()
+                        .orderId(response.getId())
+                        .orderStatus(OrderStatus.CANCEL)
+                        .createdAt(response.getCreatedAt())
+                        .orderType(orderRequest.isBuy() ? OrderType.BUY : OrderType.SELL)
+                        .build());
                 log.info("{} {} {} {}", value("kind", "order-v4"), value("trace-id", uuid),
                         value("action", "cancel"),
                         value("order-transaction", response));

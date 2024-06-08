@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 public class FirestoreRepository {
     private final Firestore database;
 
-    public void put(String group, OrderTransaction orderTransaction) {
+    public void set(String group, OrderTransaction orderTransaction) {
         Map<String, Object> record = new HashMap<>();
         record.put("orderId", orderTransaction.getOrderId());
         record.put("createdAt", orderTransaction.getCreatedAt());

@@ -1,9 +1,9 @@
-package pyororin.cryptcat.config;
+package pyororin.cryptcat.repository.model;
 
 import lombok.Builder;
 import lombok.Data;
 import lombok.ToString;
-import pyororin.cryptcat.repository.model.OrderType;
+import pyororin.cryptcat.config.OrderStatus;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -13,7 +13,7 @@ import java.time.format.DateTimeFormatter;
 @Data
 @ToString
 public class OrderTransaction {
-    private long orderId;
+    private Long orderId;
     private String createdAt;
     private OrderType orderType;
     private OrderStatus orderStatus;

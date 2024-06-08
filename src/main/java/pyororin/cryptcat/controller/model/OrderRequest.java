@@ -2,6 +2,7 @@ package pyororin.cryptcat.controller.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
 import lombok.Data;
 import lombok.ToString;
 
@@ -9,6 +10,7 @@ import java.math.BigDecimal;
 
 @Data
 @ToString
+@Builder
 public class OrderRequest {
     @NotNull
     private String reason;
@@ -16,7 +18,7 @@ public class OrderRequest {
     private String group;
     private BigDecimal price;
     @NotNull
-    private BigDecimal ratio = BigDecimal.valueOf(1);
+    private BigDecimal ratio;
 
     @JsonProperty(value = "order-type", required = true)
     private String orderType;

@@ -26,7 +26,7 @@ class TradeJpyFixServiceImplTest {
 
     @Test
     void Sell() {
-        var request = new OrderRequest();
+        var request = OrderRequest.builder().build();
         request.setOrderType("sell");
         request.setRatio(BigDecimal.valueOf(2));
         when(repository.retrieveTicker(any()))
@@ -38,7 +38,7 @@ class TradeJpyFixServiceImplTest {
 
     @Test
     void buy() {
-        var request = new OrderRequest();
+        var request = OrderRequest.builder().build();
         request.setOrderType("buy");
         request.setRatio(BigDecimal.valueOf(2));
         when(repository.retrieveTicker(any()))
@@ -50,7 +50,7 @@ class TradeJpyFixServiceImplTest {
 
     @Test
     void other() {
-        var request = new OrderRequest();
+        var request = OrderRequest.builder().build();
         request.setOrderType("other");
         request.setRatio(BigDecimal.valueOf(2));
         when(repository.retrieveTicker(any()))

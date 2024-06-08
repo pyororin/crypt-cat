@@ -5,8 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import pyororin.cryptcat.config.CoinCheckApiConfig;
 import pyororin.cryptcat.config.OrderStatus;
-import pyororin.cryptcat.config.OrderTransaction;
-import pyororin.cryptcat.config.OrderTransactions;
 import pyororin.cryptcat.controller.model.OrderRequest;
 import pyororin.cryptcat.repository.CoinCheckRepository;
 import pyororin.cryptcat.repository.model.*;
@@ -29,7 +27,7 @@ public class TradeJpyFixServiceV4Impl implements TradeService {
     private final TradeRateLogicService tradeRateLogicService;
     private final CoinCheckRepository repository;
     private final CoinCheckApiConfig apiConfig;
-    private final OrderTransactions orderTransactions;
+    private final OrderTransactionService orderTransactionService;
 
     @Override
     public void order(Pair pair, OrderRequest orderRequest) {
@@ -44,10 +42,10 @@ public class TradeJpyFixServiceV4Impl implements TradeService {
         var uuid = UUID.randomUUID().toString().split("-")[0];
         CoinCheckResponse response;
         if (orderRequest.isBuy()) {
-            if (orderTransactions.get(orderRequest.getGroup()).isBuySkip()) {
+            if (orderTransactionService.get(orderRequest.getGroup()).isBuySkip()) {
                 log.info("{} {} {} {}", value("kind", "order-v4"), value("trace-id", uuid),
                         value("action", "skip-buy"),
-                        value("order-transaction", orderTransactions));
+                        value("order-transaction", orderTransactionService));
                 return;
             } else {
                 var buyPrice = tradeRateLogicService.getFairBuyPrice(pair);
@@ -61,7 +59,7 @@ public class TradeJpyFixServiceV4Impl implements TradeService {
                         .rate(buyPrice)
                         .group(orderRequest.getGroup())
                         .build());
-                orderTransactions.put(orderRequest.getGroup(), OrderTransaction.builder()
+                orderTransactionService.put(orderRequest.getGroup(), OrderTransaction.builder()
                         .orderId(response.getId())
                         .orderStatus(OrderStatus.ORDERED)
                         .createdAt(response.getCreatedAt())
@@ -69,10 +67,10 @@ public class TradeJpyFixServiceV4Impl implements TradeService {
                         .build());
             }
         } else {
-            if (orderTransactions.get(orderRequest.getGroup()).isSellSkip()) {
+            if (orderTransactionService.get(orderRequest.getGroup()).isSellSkip()) {
                 log.info("{} {} {} {}", value("kind", "order-v4"), value("trace-id", uuid),
                         value("action", "skip-sell"),
-                        value("order-transaction", orderTransactions));
+                        value("order-transaction", orderTransactionService));
                 return;
             } else {
                 var sellPrice = tradeRateLogicService.getFairSellPrice(pair);
@@ -86,7 +84,7 @@ public class TradeJpyFixServiceV4Impl implements TradeService {
                         .rate(sellPrice)
                         .group(orderRequest.getGroup())
                         .build());
-                orderTransactions.put(orderRequest.getGroup(), OrderTransaction.builder()
+                orderTransactionService.put(orderRequest.getGroup(), OrderTransaction.builder()
                         .orderId(response.getId())
                         .orderStatus(OrderStatus.ORDERED)
                         .createdAt(response.getCreatedAt())
@@ -107,7 +105,7 @@ public class TradeJpyFixServiceV4Impl implements TradeService {
             if (!opensOrdersIds.contains(response.getId())) {
                 isNeedCancel.set(false);
                 executors.shutdown();
-                orderTransactions.remove(orderRequest.getGroup());
+                orderTransactionService.remove(orderRequest.getGroup());
                 log.info("{} {} {} {}", value("kind", "order-v4"), value("trace-id", uuid),
                         value("action", "completed"),
                         value("order-transaction", response));
@@ -117,7 +115,7 @@ public class TradeJpyFixServiceV4Impl implements TradeService {
         // 一定時間経過後キャンセル
         executors.schedule(() -> {
             if (isNeedCancel.get() && repository.exchangeCancel(response.getId())) {
-                orderTransactions.get(orderRequest.getGroup()).setOrderStatus(OrderStatus.CANCEL);
+                orderTransactionService.get(orderRequest.getGroup()).setOrderStatus(OrderStatus.CANCEL);
                 log.info("{} {} {} {}", value("kind", "order-v4"), value("trace-id", uuid),
                         value("action", "cancel"),
                         value("order-transaction", response));

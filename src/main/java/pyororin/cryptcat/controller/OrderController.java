@@ -10,6 +10,8 @@ import pyororin.cryptcat.controller.model.OrderRequest;
 import pyororin.cryptcat.repository.model.Pair;
 import pyororin.cryptcat.service.TradeService;
 
+import java.util.concurrent.ExecutionException;
+
 @RestController
 @Slf4j
 @RequiredArgsConstructor
@@ -60,6 +62,12 @@ public class OrderController {
     @PostMapping("/balance/")
     public ResponseEntity<String> balance() {
         tradeBatchServiceImpl.balance();
+        return ResponseEntity.ok("OK");
+    }
+
+    @PostMapping("/clear/transaction/{minutes}")
+    public ResponseEntity<String> clearTransactions(@PathVariable int minutes) throws ExecutionException, InterruptedException {
+        tradeBatchServiceImpl.clearTransactions(minutes);
         return ResponseEntity.ok("OK");
     }
 

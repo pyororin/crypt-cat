@@ -8,7 +8,6 @@ import pyororin.cryptcat.repository.CoinCheckRepository;
 import pyororin.cryptcat.repository.impl.FirestoreRepositoryImpl;
 import pyororin.cryptcat.repository.model.CoinCheckRequest;
 import pyororin.cryptcat.repository.model.Pair;
-import pyororin.cryptcat.service.impl.OrderTransactionService;
 
 import java.math.RoundingMode;
 import java.time.Clock;
@@ -21,7 +20,6 @@ import static net.logstash.logback.argument.StructuredArguments.value;
 @RequiredArgsConstructor
 public class TradeBatchServiceImpl {
     private final Clock clock;
-    private final OrderTransactionService orderTransactionService;
     private final CoinCheckRepository repository;
     private final FirestoreRepositoryImpl firestore;
 
@@ -67,6 +65,5 @@ public class TradeBatchServiceImpl {
                 firestore.remove(documentId);
             }
         });
-        log.info("{} {}", value("kind", "clear-transactions"), value("transactions", orderTransactionService));
     }
 }

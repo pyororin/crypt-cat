@@ -42,6 +42,9 @@ class OrderControllerTest {
     @MockBean(name = "tradeJpyFixServiceV3Impl")
     TradeService tradeJpyFixServiceV3Impl;
 
+    @MockBean(name = "tradeJpyFixServiceV4Impl")
+    TradeService tradeJpyFixServiceV4Impl;
+
     @MockBean(name = "tradeBatchServiceImpl")
     TradeBatchServiceImpl tradeBatchServiceImpl;
 
@@ -151,5 +154,16 @@ class OrderControllerTest {
                 )
                 .andExpect(status().is5xxServerError()).andReturn().getResponse().getContentAsString();
         assertEquals("", response);
+    }
+
+    @Test
+    void clearTransaction() throws Exception {
+        String response = this.mockMvc.perform(
+                        post("/clear/transaction/{minutes}", 360)
+                                .header("x-forwarded-for", "127.0.0.1")
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        assertEquals("OK", response);
     }
 }

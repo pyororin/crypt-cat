@@ -20,7 +20,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(OrderController.class)
@@ -119,6 +120,20 @@ class OrderControllerTest {
     void jpyfixBuy() throws Exception {
         String response = this.mockMvc.perform(
                         post("/order/jpyfix/{id}", Pair.BTC_JPY.getValue())
+                                .header("x-forwarded-for", "127.0.0.1")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                            {"reason": "test-reason", "group": "test-group2", "order_type": "buy", "ratio": 2}
+                                        """)
+                )
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        assertEquals("OK", response);
+    }
+
+    @Test
+    void jpyfixBuyV4() throws Exception {
+        String response = this.mockMvc.perform(
+                        post("/v4/order/jpyfix/{id}", Pair.BTC_JPY.getValue())
                                 .header("x-forwarded-for", "127.0.0.1")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""

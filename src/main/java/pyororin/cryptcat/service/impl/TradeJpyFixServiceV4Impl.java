@@ -126,7 +126,9 @@ public class TradeJpyFixServiceV4Impl implements TradeService {
                 orderTransactionService.set(orderRequest.getGroup(), OrderTransaction.builder()
                         .orderId(response.getId())
                         .orderStatus(OrderStatus.CANCEL)
-                        .createdAt(response.getCreatedAt())
+                        .createdAt(Objects.isNull(response.getCreatedAt())
+                                ? DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(ZoneId.from(ZoneOffset.UTC)).format(clock.instant())
+                                : response.getCreatedAt())
                         .orderType(orderRequest.isBuy() ? OrderType.BUY : OrderType.SELL)
                         .build());
                 log.info("{} {} {} {}", value("kind", "order-v4"), value("trace-id", uuid),

@@ -12,6 +12,8 @@ import pyororin.cryptcat.service.TradeService;
 
 import java.math.RoundingMode;
 import java.time.Clock;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 import java.util.UUID;
@@ -47,7 +49,7 @@ public class TradeJpyFixServiceV4Impl implements TradeService {
             if (orderTransactionService.get(orderRequest.getGroup()).isBuySkip()) {
                 log.info("{} {} {} {}", value("kind", "order-v4"), value("trace-id", uuid),
                         value("action", "skip-buy"),
-                        value("order-transaction", orderTransactionService));
+                        value("order-transaction", orderTransactionService.get(orderRequest.getGroup())));
                 return;
             } else {
                 var buyPrice = tradeRateLogicService.getFairBuyPrice(pair);
@@ -65,7 +67,7 @@ public class TradeJpyFixServiceV4Impl implements TradeService {
                         .orderId(response.getId())
                         .orderStatus(OrderStatus.ORDERED)
                         .createdAt(Objects.isNull(response.getCreatedAt())
-                                ? DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").format(clock.instant())
+                                ? DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(ZoneId.from(ZoneOffset.UTC)).format(clock.instant())
                                 : response.getCreatedAt())
                         .orderType(OrderType.BUY)
                         .build());
@@ -74,7 +76,7 @@ public class TradeJpyFixServiceV4Impl implements TradeService {
             if (orderTransactionService.get(orderRequest.getGroup()).isSellSkip()) {
                 log.info("{} {} {} {}", value("kind", "order-v4"), value("trace-id", uuid),
                         value("action", "skip-sell"),
-                        value("order-transaction", orderTransactionService));
+                        value("order-transaction", orderTransactionService.get(orderRequest.getGroup())));
                 return;
             } else {
                 var sellPrice = tradeRateLogicService.getFairSellPrice(pair);
@@ -92,7 +94,7 @@ public class TradeJpyFixServiceV4Impl implements TradeService {
                         .orderId(response.getId())
                         .orderStatus(OrderStatus.ORDERED)
                         .createdAt(Objects.isNull(response.getCreatedAt())
-                                ? DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").format(clock.instant())
+                                ? DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(ZoneId.from(ZoneOffset.UTC)).format(clock.instant())
                                 : response.getCreatedAt())
                         .orderType(OrderType.SELL)
                         .build());

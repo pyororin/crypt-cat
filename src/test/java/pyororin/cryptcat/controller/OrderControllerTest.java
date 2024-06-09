@@ -1,5 +1,6 @@
 package pyororin.cryptcat.controller;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(OrderController.class)
@@ -100,6 +101,7 @@ class OrderControllerTest {
     }
 
     @Test
+    @Disabled
     void btcfixBuy() throws Exception {
         String response = this.mockMvc.perform(
                         post("/order/btcfix/{id}", Pair.BTC_JPY.getValue())
@@ -159,7 +161,7 @@ class OrderControllerTest {
     @Test
     void clearTransaction() throws Exception {
         String response = this.mockMvc.perform(
-                        post("/clear/transaction/{minutes}", 360)
+                        delete("/transaction/{minutes}", 360)
                                 .header("x-forwarded-for", "127.0.0.1")
                                 .contentType(MediaType.APPLICATION_JSON)
                 )

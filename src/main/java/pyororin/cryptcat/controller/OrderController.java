@@ -10,7 +10,10 @@ import pyororin.cryptcat.controller.model.OrderRequest;
 import pyororin.cryptcat.repository.model.Pair;
 import pyororin.cryptcat.service.TradeService;
 
+import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
+
+import static net.logstash.logback.argument.StructuredArguments.value;
 
 @RestController
 @Slf4j
@@ -72,7 +75,10 @@ public class OrderController {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> handleException() {
+    public ResponseEntity<String> handleException(Exception ex) {
+        log.error("{} {} {}", value("kind", "exception"),
+                value("message", ex.getMessage()),
+                value("stack-traces", Arrays.toString(ex.getStackTrace())));
         return ResponseEntity.internalServerError().build();
     }
 }

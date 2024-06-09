@@ -53,19 +53,19 @@ public class OrderController {
         return ResponseEntity.ok("OK");
     }
 
-    @PostMapping("/transactions/")
-    public ResponseEntity<String> transactions() {
-        tradeBatchServiceImpl.transactions();
+    @GetMapping("/transactions/{minutes}")
+    public ResponseEntity<String> transactions(@PathVariable int minutes) {
+        tradeBatchServiceImpl.transactions(minutes);
         return ResponseEntity.ok("OK");
     }
 
-    @PostMapping("/balance/")
+    @GetMapping("/balance/")
     public ResponseEntity<String> balance() {
         tradeBatchServiceImpl.balance();
         return ResponseEntity.ok("OK");
     }
 
-    @PostMapping("/clear/transaction/{minutes}")
+    @DeleteMapping("/transaction/{minutes}")
     public ResponseEntity<String> clearTransactions(@PathVariable int minutes) throws ExecutionException, InterruptedException {
         tradeBatchServiceImpl.clearTransactions(minutes);
         return ResponseEntity.ok("OK");

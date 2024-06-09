@@ -74,7 +74,7 @@ class TradeBatchServiceImplTest {
                                         .side("sell")
                                         .build()
                         )).build());
-        tradeBatchService.transactions();
+        tradeBatchService.transactions(10);
     }
 
     @Test

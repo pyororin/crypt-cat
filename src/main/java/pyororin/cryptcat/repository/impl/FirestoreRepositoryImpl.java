@@ -16,6 +16,8 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
+import static net.logstash.logback.argument.StructuredArguments.value;
+
 @RequiredArgsConstructor
 @Repository
 @Slf4j
@@ -29,7 +31,8 @@ public class FirestoreRepositoryImpl implements FirestoreRepository {
         record.put("createdAt", orderTransaction.getCreatedAt());
         record.put("orderType", orderTransaction.getOrderType());
         record.put("orderStatus", orderTransaction.getOrderStatus());
-        database.collection("order-request").document(group).set(record);
+        var result = database.collection("order-request").document(group).set(record);
+        log.debug("{} {}", value("kind", "firestore-update"), value("result", result.toString()));
     }
 
     public OrderTransaction getByGroup(String group) throws ExecutionException, InterruptedException {
@@ -60,6 +63,7 @@ public class FirestoreRepositoryImpl implements FirestoreRepository {
 
     public void remove(String group) {
         var docRef = database.collection("order-request").document(group);
-        docRef.delete();
+        var result = docRef.delete();
+        log.debug("{} {}", value("kind", "firestore-update"), value("result", result.toString()));
     }
 }

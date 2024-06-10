@@ -18,7 +18,7 @@ class FirestoreRepositoryTest {
 
     @Test
     @Disabled
-    void put() {
+    void set() {
         var records = OrderTransaction.builder()
                 .orderId(100L)
                 .createdAt("test-createdAt")

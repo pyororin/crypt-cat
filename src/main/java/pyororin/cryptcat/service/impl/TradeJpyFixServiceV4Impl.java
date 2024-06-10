@@ -107,7 +107,7 @@ public class TradeJpyFixServiceV4Impl implements TradeService {
         executors.scheduleWithFixedDelay(() -> {
             var opensOrdersIds = repository.retrieveOpensOrders().findOrdersWithinMinuets(clock, 0, 10)
                     .stream().map(CoinCheckOpensOrdersResponse.Order::getId).toList();
-            log.info("{} {} {} {} {}", value("kind", "order-v4"), value("trace-id", uuid),
+            log.debug("{} {} {} {} {}", value("kind", "order-v4"), value("trace-id", uuid),
                     value("action", "opens-orders"),
                     value("order-id", response.getId()), value("opens-ids", opensOrdersIds));
             if (!opensOrdersIds.contains(response.getId())) {

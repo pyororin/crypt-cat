@@ -111,12 +111,12 @@ public class TradeJpyFixServiceV4Impl implements TradeService {
                     value("action", "opens-orders"),
                     value("order-id", response.getId()), value("opens-ids", opensOrdersIds));
             if (!opensOrdersIds.contains(response.getId())) {
-                isNeedCancel.set(false);
-                executors.shutdown();
                 orderTransactionService.remove(orderRequest.getGroup());
                 log.info("{} {} {} {}", value("kind", "order-v4"), value("trace-id", uuid),
                         value("action", "completed"),
                         value("order-transaction", response));
+                isNeedCancel.set(false);
+                executors.shutdown();
             }
         }, 30, 30, TimeUnit.SECONDS);
 

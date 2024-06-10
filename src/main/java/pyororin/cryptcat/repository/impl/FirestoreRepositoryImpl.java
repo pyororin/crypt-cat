@@ -32,7 +32,7 @@ public class FirestoreRepositoryImpl implements FirestoreRepository {
         record.put("orderType", orderTransaction.getOrderType());
         record.put("orderStatus", orderTransaction.getOrderStatus());
         var result = database.collection("order-request").document(group).set(record);
-        log.debug("{} {}", value("kind", "firestore-update"), value("result", result.toString()));
+        log.info("{} {}", value("kind", "firestore-update"), value("result", result.toString()));
     }
 
     public OrderTransaction getByGroup(String group) throws ExecutionException, InterruptedException {
@@ -64,6 +64,6 @@ public class FirestoreRepositoryImpl implements FirestoreRepository {
     public void remove(String group) {
         var docRef = database.collection("order-request").document(group);
         var result = docRef.delete();
-        log.debug("{} {}", value("kind", "firestore-update"), value("result", result.toString()));
+        log.info("{} {}", value("kind", "firestore-update"), value("result", result.toString()));
     }
 }

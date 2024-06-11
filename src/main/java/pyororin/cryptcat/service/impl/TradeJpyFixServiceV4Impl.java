@@ -44,12 +44,17 @@ public class TradeJpyFixServiceV4Impl implements TradeService {
 
     private void exchange(Pair pair, OrderRequest orderRequest) {
         var uuid = UUID.randomUUID().toString().split("-")[0];
+        var transaction = orderTransactionService.get(orderRequest.getGroup());
         CoinCheckResponse response;
         if (orderRequest.isBuy()) {
-            if (orderTransactionService.get(orderRequest.getGroup()).isBuySkip()) {
+            if (transaction.isBuySkip()) {
                 log.info("{} {} {} {}", value("kind", "order-v4"), value("trace-id", uuid),
                         value("action", "skip-buy"),
                         value("order-transaction", orderTransactionService.get(orderRequest.getGroup())));
+                if (transaction.isSell() && transaction.isOrdered()) {
+                    // もし購入時に売却進行中の場合1回スキップ後一旦削除
+                    orderTransactionService.remove(orderRequest.getGroup());
+                }
                 return;
             } else {
                 var buyPrice = tradeRateLogicService.getFairBuyPrice(pair);
@@ -73,10 +78,14 @@ public class TradeJpyFixServiceV4Impl implements TradeService {
                         .build());
             }
         } else {
-            if (orderTransactionService.get(orderRequest.getGroup()).isSellSkip()) {
+            if (transaction.isSellSkip()) {
                 log.info("{} {} {} {}", value("kind", "order-v4"), value("trace-id", uuid),
                         value("action", "skip-sell"),
                         value("order-transaction", orderTransactionService.get(orderRequest.getGroup())));
+                if (transaction.isBuy() && transaction.isOrdered()) {
+                    // もし売却時に購入進行中の場合1回スキップ後一旦削除
+                    orderTransactionService.remove(orderRequest.getGroup());
+                }
                 return;
             } else {
                 var sellPrice = tradeRateLogicService.getFairSellPrice(pair);

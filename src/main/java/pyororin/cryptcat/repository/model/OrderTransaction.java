@@ -26,14 +26,16 @@ public class OrderTransaction {
         return OrderType.BUY == this.orderType;
     }
 
+    public boolean isOrdered() {
+        return OrderStatus.ORDERED == this.orderStatus;
+    }
+
     public boolean isBuySkip() {
-        return (OrderType.BUY == this.orderType && OrderStatus.ORDERED == this.orderStatus)
-                || (OrderType.SELL == this.orderType);
+        return (isBuy() && isOrdered()) || isSell();
     }
 
     public boolean isSellSkip() {
-        return (OrderType.SELL == this.orderType && OrderStatus.ORDERED == this.orderStatus)
-                || (OrderType.BUY == this.orderType);
+        return (isSell() && isOrdered()) || isBuy();
     }
 
     public boolean isCreatedAtMoreThanMinutesAgo(int minutes) {

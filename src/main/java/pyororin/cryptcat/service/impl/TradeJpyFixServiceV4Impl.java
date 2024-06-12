@@ -51,10 +51,10 @@ public class TradeJpyFixServiceV4Impl implements TradeService {
                 log.info("{} {} {} {}", value("kind", "order-v4"), value("trace-id", uuid),
                         value("action", "skip-buy"),
                         value("order-transaction", orderTransactionService.get(orderRequest.getGroup())));
-                if (transaction.isBuy() && transaction.isOrdered()) {
-                    // もし購入時に購入進行中の場合1回スキップ後一旦削除
+//                if (transaction.isBuy() && transaction.isOrdered()) {
+//                    // もし購入時に購入進行中の場合1回スキップ後一旦削除
                     orderTransactionService.remove(orderRequest.getGroup());
-                }
+//                }
                 return;
             } else {
                 var buyPrice = tradeRateLogicService.getFairBuyPrice(pair);
@@ -82,10 +82,10 @@ public class TradeJpyFixServiceV4Impl implements TradeService {
                 log.info("{} {} {} {}", value("kind", "order-v4"), value("trace-id", uuid),
                         value("action", "skip-sell"),
                         value("order-transaction", orderTransactionService.get(orderRequest.getGroup())));
-                if (transaction.isSell() && transaction.isOrdered()) {
-                    // もし売却時に売却進行中の場合1回スキップ後一旦削除
+//                if (transaction.isSell() && transaction.isOrdered()) {
+//                    // もし売却時に売却進行中の場合1回スキップ後一旦削除
                     orderTransactionService.remove(orderRequest.getGroup());
-                }
+//                }
                 return;
             } else {
                 var sellPrice = tradeRateLogicService.getFairSellPrice(pair);

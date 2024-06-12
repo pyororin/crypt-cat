@@ -30,12 +30,18 @@ public class OrderTransaction {
         return OrderStatus.ORDERED == this.orderStatus;
     }
 
+    public boolean isCancel() {
+        return OrderStatus.CANCEL == this.orderStatus;
+    }
+
     public boolean isBuySkip() {
-        return (isBuy() && isOrdered()) || isSell();
+//        return (isBuy() && isOrdered()) || isSell();
+        return isSell() && isCancel();
     }
 
     public boolean isSellSkip() {
-        return (isSell() && isOrdered()) || isBuy();
+//        return (isSell() && isOrdered()) || isBuy();
+        return isBuy() && isCancel();
     }
 
     public boolean isCreatedAtMoreThanMinutesAgo(int minutes) {

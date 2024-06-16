@@ -4,7 +4,7 @@ WORKDIR /app
 COPY build.gradle .
 COPY src ./src
 
-RUN gradle build -x test --no-daemon
+RUN gradlew build -x test --no-daemon
 
 # Use Eclipse Temurin for base image.
 # https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds

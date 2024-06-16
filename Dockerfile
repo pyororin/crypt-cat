@@ -3,9 +3,9 @@ FROM gradle:8.8.0-jdk17 as builder
 WORKDIR /app
 COPY build.gradle .
 COPY src ./src
+RUN ls -l .
 
 RUN gradle booJar
-RUN ls -l /app/build/
 RUN ls -l /app/build/libs/
 
 # Use Eclipse Temurin for base image.

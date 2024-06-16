@@ -2,6 +2,7 @@ FROM maven:3-eclipse-temurin-17-alpine as builder
 
 WORKDIR /app
 COPY build.gradle .
+COPY gradlew .
 COPY src ./src
 
 RUN gradlew build -x test --no-daemon

@@ -4,7 +4,7 @@ WORKDIR /app
 COPY build.gradle .
 COPY src ./src
 
-RUN gradle build -x test --no-daemon bootjar
+RUN gradle booJar
 
 # Use Eclipse Temurin for base image.
 # https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds
@@ -33,5 +33,5 @@ RUN echo $RETRY_DELAY_SEC
 RUN echo $RETRY_LIMIT_COUNT
 RUN echo $ORDER_INTERVAL
 
-COPY --from=builder /app/build/libs//crypt-cat-*.jar /crypt-cat.jar
+COPY --from=builder /app/build/libs/crypt-cat-*.jar /crypt-cat.jar
 CMD ["java", "-Djava.security.egd=file:/dev/./urandom", "-jar", "/crypt-cat.jar"]

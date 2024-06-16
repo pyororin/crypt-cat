@@ -5,6 +5,8 @@ COPY build.gradle .
 COPY src ./src
 
 RUN gradle booJar
+RUN ls -l /app/build/
+RUN ls -l /app/build/libs/
 
 # Use Eclipse Temurin for base image.
 # https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds

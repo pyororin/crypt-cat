@@ -35,5 +35,5 @@ RUN echo $RETRY_DELAY_SEC
 RUN echo $RETRY_LIMIT_COUNT
 RUN echo $ORDER_INTERVAL
 
-COPY --from=builder /app/build/libs/crypt-cat-*.jar /crypt-cat.jar
+COPY --from=builder /app/build/libs/*.jar /crypt-cat.jar
 CMD ["java", "-Djava.security.egd=file:/dev/./urandom", "-jar", "/crypt-cat.jar"]

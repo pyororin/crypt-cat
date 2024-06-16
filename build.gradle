@@ -1,0 +1,65 @@
+plugins {
+    id 'java'
+    id "com.github.ben-manes.versions" version "0.51.0"
+    id "io.spring.dependency-management" version "1.1.5"
+    id 'org.springframework.boot' version '3.3.0'
+}
+
+group 'pyororin.cript-cat'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencyManagement {
+    dependencies {
+        imports {
+            "com.google.cloud:libraries-bom:26.39.0"
+        }
+    }
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'com.google.cloud:google-cloud-secretmanager:2.45.0'
+    compileOnly  'org.projectlombok:lombok:1.18.32'
+    annotationProcessor 'org.projectlombok:lombok:1.18.32'
+    implementation  'net.logstash.logback:logstash-logback-encoder:7.4'
+    implementation 'com.slack.api:slack-api-client:1.40.0'
+    implementation 'org.springframework:spring-webflux:6.1.9'
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
+    implementation 'org.springframework.retry:spring-retry:2.0.6'
+    implementation 'com.google.api-client:google-api-client-jackson2:2.6.0'
+    implementation 'org.json:json:20240303'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0'
+    implementation 'com.google.cloud:google-cloud-firestore:3.21.4'
+    implementation 'com.google.cloud:spring-cloud-gcp-starter-logging:5.4.1'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test:3.3.0'
+    testImplementation 'org.junit-pioneer:junit-pioneer:2.2.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.2'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+dependencyUpdates.resolutionStrategy = {
+    rules -> rules.all { ComponentSelection selection ->
+        boolean rejected = ['alpha', 'beta', 'rc', 'cr', 'm'].any { qualifier ->
+            selection.candidate.version =~ /(?i).*[.-]${qualifier}[.\d-]*/
+        }
+        if (rejected) {
+            selection.reject('Release candidate')
+        }
+    }
+}
+
+tasks.register('updateGradle', Wrapper) {
+    gradleVersion = '8.8'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}

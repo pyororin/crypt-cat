@@ -1,10 +1,10 @@
 FROM maven:3-eclipse-temurin-17-alpine as builder
 
 WORKDIR /app
-COPY pom.xml .
+COPY build.gradle .
 COPY src ./src
 
-RUN mvn package -DskipTests
+RUN gradle build -x test --no-daemon
 
 # Use Eclipse Temurin for base image.
 # https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds

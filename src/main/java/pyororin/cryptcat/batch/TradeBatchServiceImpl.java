@@ -43,7 +43,7 @@ public class TradeBatchServiceImpl {
     }
 
     public void transactions(int minutes) {
-        var response = repository.retrieveOrdersTransactions().withinMinutes(clock, minutes);
+        var response = repository.retrieveOrdersTransactions().withinMinutes(clock, minutes).aggregateByRate();
         var sumFunds = response.sumFunds();
         log.info("{} {} {} {} {} {} {} {} {}",
                 value("kind", "transactions"),

@@ -10,7 +10,9 @@ import java.math.RoundingMode;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -123,5 +125,38 @@ public class CoinCheckTransactionsResponse {
             return uniqueRates.stream().reduce(BigDecimal.ZERO, BigDecimal::add)
                     .divide(BigDecimal.valueOf(uniqueRates.size()), 2, RoundingMode.HALF_EVEN);
         }
+    }
+
+    public CoinCheckTransactionsResponse aggregateByRate() {
+        // Group by rate with tolerance of ±10
+        Map<Integer, List<Data>> groupedByRate = this.data.stream()
+                .collect(Collectors.groupingBy(
+                        data -> data.getRate().subtract(new BigDecimal(10)).divide(new BigDecimal(20), RoundingMode.DOWN).intValue()
+                ));
+
+        // Aggregate the grouped data
+        List<Data> aggregatedList = new ArrayList<>();
+        for (List<Data> group : groupedByRate.values()) {
+            Data aggregatedData = group.stream().reduce((data1, data2) -> Data.builder()
+                    .id(data1.getId()) // or some logic to decide which id to keep
+                    .orderId(data1.getOrderId()) // similarly, decide which orderId to keep
+                    .createdAt(data1.getCreatedAt()) // similarly, decide which createdAt to keep
+                    .funds(Funds.builder()
+                            .btc(data1.getFunds().getBtc().add(data2.getFunds().getBtc()))
+                            .jpy(data1.getFunds().getJpy().add(data2.getFunds().getJpy()))
+                            .build())
+                    .pair(data1.getPair())
+                    .rate(data1.getRate()) // or some logic to decide which rate to keep
+                    .feeCurrency(data1.getFeeCurrency())
+                    .fee(data1.getFee().add(data2.getFee()))
+                    .liquidity(data1.getLiquidity())
+                    .side(data1.getSide())
+                    .build()).get();
+            aggregatedList.add(aggregatedData);
+        }
+
+        // Update the data field with the aggregated list
+        this.data = aggregatedList;
+        return this;
     }
 }

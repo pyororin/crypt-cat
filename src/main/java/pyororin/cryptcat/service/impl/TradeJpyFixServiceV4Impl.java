@@ -139,6 +139,6 @@ public class TradeJpyFixServiceV4Impl implements TradeService {
                         value("order-transaction", response));
             }
             executors.shutdown();
-        }, apiConfig.getCancelDelayMinutes(), TimeUnit.SECONDS);
+        }, apiConfig.getCancelDelayMinutes(), TimeUnit.MINUTES);
     }
 }

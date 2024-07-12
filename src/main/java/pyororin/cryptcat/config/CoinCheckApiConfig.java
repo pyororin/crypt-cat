@@ -18,6 +18,7 @@ public class CoinCheckApiConfig {
     private BigDecimal price;
     private String actually;
     private long interval;
+    private long cancelDelayMinutes;
     private OrderLogic orderLogic;
 
     @Data

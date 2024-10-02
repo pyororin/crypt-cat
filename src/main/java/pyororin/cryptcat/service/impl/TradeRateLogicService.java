@@ -27,7 +27,7 @@ public class TradeRateLogicService {
         } else if (apiConfig.getOrderLogic().equals(OrderLogic.MIDIUM)) {
             return tickerResponse.getLast().min(tickerResponse.getAsk());
         } else if (apiConfig.getOrderLogic().equals(OrderLogic.LOW)) {
-            return tickerResponse.getAsk();
+            return tickerResponse.getAsk().add(BigDecimal.valueOf(1));
         } else if (apiConfig.getOrderLogic().equals(OrderLogic.EVEN)) {
             return tickerResponse.getAsk().add(tickerResponse.getBid()).add(tickerResponse.getLast())
                     .divide(BigDecimal.valueOf(3), 9, RoundingMode.HALF_EVEN);
@@ -43,7 +43,7 @@ public class TradeRateLogicService {
         } else if (apiConfig.getOrderLogic().equals(OrderLogic.MIDIUM)) {
             return tickerResponse.getLast().max(tickerResponse.getBid());
         } else if (apiConfig.getOrderLogic().equals(OrderLogic.LOW)) {
-            return tickerResponse.getBid();
+            return tickerResponse.getBid().subtract(BigDecimal.valueOf(1));
         } else if (apiConfig.getOrderLogic().equals(OrderLogic.EVEN)) {
             return tickerResponse.getAsk().add(tickerResponse.getBid()).add(tickerResponse.getLast())
                     .divide(BigDecimal.valueOf(3), 9, RoundingMode.HALF_EVEN);

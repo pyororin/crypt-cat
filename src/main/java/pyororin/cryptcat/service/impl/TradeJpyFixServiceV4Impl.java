@@ -108,7 +108,7 @@ public class TradeJpyFixServiceV4Impl implements TradeService {
         var executors = Executors.newScheduledThreadPool(1);
         var isNeedCancel = new AtomicBoolean(true);
         executors.scheduleWithFixedDelay(() -> {
-            var opensOrdersIds = repository.retrieveOpensOrders().findOrdersWithinMinuets(clock, 0, 10)
+            var opensOrdersIds = repository.retrieveOpensOrders().findOrdersWithinMinuets(clock, 0, (long) (apiConfig.getCancelDelayMinutes() * 1.1))
                     .stream().map(CoinCheckOpensOrdersResponse.Order::getId).toList();
             log.info("{} {} {} {} {}", value("kind", "order-v4"), value("trace-id", uuid),
                     value("action", "opens-orders"),

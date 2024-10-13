@@ -65,7 +65,7 @@ public class CoinCheckTransactionsResponseTest {
 
         // Act
         List<CoinCheckTransactionsResponse.Data> result =
-                CoinCheckTransactionsResponse.builder().data(Arrays.asList(data1, data2, data3)).build().aggregateByRate();
+                CoinCheckTransactionsResponse.builder().data(Arrays.asList(data1, data2, data3)).build().aggregateByRate().getData();
 
         // Assert
         assertEquals(1, result.size());

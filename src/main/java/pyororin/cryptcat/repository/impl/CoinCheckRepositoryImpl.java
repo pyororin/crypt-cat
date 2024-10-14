@@ -123,6 +123,7 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
         jsonBody.put("order_type", "buy");
         jsonBody.put("rate", request.getRate().longValue());
         jsonBody.put("amount", request.getAmount());
+        var response = exchange(jsonBody);
         log.info("{} {} {} {} {} {} {}",
                 value("kind", "exchange"),
                 value("pair", request.getPair().getValue()),
@@ -131,7 +132,7 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
                 value("market_buy_price", request.getPrice()),
                 value("order_rate", request.getRate()),
                 value("group", request.getGroup()));
-        return exchange(jsonBody);
+        return response;
     }
 
     @Override
@@ -142,6 +143,7 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
         jsonBody.put("order_type", "sell");
         jsonBody.put("rate", request.getRate().longValue());
         jsonBody.put("amount", request.getAmount());
+        var response = exchange(jsonBody);
         log.info("{} {} {} {} {} {} {}",
                 value("kind", "exchange"),
                 value("pair", request.getPair().getValue()),
@@ -150,7 +152,7 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
                 value("market_sell_price", request.getPrice()),
                 value("order_rate", request.getRate()),
                 value("group", request.getGroup()));
-        return exchange(jsonBody);
+        return response;
     }
 
     @Override
@@ -160,6 +162,7 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
         jsonBody.put("pair", request.getPair().getValue());
         jsonBody.put("order_type", "market_buy");
         jsonBody.put("market_buy_amount", request.getPrice());
+        exchange(jsonBody);
         log.info("{} {} {} {} {} {} {}",
                 value("kind", "exchange"),
                 value("pair", request.getPair().getValue()),
@@ -168,7 +171,6 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
                 value("market_buy_price", request.getPrice()),
                 value("order_rate", request.getRate()),
                 value("group", request.getGroup()));
-        exchange(jsonBody);
     }
 
     @Override
@@ -178,6 +180,7 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
         jsonBody.put("pair", request.getPair().getValue());
         jsonBody.put("order_type", "market_sell");
         jsonBody.put("amount", request.getAmount());
+        exchange(jsonBody);
         log.info("{} {} {} {} {} {} {}",
                 value("kind", "exchange"),
                 value("pair", request.getPair().getValue()),
@@ -186,7 +189,6 @@ public class CoinCheckRepositoryImpl implements CoinCheckRepository {
                 value("market_sell_price", request.getPrice()),
                 value("order_rate", request.getRate()),
                 value("group", request.getGroup()));
-        exchange(jsonBody);
     }
 
     @Override

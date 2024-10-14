@@ -57,7 +57,7 @@ public class TradeJpyFixServiceV5Impl implements TradeService {
                 var buyPrice = tradeRateLogicService.getFairBuyPrice(pair);
                 /* 市場最終価格(ticker.last or ticker.ask) = rate */
                 /* 固定金額(JPY) / 市場最終価格(ticker.last or ticker.ask) = amount */
-                var amount = repository.retrieveBalance().getJpy().multiply(orderRequest.getRatio()).divide(buyPrice, 9, RoundingMode.HALF_EVEN);
+                var amount = repository.retrieveBalance().getJpy().multiply(orderRequest.getRatio()).divide(buyPrice, 9, RoundingMode.DOWN);
                 response = repository.exchangeBuyLimit(CoinCheckRequest.builder()
                         .pair(pair)
                         .price(apiConfig.getPrice().multiply(orderRequest.getRatio()))

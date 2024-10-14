@@ -62,7 +62,7 @@ class TradeRateLogicServiceTest {
 
         @BeforeEach
         void setUp() {
-            apiConfig.setOrderLogic(OrderLogic.MIDIUM);
+            apiConfig.setOrderLogic(OrderLogic.MEDIUM);
         }
 
         @Test

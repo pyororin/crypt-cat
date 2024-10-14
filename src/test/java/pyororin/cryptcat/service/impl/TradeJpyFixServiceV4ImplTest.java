@@ -14,6 +14,7 @@ import pyororin.cryptcat.repository.model.Pair;
 import pyororin.cryptcat.service.TradeService;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.concurrent.ExecutionException;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -30,6 +31,14 @@ class TradeJpyFixServiceV4ImplTest {
     @MockBean(name = "skipFirestoreRepositoryImpl")
     FirestoreRepository firestore;
 
+    @Test
+    void Buy() {
+        var jpy = new BigDecimal("5502389");
+        var ratio = new BigDecimal("9435234");
+        var amount = jpy.divide(ratio, 9, RoundingMode.DOWN);
+        System.out.println(amount);
+        System.out.println(amount.multiply(ratio));
+    }
     @Test
     void Sell() throws ExecutionException, InterruptedException {
         var request = OrderRequest.builder().build();

@@ -62,7 +62,7 @@ public class TradeJpyFixBuyServiceV6Impl implements TradeService {
                     value("action", "attempt-buy"), value("order-logic", orderLogic));
 
             var buyPrice = tradeRateLogicService.selectBuyPrice(pair, orderLogic);
-            var amount = repository.retrieveBalance().getJpy().multiply(BigDecimal.valueOf(7777)).divide(buyPrice, 9, RoundingMode.DOWN);
+            var amount = repository.retrieveBalance().getJpy().subtract(BigDecimal.valueOf(7777)).divide(buyPrice, 9, RoundingMode.DOWN);
             var response = repository.exchangeBuyLimit(CoinCheckRequest.builder()
                     .pair(pair)
                     .amount(amount)

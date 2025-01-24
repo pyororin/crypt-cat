@@ -47,6 +47,15 @@ class OrderControllerTest {
     @MockBean(name = "tradeJpyFixServiceV4Impl")
     TradeService tradeJpyFixServiceV4Impl;
 
+    @MockBean(name = "tradeJpyFixServiceV5Impl")
+    TradeService tradeJpyFixServiceV5Impl;
+
+    @MockBean(name = "tradeJpyFixBuyServiceV6Impl")
+    TradeService tradeJpyFixBuyServiceV6Impl;
+
+    @MockBean(name = "tradeJpyFixSellServiceV6Impl")
+    TradeService tradeJpyFixSellServiceV6Impl;
+
     @MockBean(name = "tradeBatchServiceImpl")
     TradeBatchServiceImpl tradeBatchServiceImpl;
 

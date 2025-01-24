@@ -177,7 +177,7 @@ class CoinCheckRepositoryImplTest {
     void retryTicker() {
         doThrow(new RestClientException("Test")).when(restClient).get();
         assertThrows(RestClientException.class, () -> repository.retrieveTicker(CoinCheckRequest.builder().pair(Pair.BTC_JPY).build()));
-        verify(restClient, times(4)).get();
+        verify(restClient, times(2)).get();
     }
 
     @Test
@@ -209,7 +209,7 @@ class CoinCheckRepositoryImplTest {
                     .rate(BigDecimal.valueOf(39013)).build());
             mockServer.verify();
         });
-        verify(restClient, times(8)).post();
+        verify(restClient, times(3)).post();
     }
 
     @Disabled

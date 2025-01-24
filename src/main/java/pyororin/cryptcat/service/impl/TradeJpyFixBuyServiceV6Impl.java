@@ -11,6 +11,7 @@ import pyororin.cryptcat.repository.CoinCheckRepository;
 import pyororin.cryptcat.repository.model.*;
 import pyororin.cryptcat.service.TradeService;
 
+import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Clock;
 import java.time.ZoneId;
@@ -61,7 +62,7 @@ public class TradeJpyFixBuyServiceV6Impl implements TradeService {
                     value("action", "attempt-buy"), value("order-logic", orderLogic));
 
             var buyPrice = tradeRateLogicService.selectBuyPrice(pair, orderLogic);
-            var amount = repository.retrieveBalance().getJpy().divide(buyPrice, 9, RoundingMode.DOWN);
+            var amount = repository.retrieveBalance().getJpy().multiply(BigDecimal.valueOf(7777)).divide(buyPrice, 9, RoundingMode.DOWN);
             var response = repository.exchangeBuyLimit(CoinCheckRequest.builder()
                     .pair(pair)
                     .amount(amount)

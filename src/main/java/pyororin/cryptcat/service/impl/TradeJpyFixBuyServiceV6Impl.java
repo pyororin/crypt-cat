@@ -64,7 +64,6 @@ public class TradeJpyFixBuyServiceV6Impl implements TradeService {
             var amount = repository.retrieveBalance().getJpy().divide(buyPrice, 9, RoundingMode.DOWN);
             var response = repository.exchangeBuyLimit(CoinCheckRequest.builder()
                     .pair(pair)
-                    .price(apiConfig.getPrice().multiply(orderRequest.getRatio()))
                     .amount(amount)
                     .rate(buyPrice)
                     .group(orderRequest.getGroup())

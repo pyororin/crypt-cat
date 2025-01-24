@@ -64,7 +64,6 @@ public class TradeJpyFixSellServiceV6Impl implements TradeService {
             /* 固定金額(JPY) / 市場最終価格(ticker.last or ticker.ask) = amount */
             var response = repository.exchangeSellLimit(CoinCheckRequest.builder()
                     .pair(pair)
-                    .price(apiConfig.getPrice().multiply(orderRequest.getRatio()))
                     .amount(repository.retrieveBalance().getBtc())
                     .rate(sellPrice)
                     .group(orderRequest.getGroup())

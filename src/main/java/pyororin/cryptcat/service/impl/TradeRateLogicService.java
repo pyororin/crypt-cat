@@ -26,31 +26,39 @@ public class TradeRateLogicService {
     private final CoinCheckApiConfig apiConfig;
 
     public BigDecimal getFairBuyPrice(Pair pair) {
+        return selectBuyPrice(pair, apiConfig.getOrderLogic());
+    }
+
+    public BigDecimal getFairSellPrice(Pair pair) {
+        return selectSellPrice(pair, apiConfig.getOrderLogic());
+    }
+
+    public BigDecimal selectBuyPrice(Pair pair, OrderLogic orderLogic) {
         var tickerResponse = repository.retrieveTicker(CoinCheckRequest.builder().pair(pair).build());
-        if (apiConfig.getOrderLogic().equals(OrderLogic.HIGH)) {
+        if (orderLogic.equals(OrderLogic.HIGH)) {
             return tickerResponse.getLast().min(tickerResponse.getBid())
                     .add(tickerResponse.getLast().subtract(tickerResponse.getBid()).abs().multiply(BigDecimal.valueOf(0.05)));
-        } else if (apiConfig.getOrderLogic().equals(OrderLogic.MEDIUM)) {
+        } else if (orderLogic.equals(OrderLogic.MEDIUM)) {
             return tickerResponse.getBid().add(BigDecimal.valueOf(100));
-        } else if (apiConfig.getOrderLogic().equals(OrderLogic.LOW)) {
+        } else if (orderLogic.equals(OrderLogic.LOW)) {
             return tickerResponse.getAsk();
-        } else if (apiConfig.getOrderLogic().equals(OrderLogic.EVEN)) {
+        } else if (orderLogic.equals(OrderLogic.EVEN)) {
             return tickerResponse.getBid().add(tickerResponse.getAsk()).add(tickerResponse.getLast())
                     .divide(BigDecimal.valueOf(3), 9, RoundingMode.HALF_EVEN);
         }
         return tickerResponse.getLast();
     }
 
-    public BigDecimal getFairSellPrice(Pair pair) {
+    public BigDecimal selectSellPrice(Pair pair, OrderLogic orderLogic) {
         var tickerResponse = repository.retrieveTicker(CoinCheckRequest.builder().pair(pair).build());
-        if (apiConfig.getOrderLogic().equals(OrderLogic.HIGH)) {
+        if (orderLogic.equals(OrderLogic.HIGH)) {
             return tickerResponse.getLast().max(tickerResponse.getAsk())
                     .subtract(tickerResponse.getLast().subtract(tickerResponse.getAsk()).abs().multiply(BigDecimal.valueOf(0.05)));
-        } else if (apiConfig.getOrderLogic().equals(OrderLogic.MEDIUM)) {
+        } else if (orderLogic.equals(OrderLogic.MEDIUM)) {
             return tickerResponse.getAsk().subtract(BigDecimal.valueOf(100));
-        } else if (apiConfig.getOrderLogic().equals(OrderLogic.LOW)) {
+        } else if (orderLogic.equals(OrderLogic.LOW)) {
             return tickerResponse.getBid();
-        } else if (apiConfig.getOrderLogic().equals(OrderLogic.EVEN)) {
+        } else if (orderLogic.equals(OrderLogic.EVEN)) {
             return tickerResponse.getAsk().add(tickerResponse.getBid()).add(tickerResponse.getLast())
                     .divide(BigDecimal.valueOf(3), 9, RoundingMode.HALF_EVEN);
         }

@@ -3,19 +3,20 @@ package pyororin.cryptcat.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import pyororin.cryptcat.config.CoinCheckApiConfig;
 import pyororin.cryptcat.config.OrderLogic;
-import pyororin.cryptcat.config.OrderStatus;
 import pyororin.cryptcat.controller.model.OrderRequest;
 import pyororin.cryptcat.repository.CoinCheckRepository;
-import pyororin.cryptcat.repository.model.*;
+import pyororin.cryptcat.repository.model.CoinCheckOpensOrdersResponse;
+import pyororin.cryptcat.repository.model.CoinCheckRequest;
+import pyororin.cryptcat.repository.model.CoinCheckResponse;
+import pyororin.cryptcat.repository.model.Pair;
 import pyororin.cryptcat.service.TradeService;
 
 import java.time.Clock;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -29,24 +30,11 @@ public class TradeJpyFixSellServiceV6Impl implements TradeService {
     private final Clock clock;
     private final TradeRateLogicService tradeRateLogicService;
     private final CoinCheckRepository repository;
-    private final CoinCheckApiConfig apiConfig;
-    private final OrderTransactionService orderTransactionService;
 
     @Override
     public void order(Pair pair, OrderRequest orderRequest) {
-        var uuid = UUID.randomUUID().toString().split("-")[0];
-        var transaction = orderTransactionService.get(orderRequest.getGroup());
-
-        if (transaction.isSellSkip()) {
-            log.info("{} {} {} {}", value("kind", "order-v6"), value("trace-id", uuid),
-                    value("action", "skip-sell"),
-                    value("order-transaction", orderTransactionService.get(orderRequest.getGroup())));
-            orderTransactionService.remove(orderRequest.getGroup());
-            return;
-        }
-
         // 非同期タスクで処理を実行
-        CompletableFuture.runAsync(() -> processOrderWithRetry(pair, orderRequest, uuid));
+        CompletableFuture.runAsync(() -> processOrderWithRetry(pair, orderRequest, UUID.randomUUID().toString().split("-")[0]));
     }
 
     private void processOrderWithRetry(Pair pair, OrderRequest orderRequest, String uuid) {
@@ -58,23 +46,20 @@ public class TradeJpyFixSellServiceV6Impl implements TradeService {
         for (OrderLogic orderLogic : sortedOrderLogics) {
             log.info("{} {} {} {}", value("kind", "order-v6"), value("trace-id", uuid),
                     value("action", "attempt-sell"), value("order-logic", orderLogic));
-
+            var btc = repository.retrieveBalance().getBtc();
+            if (btc.doubleValue() <= 0.001) {
+                log.info("{} {} {} {}", value("kind", "order-v6"), value("trace-id", uuid),
+                        value("jpy", btc), value("action", "order-skip"));
+                return;
+            }
             var sellPrice = tradeRateLogicService.selectSellPrice(pair, orderLogic);
             /* 市場最終価格(ticker.last or ticker.ask) = rate */
             /* 固定金額(JPY) / 市場最終価格(ticker.last or ticker.ask) = amount */
             var response = repository.exchangeSellLimit(CoinCheckRequest.builder()
                     .pair(pair)
-                    .amount(repository.retrieveBalance().getBtc())
+                    .amount(btc)
                     .rate(sellPrice)
                     .group(orderRequest.getGroup())
-                    .build());
-            orderTransactionService.set(orderRequest.getGroup(), OrderTransaction.builder()
-                    .orderId(response.getId())
-                    .orderStatus(OrderStatus.ORDERED)
-                    .createdAt(Objects.isNull(response.getCreatedAt())
-                            ? DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(ZoneId.from(ZoneOffset.UTC)).format(clock.instant())
-                            : response.getCreatedAt())
-                    .orderType(OrderType.SELL)
                     .build());
 
             // `OrderLogic`に基づくキャンセル待ち時間を渡す
@@ -114,14 +99,6 @@ public class TradeJpyFixSellServiceV6Impl implements TradeService {
         // キャンセル処理を一定時間後にスケジュール
         scheduledExecutor.schedule(() -> {
             if (!isOrderConfirmed.isDone() && repository.exchangeCancel(response.getId())) {
-                orderTransactionService.set(orderRequest.getGroup(), OrderTransaction.builder()
-                        .orderId(response.getId())
-                        .orderStatus(OrderStatus.CANCEL)
-                        .createdAt(Objects.isNull(response.getCreatedAt())
-                                ? DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(ZoneId.from(ZoneOffset.UTC)).format(clock.instant())
-                                : response.getCreatedAt())
-                        .orderType(orderRequest.isBuy() ? OrderType.BUY : OrderType.SELL)
-                        .build());
                 log.info("{} {} {} {}", value("kind", "order-v6"), value("trace-id", uuid),
                         value("action", "order-cancelled"),
                         value("order-transaction", response));

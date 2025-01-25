@@ -7,9 +7,9 @@ import lombok.ToString;
 @ToString
 public enum OrderLogic {
     HIGH(1),
-    MEDIUM(2),
-    LOW(5),
-    EVEN(3);
+    MEDIUM(1),
+    LOW(1),
+    EVEN(1);
 
     private final int cancelDelayMinutes;
 

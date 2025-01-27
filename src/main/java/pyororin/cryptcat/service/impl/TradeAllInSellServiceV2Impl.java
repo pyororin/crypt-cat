@@ -59,7 +59,8 @@ public class TradeAllInSellServiceV2Impl implements TradeService {
             log.info("{} {} {} {}", value("kind", "order-allin-v2"), value("trace-id", uuid),
                     value("action", "attempt-sell"), value("retry", i));
             var btc = repository.retrieveBalance().getBtc();
-            var beforePrice = Optional.ofNullable(orderTransactionService.get("All-In-Buy").getOrderId());
+            var sellRate = tradeRateLogicService.getFairSellRate(pair);
+            var beforeRate = Optional.ofNullable(orderTransactionService.get("All-In-Buy").getOrderId()).orElse(0L);
 
             // 売却出来ない場合は見送り
             if (btc.doubleValue() <= 0.001) {
@@ -69,14 +70,13 @@ public class TradeAllInSellServiceV2Impl implements TradeService {
                 return;
             }
             // 前回購入時点よりRateが低い場合は見送り
-            if (btc.longValue() < beforePrice.orElse(0L)) {
+            if (sellRate.longValue() <= beforeRate) {
                 log.info("{} {} {} {} {}", value("kind", "order-allin-v2"), value("trace-id", uuid),
-                        value("sell-price", btc.longValue()), value("before-price", beforePrice), value("action", "order-skip"));
+                        value("sell-rate", btc.longValue()), value("before-rate", beforeRate), value("action", "order-skip"));
                 isOrderStopped.set(true);
                 return;
             }
 
-            var sellRate = tradeRateLogicService.getFairSellRate(pair);
             /* 市場最終価格(ticker.last or ticker.ask) = rate */
             /* 固定金額(JPY) / 市場最終価格(ticker.last or ticker.ask) = amount */
             var response = repository.exchangeSellLimit(CoinCheckRequest.builder()

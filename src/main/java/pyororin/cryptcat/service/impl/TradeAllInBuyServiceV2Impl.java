@@ -59,7 +59,7 @@ public class TradeAllInBuyServiceV2Impl implements TradeService {
                     value("action", "attempt-buy"), value("retry", i));
             var jpy = repository.retrieveBalance().getJpy().subtract(BigDecimal.valueOf(7777));
             var buyRate = tradeRateLogicService.getFairBuyRate(pair);
-//            var beforePrice = Optional.of(orderTransactionService.get("All-In-Sell").getOrderId());
+//            var beforeRate = Optional.of(orderTransactionService.get("All-In-Sell").getOrderId());
 
             // 購入出来ない場合は見送り
             if (jpy.longValue() <= 0) {
@@ -69,9 +69,9 @@ public class TradeAllInBuyServiceV2Impl implements TradeService {
                 return;
             }
 //            // 前回売却時点よりRateが高い場合は見送り
-//            if (buyRate.longValue() >= beforePrice.orElse(99999999999L)) {
+//            if (buyRate.longValue() >= beforeRate.orElse(99999999999L)) {
 //                log.info("{} {} {} {} {}", value("kind", "order-allin-v2"), value("trace-id", uuid),
-//                        value("buy-price", buyRate), value("before-price", beforePrice), value("action", "order-skip"));
+//                        value("buy-rate", buyRate), value("before-rate", beforeRate), value("action", "order-skip"));
 //                isOrderStopped.set(true);
 //                return;
 //            }

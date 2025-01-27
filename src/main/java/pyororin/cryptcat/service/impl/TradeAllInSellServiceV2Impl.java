@@ -124,7 +124,7 @@ public class TradeAllInSellServiceV2Impl implements TradeService {
                 isOrderConfirmed.complete(true);
                 scheduledExecutor.shutdown();
             }
-        }, 15, 15, TimeUnit.SECONDS);
+        }, 1, 5, TimeUnit.SECONDS);
 
         // キャンセル処理を一定時間後にスケジュール
         scheduledExecutor.schedule(() -> {

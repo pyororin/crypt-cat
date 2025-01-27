@@ -42,7 +42,8 @@ public class TradeAllInSellServiceV2Impl implements TradeService {
     @Override
     public void order(Pair pair, OrderRequest orderRequest) {
         // 非同期タスクで処理を実行
-        CompletableFuture.runAsync(() -> processOrderWithRetry(pair, orderRequest, UUID.randomUUID().toString().split("-")[0]));
+//        CompletableFuture.runAsync(() -> processOrderWithRetry(pair, orderRequest, UUID.randomUUID().toString().split("-")[0]));
+processOrderWithRetry(pair, orderRequest, UUID.randomUUID().toString().split("-")[0]);
     }
 
     private void processOrderWithRetry(Pair pair, OrderRequest orderRequest, String uuid) {

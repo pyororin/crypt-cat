@@ -48,7 +48,7 @@ public class TradeAllInBuyServiceV2Impl implements TradeService {
     private void processOrderWithRetry(Pair pair, OrderRequest orderRequest, String uuid) {
         var isOrderStopped = new AtomicBoolean(false);
         IntStream.range(0, 10).takeWhile(__ -> !isOrderStopped.get()).forEach(i -> {
-            log.info("{} {} {} {}", value("kind", "order-v6"), value("trace-id", uuid),
+            log.info("{} {} {} {}", value("kind", "order-allin-v2"), value("trace-id", uuid),
                     value("action", "attempt-buy"), value("retry", i));
             var jpy = repository.retrieveBalance().getJpy().subtract(BigDecimal.valueOf(7777));
             var buyPrice = tradeRateLogicService.getFairBuyPrice(pair);

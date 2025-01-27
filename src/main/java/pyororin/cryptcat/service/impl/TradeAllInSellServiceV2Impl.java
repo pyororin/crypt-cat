@@ -47,14 +47,14 @@ public class TradeAllInSellServiceV2Impl implements TradeService {
     private void processOrderWithRetry(Pair pair, OrderRequest orderRequest, String uuid) {
         var isOrderStopped = new AtomicBoolean(false);
         IntStream.range(0, 10).takeWhile(__ -> !isOrderStopped.get()).forEach(i -> {
-            log.info("{} {} {} {}", value("kind", "order-v6"), value("trace-id", uuid),
+            log.info("{} {} {} {}", value("kind", "order-allin-v2"), value("trace-id", uuid),
                     value("action", "attempt-sell"), value("retry", i));
             var btc = repository.retrieveBalance().getBtc();
             var beforePrice = orderTransactionService.get("All-In-Buy").getOrderId();
 
             // 売却出来ない場合は見送り
             if (btc.doubleValue() <= 0.001) {
-                log.info("{} {} {} {}", value("kind", "order-v6"), value("trace-id", uuid),
+                log.info("{} {} {} {}", value("kind", "order-allin-v2"), value("trace-id", uuid),
                         value("jpy", btc), value("action", "order-skip"));
                 return;
             }

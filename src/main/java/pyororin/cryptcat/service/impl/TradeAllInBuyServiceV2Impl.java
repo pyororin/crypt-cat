@@ -20,6 +20,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.IntStream;
 
 import static net.logstash.logback.argument.StructuredArguments.value;
@@ -47,12 +48,15 @@ public class TradeAllInBuyServiceV2Impl implements TradeService {
 
     private void processOrderWithRetry(Pair pair, OrderRequest orderRequest, String uuid) {
         var isOrderStopped = new AtomicBoolean(false);
+        var firstOrderRate = new AtomicLong();
+        var lastOrderRate = new AtomicLong();
         IntStream.range(0, 10).takeWhile(__ -> !isOrderStopped.get()).forEach(i -> {
             log.info("{} {} {} {}", value("kind", "order-allin-v2"), value("trace-id", uuid),
                     value("action", "attempt-buy"), value("retry", i));
             var jpy = repository.retrieveBalance().getJpy().subtract(BigDecimal.valueOf(7777));
-            var buyPrice = tradeRateLogicService.getFairBuyPrice(pair);
-//            var beforePrice = orderTransactionService.get("All-In-Sell").getOrderId();
+            var buyRate = tradeRateLogicService.getFairBuyRate(pair);
+            var beforePrice = orderTransactionService.get("All-In-Sell").getOrderId();
+            if (firstOrderRate.get() == 0) { firstOrderRate.set(beforePrice); }
 
             // 購入出来ない場合は見送り
             if (jpy.longValue() <= 0) {
@@ -62,18 +66,20 @@ public class TradeAllInBuyServiceV2Impl implements TradeService {
                 return;
             }
 //            // 前回売却時点よりRateが高い場合は見送り
-//            if (buyPrice.longValue() >= beforePrice && beforePrice != 0) {
+//            if (buyRate.longValue() >= beforePrice && beforePrice != 0) {
 //                log.info("{} {} {} {} {}", value("kind", "order-allin-v2"), value("trace-id", uuid),
-//                        value("buy-price", buyPrice), value("before-price", beforePrice), value("action", "order-skip"));
+//                        value("buy-price", buyRate), value("before-price", beforePrice), value("action", "order-skip"));
 //                isOrderStopped.set(true);
 //                return;
 //            }
 
-            var amount = jpy.divide(buyPrice, 9, RoundingMode.DOWN);
+            var amount = jpy.divide(buyRate, 9, RoundingMode.DOWN);
+            if (firstOrderRate.get() == 0) { firstOrderRate.set(buyRate.longValue()); }
+            lastOrderRate.set(buyRate.longValue());
             var response = repository.exchangeBuyLimit(CoinCheckRequest.builder()
                     .pair(pair)
                     .amount(amount)
-                    .rate(buyPrice)
+                    .rate(buyRate)
                     .group(orderRequest.getGroup())
                     .build());
 
@@ -93,7 +99,14 @@ public class TradeAllInBuyServiceV2Impl implements TradeService {
                         : response.getCreatedAt())
                 .orderType(OrderType.BUY)
                 .build());
+            lastOrderRate.set(Long.parseLong(response.getAmount()));
         });
+
+        // リトライに応じてどの程度期待値が低下したかロギング
+        log.info("{} {} {} {} {} {}", value("kind", "order-allin-v2"), value("trace-id", uuid),
+                value("action", "diff"), value("first-order-rate", firstOrderRate.get()),
+                value("last-order-rate", lastOrderRate.get()),
+                value("diff-buy-rate", firstOrderRate.get() - lastOrderRate.get()));
     }
 
     private boolean waitForOrderConfirmationOrCancel(CoinCheckResponse response, String uuid) {

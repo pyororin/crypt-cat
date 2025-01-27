@@ -48,7 +48,7 @@ public class TradeBtcFixServiceImpl implements TradeService {
 
     private BigDecimal exchange(Pair pair, OrderRequest orderRequest) {
         if (orderRequest.isBuy()) {
-            var buyPrice = tradeRateLogicService.getFairBuyPrice(pair);
+            var buyPrice = tradeRateLogicService.getFairBuyRate(pair);
             /* 市場最終価格(ticker.last or ticker.ask) = rate */
             /* 固定注文量 * アラート別レシオ = amount */
             var marketBuyPrice = buyPrice.multiply(apiConfig.getAmount());
@@ -61,7 +61,7 @@ public class TradeBtcFixServiceImpl implements TradeService {
                     .build());
             return marketBuyPrice;
         } else {
-            var sellPrice = tradeRateLogicService.getFairSellPrice(pair);
+            var sellPrice = tradeRateLogicService.getFairSellRate(pair);
             /* 市場最終価格(ticker.last or ticker.ask) = rate */
             /* 固定注文量 = amount */
             var marketSellPrice = sellPrice.multiply(apiConfig.getAmount());

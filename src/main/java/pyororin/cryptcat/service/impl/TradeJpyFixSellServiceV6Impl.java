@@ -52,7 +52,7 @@ public class TradeJpyFixSellServiceV6Impl implements TradeService {
                         value("jpy", btc), value("action", "order-skip"));
                 return;
             }
-            var sellPrice = tradeRateLogicService.selectSellPrice(pair, orderLogic);
+            var sellPrice = tradeRateLogicService.selectSellRate(pair, orderLogic);
             /* 市場最終価格(ticker.last or ticker.ask) = rate */
             /* 固定金額(JPY) / 市場最終価格(ticker.last or ticker.ask) = amount */
             var response = repository.exchangeSellLimit(CoinCheckRequest.builder()

@@ -46,12 +46,12 @@ class TradeRateLogicServiceTest {
 
         @Test
         void getFairBuyPrice() {
-            System.out.println(tradeRateLogicService.getFairBuyPrice(Pair.BTC_JPY));
+            System.out.println(tradeRateLogicService.getFairBuyRate(Pair.BTC_JPY));
         }
 
         @Test
         void getFairSellPrice() {
-            System.out.println(tradeRateLogicService.getFairSellPrice(Pair.BTC_JPY));
+            System.out.println(tradeRateLogicService.getFairSellRate(Pair.BTC_JPY));
         }
     }
 
@@ -67,12 +67,12 @@ class TradeRateLogicServiceTest {
 
         @Test
         void getFairBuyPrice() {
-            System.out.println(tradeRateLogicService.getFairBuyPrice(Pair.BTC_JPY));
+            System.out.println(tradeRateLogicService.getFairBuyRate(Pair.BTC_JPY));
         }
 
         @Test
         void getFairSellPrice() {
-            System.out.println(tradeRateLogicService.getFairSellPrice(Pair.BTC_JPY));
+            System.out.println(tradeRateLogicService.getFairSellRate(Pair.BTC_JPY));
         }
     }
 
@@ -88,12 +88,12 @@ class TradeRateLogicServiceTest {
 
         @Test
         void getFairBuyPrice() {
-            System.out.println(tradeRateLogicService.getFairBuyPrice(Pair.BTC_JPY));
+            System.out.println(tradeRateLogicService.getFairBuyRate(Pair.BTC_JPY));
         }
 
         @Test
         void getFairSellPrice() {
-            System.out.println(tradeRateLogicService.getFairSellPrice(Pair.BTC_JPY));
+            System.out.println(tradeRateLogicService.getFairSellRate(Pair.BTC_JPY));
         }
     }
 
@@ -109,12 +109,12 @@ class TradeRateLogicServiceTest {
 
         @Test
         void getFairBuyPrice() {
-            System.out.println(tradeRateLogicService.getFairBuyPrice(Pair.BTC_JPY));
+            System.out.println(tradeRateLogicService.getFairBuyRate(Pair.BTC_JPY));
         }
 
         @Test
         void getFairSellPrice() {
-            System.out.println(tradeRateLogicService.getFairSellPrice(Pair.BTC_JPY));
+            System.out.println(tradeRateLogicService.getFairSellRate(Pair.BTC_JPY));
         }
     }
 }

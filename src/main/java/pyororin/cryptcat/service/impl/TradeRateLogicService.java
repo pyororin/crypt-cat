@@ -25,15 +25,15 @@ public class TradeRateLogicService {
     private final CoinCheckRepository repository;
     private final CoinCheckApiConfig apiConfig;
 
-    public BigDecimal getFairBuyPrice(Pair pair) {
-        return selectBuyPrice(pair, apiConfig.getOrderLogic());
+    public BigDecimal getFairBuyRate(Pair pair) {
+        return selectBuyRate(pair, apiConfig.getOrderLogic());
     }
 
-    public BigDecimal getFairSellPrice(Pair pair) {
-        return selectSellPrice(pair, apiConfig.getOrderLogic());
+    public BigDecimal getFairSellRate(Pair pair) {
+        return selectSellRate(pair, apiConfig.getOrderLogic());
     }
 
-    public BigDecimal selectBuyPrice(Pair pair, OrderLogic orderLogic) {
+    public BigDecimal selectBuyRate(Pair pair, OrderLogic orderLogic) {
         var tickerResponse = repository.retrieveTicker(CoinCheckRequest.builder().pair(pair).build());
         if (orderLogic.equals(OrderLogic.HIGH)) {
             return tickerResponse.getLast().min(tickerResponse.getBid())
@@ -49,7 +49,7 @@ public class TradeRateLogicService {
         return tickerResponse.getLast();
     }
 
-    public BigDecimal selectSellPrice(Pair pair, OrderLogic orderLogic) {
+    public BigDecimal selectSellRate(Pair pair, OrderLogic orderLogic) {
         var tickerResponse = repository.retrieveTicker(CoinCheckRequest.builder().pair(pair).build());
         if (orderLogic.equals(OrderLogic.HIGH)) {
             return tickerResponse.getLast().max(tickerResponse.getAsk())

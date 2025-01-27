@@ -76,8 +76,6 @@ public class TradeAllInSellServiceV2Impl implements TradeService {
             }
 
             var sellRate = tradeRateLogicService.getFairSellRate(pair);
-            if (firstOrderRate.get() == 0) { firstOrderRate.set(sellRate.longValue()); }
-            lastOrderRate.set(sellRate.longValue());
             /* 市場最終価格(ticker.last or ticker.ask) = rate */
             /* 固定金額(JPY) / 市場最終価格(ticker.last or ticker.ask) = amount */
             var response = repository.exchangeSellLimit(CoinCheckRequest.builder()
@@ -103,6 +101,8 @@ public class TradeAllInSellServiceV2Impl implements TradeService {
                             : response.getCreatedAt())
                     .orderType(OrderType.SELL)
                     .build());
+            if (firstOrderRate.get() == 0) { firstOrderRate.set(sellRate.longValue()); }
+            lastOrderRate.set(sellRate.longValue());
         });
 
         // リトライに応じてどの程度期待値が低下したかロギング

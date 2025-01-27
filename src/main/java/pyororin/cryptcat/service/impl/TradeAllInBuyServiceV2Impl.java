@@ -56,8 +56,7 @@ processOrderWithRetry(pair, orderRequest, UUID.randomUUID().toString().split("-"
                     value("action", "attempt-buy"), value("retry", i));
             var jpy = repository.retrieveBalance().getJpy().subtract(BigDecimal.valueOf(7777));
             var buyRate = tradeRateLogicService.getFairBuyRate(pair);
-            var beforePrice = orderTransactionService.get("All-In-Sell").getOrderId();
-            if (firstOrderRate.get() == 0) { firstOrderRate.set(beforePrice); }
+//            var beforePrice = orderTransactionService.get("All-In-Sell").getOrderId();
 
             // 購入出来ない場合は見送り
             if (jpy.longValue() <= 0) {

@@ -51,7 +51,7 @@ public class TradeJpyFixServiceV3Impl implements TradeService {
         var hop = new AtomicInteger(retry.getLimitCount());
         var uuid = UUID.randomUUID().toString().split("-")[0];
         if (orderRequest.isBuy()) {
-            var buyPrice = tradeRateLogicService.getFairBuyPrice(pair);
+            var buyPrice = tradeRateLogicService.getFairBuyRate(pair);
             /* 市場最終価格(ticker.last or ticker.ask) = rate */
             /* 固定金額(JPY) / 市場最終価格(ticker.last or ticker.ask) = amount */
             var amount = apiConfig.getPrice().divide(buyPrice, 9, RoundingMode.HALF_EVEN);
@@ -71,7 +71,7 @@ public class TradeJpyFixServiceV3Impl implements TradeService {
                 log.info("{} {} {} {}", value("kind", "limit-retry"), value("trace-id", uuid), value("order-id", response.get().getId()), value("opens-ids", opensOrdersIds));
                 if (hop.get() > 0 && opensOrdersIds.contains(response.get().getId())) {
                     if (repository.exchangeCancel(response.get().getId())) {
-                        var buyPriceRetry = tradeRateLogicService.getFairBuyPrice(pair);
+                        var buyPriceRetry = tradeRateLogicService.getFairBuyRate(pair);
                         /* 市場最終価格(ticker.last or ticker.ask) = rate */
                         /* 固定金額(JPY) / 市場最終価格(ticker.last or ticker.ask) = amount */
                         response.set(repository.exchangeBuyLimit(CoinCheckRequest.builder()
@@ -121,7 +121,7 @@ public class TradeJpyFixServiceV3Impl implements TradeService {
 
             }, retry.getDelaySec(), TimeUnit.SECONDS);
         } else {
-            var sellPrice = tradeRateLogicService.getFairSellPrice(pair);
+            var sellPrice = tradeRateLogicService.getFairSellRate(pair);
             /* 市場最終価格(ticker.last or ticker.ask) = rate */
             /* 固定金額(JPY) / 市場最終価格(ticker.last or ticker.ask) = amount */
             var amount = apiConfig.getPrice().divide(sellPrice, 9, RoundingMode.HALF_EVEN);
@@ -142,7 +142,7 @@ public class TradeJpyFixServiceV3Impl implements TradeService {
                         value("order-id", response.get().getId()), value("opens-ids", opensOrdersIds));
                 if (hop.get() > 0 && opensOrdersIds.contains(response.get().getId())) {
                     if (repository.exchangeCancel(response.get().getId())) {
-                        var sellPriceRetry = tradeRateLogicService.getFairSellPrice(pair);
+                        var sellPriceRetry = tradeRateLogicService.getFairSellRate(pair);
                         /* 市場最終価格(ticker.last or ticker.ask) = rate */
                         /* 固定金額(JPY) / 市場最終価格(ticker.last or ticker.ask) = amount */
                         response.set(repository.exchangeSellLimit(CoinCheckRequest.builder()
@@ -184,7 +184,7 @@ public class TradeJpyFixServiceV3Impl implements TradeService {
                     if (repository.exchangeCancel(response.get().getId())) {
                         repository.exchangeSellMarket(CoinCheckRequest.builder()
                                 .pair(pair)
-                                .amount(apiConfig.getPrice().divide(tradeRateLogicService.getFairSellPrice(pair), 9, RoundingMode.HALF_EVEN))
+                                .amount(apiConfig.getPrice().divide(tradeRateLogicService.getFairSellRate(pair), 9, RoundingMode.HALF_EVEN))
                                 .group("market-retry")
                                 .build());
                     }

@@ -160,7 +160,7 @@ class CoinCheckRepositoryImplTest {
     void exchangeBuy() {
         var repository = new CoinCheckRepositoryImpl(
                 RestClient.builder().baseUrl(apiConfig.getHost()).build(), config, apiConfig);
-        var rate = tradeRateLogicService.getFairBuyPrice(Pair.BTC_JPY);
+        var rate = tradeRateLogicService.getFairBuyRate(Pair.BTC_JPY);
         var amount = BigDecimal.valueOf(0.0055);
         repository.exchangeBuyLimit(CoinCheckRequest.builder().pair(Pair.BTC_JPY).price(rate).amount(amount).build());
     }
@@ -168,7 +168,7 @@ class CoinCheckRepositoryImplTest {
     @Disabled
     @Test
     void exchangeSell() {
-        var rate = tradeRateLogicService.getFairSellPrice(Pair.BTC_JPY);
+        var rate = tradeRateLogicService.getFairSellRate(Pair.BTC_JPY);
         var amount = BigDecimal.valueOf(0.0055);
         repository.exchangeSellLimit(CoinCheckRequest.builder().pair(Pair.BTC_JPY).price(rate).amount(amount).build());
     }

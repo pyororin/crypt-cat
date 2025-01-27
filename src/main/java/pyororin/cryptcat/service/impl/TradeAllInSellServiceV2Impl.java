@@ -19,6 +19,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.IntStream;
 
 import static net.logstash.logback.argument.StructuredArguments.value;
@@ -46,6 +47,8 @@ public class TradeAllInSellServiceV2Impl implements TradeService {
 
     private void processOrderWithRetry(Pair pair, OrderRequest orderRequest, String uuid) {
         var isOrderStopped = new AtomicBoolean(false);
+        var firstOrderRate = new AtomicLong();
+        var lastOrderRate = new AtomicLong();
         IntStream.range(0, 10).takeWhile(__ -> !isOrderStopped.get()).forEach(i -> {
             log.info("{} {} {} {}", value("kind", "order-allin-v2"), value("trace-id", uuid),
                     value("action", "attempt-sell"), value("retry", i));
@@ -66,13 +69,15 @@ public class TradeAllInSellServiceV2Impl implements TradeService {
                 return;
             }
 
-            var sellPrice = tradeRateLogicService.getFairSellPrice(pair);
+            var sellRate = tradeRateLogicService.getFairSellRate(pair);
+            if (firstOrderRate.get() == 0) { firstOrderRate.set(sellRate.longValue()); }
+            lastOrderRate.set(sellRate.longValue());
             /* 市場最終価格(ticker.last or ticker.ask) = rate */
             /* 固定金額(JPY) / 市場最終価格(ticker.last or ticker.ask) = amount */
             var response = repository.exchangeSellLimit(CoinCheckRequest.builder()
                     .pair(pair)
                     .amount(btc)
-                    .rate(sellPrice)
+                    .rate(sellRate)
                     .group(orderRequest.getGroup())
                     .build());
 
@@ -93,6 +98,12 @@ public class TradeAllInSellServiceV2Impl implements TradeService {
                     .orderType(OrderType.SELL)
                     .build());
         });
+
+        // リトライに応じてどの程度期待値が低下したかロギング
+        log.info("{} {} {} {} {} {}", value("kind", "order-allin-v2"), value("trace-id", uuid),
+                value("action", "diff"), value("first-order-rate", firstOrderRate.get()),
+                value("last-order-rate", lastOrderRate.get()),
+                value("diff-sell-rate", lastOrderRate.get() - firstOrderRate.get()));
     }
 
     private boolean waitForOrderConfirmationOrCancel(CoinCheckResponse response, String uuid) {

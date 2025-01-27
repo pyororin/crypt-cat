@@ -54,7 +54,7 @@ public class TradeJpyFixServiceV2Impl implements TradeService {
 
     private void exchange(Pair pair, OrderRequest orderRequest) {
         if (orderRequest.isBuy()) {
-            var buyPrice = tradeRateLogicService.getFairBuyPrice(pair);
+            var buyPrice = tradeRateLogicService.getFairBuyRate(pair);
             /* 市場最終価格(ticker.last or ticker.ask) = rate */
             /* 固定金額(JPY) / 市場最終価格(ticker.last or ticker.ask) = amount */
             var amount = apiConfig.getPrice().divide(buyPrice, 9, RoundingMode.HALF_EVEN);
@@ -87,7 +87,7 @@ public class TradeJpyFixServiceV2Impl implements TradeService {
 
             }, retry.getDelaySec(), TimeUnit.SECONDS);
         } else {
-            var sellPrice = tradeRateLogicService.getFairSellPrice(pair);
+            var sellPrice = tradeRateLogicService.getFairSellRate(pair);
             /* 市場最終価格(ticker.last or ticker.ask) = rate */
             /* 固定金額(JPY) / 市場最終価格(ticker.last or ticker.ask) = amount */
             var amount = apiConfig.getPrice().divide(sellPrice, 9, RoundingMode.HALF_EVEN);
@@ -112,7 +112,7 @@ public class TradeJpyFixServiceV2Impl implements TradeService {
                     repository.exchangeCancel(response.getId());
                     repository.exchangeSellMarket(CoinCheckRequest.builder()
                             .pair(pair)
-                            .amount(apiConfig.getPrice().divide(tradeRateLogicService.getFairSellPrice(pair), 9, RoundingMode.HALF_EVEN))
+                            .amount(apiConfig.getPrice().divide(tradeRateLogicService.getFairSellRate(pair), 9, RoundingMode.HALF_EVEN))
                             .group("order-retry")
                             .build());
                 }

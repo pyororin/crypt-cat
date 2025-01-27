@@ -54,7 +54,7 @@ public class TradeJpyFixBuyServiceV6Impl implements TradeService {
                         value("jpy", jpy), value("action", "order-skip"));
                 return;
             }
-            var buyPrice = tradeRateLogicService.selectBuyPrice(pair, orderLogic);
+            var buyPrice = tradeRateLogicService.selectBuyRate(pair, orderLogic);
             var amount = jpy.divide(buyPrice, 9, RoundingMode.DOWN);
             var response = repository.exchangeBuyLimit(CoinCheckRequest.builder()
                     .pair(pair)

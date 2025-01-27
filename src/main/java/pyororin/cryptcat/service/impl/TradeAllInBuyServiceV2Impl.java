@@ -77,8 +77,6 @@ public class TradeAllInBuyServiceV2Impl implements TradeService {
 //            }
 
             var amount = jpy.divide(buyRate, 9, RoundingMode.DOWN);
-            if (firstOrderRate.get() == 0) { firstOrderRate.set(buyRate.longValue()); }
-            lastOrderRate.set(buyRate.longValue());
             var response = repository.exchangeBuyLimit(CoinCheckRequest.builder()
                     .pair(pair)
                     .amount(amount)
@@ -102,7 +100,8 @@ public class TradeAllInBuyServiceV2Impl implements TradeService {
                         : response.getCreatedAt())
                 .orderType(OrderType.BUY)
                 .build());
-            lastOrderRate.set(Long.parseLong(response.getAmount()));
+            if (firstOrderRate.get() == 0) { firstOrderRate.set(buyRate.longValue()); }
+            lastOrderRate.set(buyRate.longValue());
         });
 
         // リトライに応じてどの程度期待値が低下したかロギング

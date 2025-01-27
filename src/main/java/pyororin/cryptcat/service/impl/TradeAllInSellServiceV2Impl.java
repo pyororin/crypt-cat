@@ -65,6 +65,7 @@ public class TradeAllInSellServiceV2Impl implements TradeService {
             if (btc.doubleValue() <= 0.001) {
                 log.info("{} {} {} {}", value("kind", "order-allin-v2"), value("trace-id", uuid),
                         value("jpy", btc), value("action", "order-skip"));
+                isOrderStopped.set(true);
                 return;
             }
             // 前回購入時点よりRateが低い場合は見送り

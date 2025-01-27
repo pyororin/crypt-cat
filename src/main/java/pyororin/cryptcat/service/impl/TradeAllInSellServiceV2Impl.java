@@ -9,6 +9,7 @@ import pyororin.cryptcat.repository.CoinCheckRepository;
 import pyororin.cryptcat.repository.model.*;
 import pyororin.cryptcat.service.TradeService;
 
+import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
@@ -45,7 +46,7 @@ public class TradeAllInSellServiceV2Impl implements TradeService {
         // 非同期タスクで処理を実行
         CompletableFuture.runAsync(() -> processOrderWithRetry(pair, orderRequest, UUID.randomUUID().toString().split("-")[0]))
                 .exceptionally(ex -> {
-                    log.error("非同期処理中に例外が発生しました", ex);
+                    log.error(ex.getLocalizedMessage(), ex);
                     return null;
                 });
     }
@@ -95,7 +96,7 @@ public class TradeAllInSellServiceV2Impl implements TradeService {
             }
 
             orderTransactionService.set("All-In-Sell", OrderTransaction.builder()
-                    .orderId(Long.valueOf(response.getRate()))
+                    .orderId(new BigDecimal(response.getRate()).longValue())
                     .orderStatus(OrderStatus.ORDERED)
                     .createdAt(Objects.isNull(response.getCreatedAt())
                             ? DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(ZoneId.from(ZoneOffset.UTC)).format(clock.instant())

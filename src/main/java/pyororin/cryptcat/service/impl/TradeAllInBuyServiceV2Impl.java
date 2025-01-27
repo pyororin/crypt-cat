@@ -43,8 +43,11 @@ public class TradeAllInBuyServiceV2Impl implements TradeService {
     @Override
     public void order(Pair pair, OrderRequest orderRequest) {
         // 非同期タスクで処理を実行
-//        CompletableFuture.runAsync(() -> processOrderWithRetry(pair, orderRequest, UUID.randomUUID().toString().split("-")[0]));
-processOrderWithRetry(pair, orderRequest, UUID.randomUUID().toString().split("-")[0]);
+        CompletableFuture.runAsync(() -> processOrderWithRetry(pair, orderRequest, UUID.randomUUID().toString().split("-")[0]))
+                .exceptionally(ex -> {
+                    log.error("非同期処理中に例外が発生しました", ex);
+                    return null;
+                });
     }
 
     private void processOrderWithRetry(Pair pair, OrderRequest orderRequest, String uuid) {

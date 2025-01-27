@@ -27,6 +27,8 @@ public class OrderController {
     private final TradeService tradeJpyFixServiceV5Impl;
     private final TradeService tradeJpyFixBuyServiceV6Impl;
     private final TradeService tradeJpyFixSellServiceV6Impl;
+    private final TradeService tradeAllInBuyServiceV2Impl;
+    private final TradeService tradeAllInSellServiceV2Impl;
     private final TradeBatchServiceImpl tradeBatchServiceImpl;
 
     @PostMapping("/order/btcfix/{pair}")
@@ -67,6 +69,16 @@ public class OrderController {
 
     @PostMapping("/v6/order/jpyfix/{pair}")
     public ResponseEntity<String> jpyFixV6(@PathVariable String pair, @RequestBody @Validated OrderRequest orderRequest) {
+        if (orderRequest.isBuy()) {
+            tradeAllInBuyServiceV2Impl.order(Pair.fromValue(pair), orderRequest);
+        } else {
+            tradeAllInSellServiceV2Impl.order(Pair.fromValue(pair), orderRequest);
+        }
+        return ResponseEntity.ok("OK");
+    }
+
+    @PostMapping("/v2/order/allin/{pair}")
+    public ResponseEntity<String> allinV2(@PathVariable String pair, @RequestBody @Validated OrderRequest orderRequest) {
         if (orderRequest.isBuy()) {
             tradeJpyFixBuyServiceV6Impl.order(Pair.fromValue(pair), orderRequest);
         } else {

@@ -70,9 +70,9 @@ public class OrderController {
     @PostMapping("/v6/order/jpyfix/{pair}")
     public ResponseEntity<String> jpyFixV6(@PathVariable String pair, @RequestBody @Validated OrderRequest orderRequest) {
         if (orderRequest.isBuy()) {
-            tradeAllInBuyServiceV2Impl.order(Pair.fromValue(pair), orderRequest);
+            tradeJpyFixBuyServiceV6Impl.order(Pair.fromValue(pair), orderRequest);
         } else {
-            tradeAllInSellServiceV2Impl.order(Pair.fromValue(pair), orderRequest);
+            tradeJpyFixSellServiceV6Impl.order(Pair.fromValue(pair), orderRequest);
         }
         return ResponseEntity.ok("OK");
     }
@@ -80,9 +80,9 @@ public class OrderController {
     @PostMapping("/v2/order/allin/{pair}")
     public ResponseEntity<String> allinV2(@PathVariable String pair, @RequestBody @Validated OrderRequest orderRequest) {
         if (orderRequest.isBuy()) {
-            tradeJpyFixBuyServiceV6Impl.order(Pair.fromValue(pair), orderRequest);
+            tradeAllInBuyServiceV2Impl.order(Pair.fromValue(pair), orderRequest);
         } else {
-            tradeJpyFixSellServiceV6Impl.order(Pair.fromValue(pair), orderRequest);
+            tradeAllInSellServiceV2Impl.order(Pair.fromValue(pair), orderRequest);
         }
         return ResponseEntity.ok("OK");
     }

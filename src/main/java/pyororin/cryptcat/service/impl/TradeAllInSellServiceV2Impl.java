@@ -14,6 +14,7 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
@@ -57,7 +58,7 @@ public class TradeAllInSellServiceV2Impl implements TradeService {
             log.info("{} {} {} {}", value("kind", "order-allin-v2"), value("trace-id", uuid),
                     value("action", "attempt-sell"), value("retry", i));
             var btc = repository.retrieveBalance().getBtc();
-            var beforePrice = orderTransactionService.get("All-In-Buy").getOrderId();
+            var beforePrice = Optional.of(orderTransactionService.get("All-In-Buy").getOrderId());
 
             // 売却出来ない場合は見送り
             if (btc.doubleValue() <= 0.001) {
@@ -66,7 +67,7 @@ public class TradeAllInSellServiceV2Impl implements TradeService {
                 return;
             }
             // 前回購入時点よりRateが低い場合は見送り
-            if (btc.longValue() < beforePrice) {
+            if (btc.longValue() < beforePrice.orElse(0L)) {
                 log.info("{} {} {} {} {}", value("kind", "order-allin-v2"), value("trace-id", uuid),
                         value("sell-price", btc.longValue()), value("before-price", beforePrice), value("action", "order-skip"));
                 isOrderStopped.set(true);

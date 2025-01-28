@@ -53,9 +53,10 @@ public class TradeAllInSellServiceV2Impl implements TradeService {
 
     private void processOrderWithRetry(Pair pair, OrderRequest orderRequest, String uuid) {
         var isOrderStopped = new AtomicBoolean(false);
+        var isOrderSkipped = new AtomicBoolean(false);
         var firstOrderRate = new AtomicLong();
         var lastOrderRate = new AtomicLong();
-        IntStream.range(0, 10).takeWhile(__ -> !isOrderStopped.get()).forEach(i -> {
+        IntStream.range(0, 10).takeWhile(__ -> !isOrderStopped.get() && !isOrderSkipped.get()).forEach(i -> {
             log.info("{} {} {} {}", value("kind", "order-allin-v2"), value("trace-id", uuid),
                     value("action", "attempt-sell"), value("retry", i));
             var btc = repository.retrieveBalance().getBtc();
@@ -66,14 +67,14 @@ public class TradeAllInSellServiceV2Impl implements TradeService {
             if (btc.doubleValue() <= 0.001) {
                 log.info("{} {} {} {}", value("kind", "order-allin-v2"), value("trace-id", uuid),
                         value("jpy", btc), value("action", "order-skip"));
-                isOrderStopped.set(true);
+                isOrderSkipped.set(true);
                 return;
             }
             // 前回購入時点よりRateが低い場合は見送り
             if (sellRate.longValue() <= beforeRate) {
                 log.info("{} {} {} {} {}", value("kind", "order-allin-v2"), value("trace-id", uuid),
                         value("sell-rate", sellRate.longValue()), value("before-rate", beforeRate), value("action", "sell-skip"));
-                isOrderStopped.set(true);
+                isOrderSkipped.set(true);
                 return;
             }
 
@@ -107,10 +108,12 @@ public class TradeAllInSellServiceV2Impl implements TradeService {
         });
 
         // リトライに応じてどの程度期待値が低下したかロギング
-        log.info("{} {} {} {} {} {}", value("kind", "order-allin-v2"), value("trace-id", uuid),
-                value("action", "diff"), value("first-order-rate", firstOrderRate.get()),
-                value("last-order-rate", lastOrderRate.get()),
-                value("diff-sell-rate", lastOrderRate.get() - firstOrderRate.get()));
+        if (!isOrderSkipped.get()) {
+            log.info("{} {} {} {} {} {}", value("kind", "order-allin-v2"), value("trace-id", uuid),
+                    value("action", "diff"), value("first-order-rate", firstOrderRate.get()),
+                    value("last-order-rate", lastOrderRate.get()),
+                    value("diff-sell-rate", lastOrderRate.get() - firstOrderRate.get()));
+        }
     }
 
     private boolean waitForOrderConfirmationOrCancel(CoinCheckResponse response, String uuid) {

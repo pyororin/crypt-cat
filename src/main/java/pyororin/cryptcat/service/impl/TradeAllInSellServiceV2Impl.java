@@ -72,7 +72,7 @@ public class TradeAllInSellServiceV2Impl implements TradeService {
             // 前回購入時点よりRateが低い場合は見送り
             if (sellRate.longValue() <= beforeRate) {
                 log.info("{} {} {} {} {}", value("kind", "order-allin-v2"), value("trace-id", uuid),
-                        value("sell-rate", btc.longValue()), value("before-rate", beforeRate), value("action", "order-skip"));
+                        value("sell-rate", sellRate.longValue()), value("before-rate", beforeRate), value("action", "sell-skip"));
                 isOrderStopped.set(true);
                 return;
             }

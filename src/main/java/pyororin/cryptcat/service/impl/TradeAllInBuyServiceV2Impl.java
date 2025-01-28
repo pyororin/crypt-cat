@@ -71,7 +71,7 @@ public class TradeAllInBuyServiceV2Impl implements TradeService {
 //            // 前回売却時点よりRateが高い場合は見送り
 //            if (buyRate.longValue() >= beforeRate.orElse(99999999999L)) {
 //                log.info("{} {} {} {} {}", value("kind", "order-allin-v2"), value("trace-id", uuid),
-//                        value("buy-rate", buyRate), value("before-rate", beforeRate), value("action", "order-skip"));
+//                        value("buy-rate", buyRate.longValue()), value("before-rate", beforeRate), value("action", "buy-skip"));
 //                isOrderStopped.set(true);
 //                return;
 //            }

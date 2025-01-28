@@ -52,9 +52,10 @@ public class TradeAllInBuyServiceV2Impl implements TradeService {
 
     private void processOrderWithRetry(Pair pair, OrderRequest orderRequest, String uuid) {
         var isOrderStopped = new AtomicBoolean(false);
+        var isOrderSkipped = new AtomicBoolean(false);
         var firstOrderRate = new AtomicLong();
         var lastOrderRate = new AtomicLong();
-        IntStream.range(0, 10).takeWhile(__ -> !isOrderStopped.get()).forEach(i -> {
+        IntStream.range(0, 10).takeWhile(__ -> !isOrderStopped.get() && !isOrderSkipped.get()).forEach(i -> {
             log.info("{} {} {} {}", value("kind", "order-allin-v2"), value("trace-id", uuid),
                     value("action", "attempt-buy"), value("retry", i));
             var jpy = repository.retrieveBalance().getJpy().subtract(BigDecimal.valueOf(7777));
@@ -65,14 +66,14 @@ public class TradeAllInBuyServiceV2Impl implements TradeService {
             if (jpy.longValue() <= 0) {
                 log.info("{} {} {} {}", value("kind", "order-allin-v2"), value("trace-id", uuid),
                         value("jpy", jpy), value("action", "order-skip"));
-                isOrderStopped.set(true);
+                isOrderSkipped.set(true);
                 return;
             }
 //            // 前回売却時点よりRateが高い場合は見送り
 //            if (buyRate.longValue() >= beforeRate.orElse(99999999999L)) {
 //                log.info("{} {} {} {} {}", value("kind", "order-allin-v2"), value("trace-id", uuid),
 //                        value("buy-rate", buyRate.longValue()), value("before-rate", beforeRate), value("action", "buy-skip"));
-//                isOrderStopped.set(true);
+//                isOrderSkipped.set(true);
 //                return;
 //            }
 
@@ -93,22 +94,26 @@ public class TradeAllInBuyServiceV2Impl implements TradeService {
             }
 
             orderTransactionService.set("All-In-Buy", OrderTransaction.builder()
-                .orderId(new BigDecimal(response.getRate()).longValue())
-                .orderStatus(OrderStatus.ORDERED)
-                .createdAt(Objects.isNull(response.getCreatedAt())
-                        ? DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(ZoneId.from(ZoneOffset.UTC)).format(clock.instant())
-                        : response.getCreatedAt())
-                .orderType(OrderType.BUY)
-                .build());
-            if (firstOrderRate.get() == 0) { firstOrderRate.set(buyRate.longValue()); }
+                    .orderId(new BigDecimal(response.getRate()).longValue())
+                    .orderStatus(OrderStatus.ORDERED)
+                    .createdAt(Objects.isNull(response.getCreatedAt())
+                            ? DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(ZoneId.from(ZoneOffset.UTC)).format(clock.instant())
+                            : response.getCreatedAt())
+                    .orderType(OrderType.BUY)
+                    .build());
+            if (firstOrderRate.get() == 0) {
+                firstOrderRate.set(buyRate.longValue());
+            }
             lastOrderRate.set(buyRate.longValue());
         });
 
         // リトライに応じてどの程度期待値が低下したかロギング
-        log.info("{} {} {} {} {} {}", value("kind", "order-allin-v2"), value("trace-id", uuid),
-                value("action", "diff"), value("first-order-rate", firstOrderRate.get()),
-                value("last-order-rate", lastOrderRate.get()),
-                value("diff-buy-rate", firstOrderRate.get() - lastOrderRate.get()));
+        if (!isOrderSkipped.get()) {
+            log.info("{} {} {} {} {} {}", value("kind", "order-allin-v2"), value("trace-id", uuid),
+                    value("action", "diff"), value("first-order-rate", firstOrderRate.get()),
+                    value("last-order-rate", lastOrderRate.get()),
+                    value("diff-buy-rate", firstOrderRate.get() - lastOrderRate.get()));
+        }
     }
 
     private boolean waitForOrderConfirmationOrCancel(CoinCheckResponse response, String uuid) {

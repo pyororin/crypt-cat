@@ -3,6 +3,7 @@ package pyororin.cryptcat.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import pyororin.cryptcat.config.CoinCheckApiConfig;
 import pyororin.cryptcat.config.OrderStatus;
 import pyororin.cryptcat.controller.model.OrderRequest;
 import pyororin.cryptcat.repository.CoinCheckRepository;
@@ -37,6 +38,7 @@ import static net.logstash.logback.argument.StructuredArguments.value;
 @RequiredArgsConstructor
 public class TradeAllInSellServiceV2Impl implements TradeService {
     private final Clock clock;
+    private final CoinCheckApiConfig.Retry apiConfigRetry;
     private final TradeRateLogicService tradeRateLogicService;
     private final CoinCheckRepository repository;
     private final OrderTransactionService orderTransactionService;
@@ -56,7 +58,7 @@ public class TradeAllInSellServiceV2Impl implements TradeService {
         var isOrderSkipped = new AtomicBoolean(false);
         var firstOrderRate = new AtomicLong();
         var lastOrderRate = new AtomicLong();
-        IntStream.range(0, 10).takeWhile(__ -> !isOrderStopped.get() && !isOrderSkipped.get()).forEach(i -> {
+        IntStream.range(0, apiConfigRetry.getLimitCount()).takeWhile(__ -> !isOrderStopped.get() && !isOrderSkipped.get()).forEach(i -> {
             log.info("{} {} {} {}", value("kind", "order-allin-v2"), value("trace-id", uuid),
                     value("action", "attempt-sell"), value("retry", i));
             var btc = repository.retrieveBalance().getBtc();
@@ -90,8 +92,6 @@ public class TradeAllInSellServiceV2Impl implements TradeService {
             // `OrderLogic`に基づくキャンセル待ち時間を渡す
             if (waitForOrderConfirmationOrCancel(response, uuid)) {
                 // 注文が確定した場合、処理を終了
-                log.info("{} {} {}", value("kind", "order-allin-v2"), value("trace-id", uuid),
-                        value("action", "order-confirmed"));
                 isOrderStopped.set(true);
             }
 
@@ -129,23 +129,24 @@ public class TradeAllInSellServiceV2Impl implements TradeService {
                     value("action", "check-open-orders"),
                     value("order-id", response.getId()), value("opens-ids", opensOrdersIds));
 
-            if (!opensOrdersIds.contains(response.getId())) {
+            if (opensOrdersIds.contains(response.getId())) {
+                // 注文が未確定の場合
+                if (repository.exchangeCancel(response.getId())) {
+                    log.info("{} {} {} {}", value("kind", "order-allin-v2"), value("trace-id", uuid),
+                            value("action", "order-cancelled"),
+                            value("order-transaction", response));
+                    isOrderConfirmed.complete(false);
+                    scheduledExecutor.shutdown();
+                }
+            } else {
                 // 注文が確定した場合
+                log.info("{} {} {} {}", value("kind", "order-allin-v2"), value("trace-id", uuid),
+                        value("action", "order-confirmed"),
+                        value("order-transaction", response));
                 isOrderConfirmed.complete(true);
                 scheduledExecutor.shutdown();
             }
-        }, 1, 5, TimeUnit.SECONDS);
-
-        // キャンセル処理を一定時間後にスケジュール
-        scheduledExecutor.schedule(() -> {
-            if (!isOrderConfirmed.isDone() && repository.exchangeCancel(response.getId())) {
-                log.info("{} {} {} {}", value("kind", "order-allin-v2"), value("trace-id", uuid),
-                        value("action", "order-cancelled"),
-                        value("order-transaction", response));
-            }
-            isOrderConfirmed.complete(false);
-            scheduledExecutor.shutdown();
-        }, 15, TimeUnit.SECONDS);
+        }, 0, apiConfigRetry.getDelaySec(), TimeUnit.SECONDS);
 
         // 結果が確定するまで待機（非同期処理でブロックせず結果を返す）
         try {

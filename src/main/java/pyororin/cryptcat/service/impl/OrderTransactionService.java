@@ -22,11 +22,19 @@ public class OrderTransactionService {
         }
     }
 
+    public void set(String group, OrderTransaction orderTransaction) {
+        repository.set(group, orderTransaction);
+    }
+
+    public void addSkipCount(String group) {
+        try {
+            repository.addSkipCount(group);
+        } catch (ExecutionException | InterruptedException ignored) {}
+    }
+
     public void remove(String group) {
         repository.remove(group);
     }
 
-    public void set(String group, OrderTransaction orderTransaction) {
-        repository.set(group, orderTransaction);
-    }
+
 }

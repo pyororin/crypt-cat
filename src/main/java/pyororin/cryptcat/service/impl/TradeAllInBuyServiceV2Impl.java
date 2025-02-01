@@ -67,14 +67,16 @@ public class TradeAllInBuyServiceV2Impl implements TradeService {
             // 購入出来ない場合は見送り
             if (jpy.longValue() <= 0) {
                 log.info("{} {} {} {}", value("kind", "order-allin-v2"), value("trace-id", uuid),
-                        value("jpy", jpy), value("action", "order-skip"));
+                        value("reason", String.format("%f <= 0 yen", jpy)), value("action", "sell-skip"));
+                orderTransactionService.addSkipCount("All-In-Buy");
                 isOrderSkipped.set(true);
                 return;
             }
 //            // 前回売却時点よりRateが高い場合は見送り
 //            if (buyRate.longValue() >= beforeRate.orElse(99999999999L)) {
-//                log.info("{} {} {} {} {}", value("kind", "order-allin-v2"), value("trace-id", uuid),
-//                        value("buy-rate", buyRate.longValue()), value("before-rate", beforeRate), value("action", "buy-skip"));
+//                log.info("{} {} {} {}", value("kind", "order-allin-v2"), value("trace-id", uuid),
+//                        value("reason", String.format("%d <= %d(or999999999L)", buyRate.longValue(), beforeRate)), value("action", "sell-skip"));
+//                orderTransactionService.addSkipCount("All-In-Buy");
 //                isOrderSkipped.set(true);
 //                return;
 //            }
@@ -94,12 +96,14 @@ public class TradeAllInBuyServiceV2Impl implements TradeService {
             }
 
             orderTransactionService.set("All-In-Buy", OrderTransaction.builder()
-                    .orderId(new BigDecimal(response.getRate()).longValue())
+                    .orderId(response.getId())
                     .orderStatus(OrderStatus.ORDERED)
                     .createdAt(Objects.isNull(response.getCreatedAt())
                             ? DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(ZoneId.from(ZoneOffset.UTC)).format(clock.instant())
                             : response.getCreatedAt())
                     .orderType(OrderType.BUY)
+                    .price(new BigDecimal(response.getRate()).longValue())
+                    .skipCount(0L)
                     .build());
             if (firstOrderRate.get() == 0) {
                 firstOrderRate.set(buyRate.longValue());

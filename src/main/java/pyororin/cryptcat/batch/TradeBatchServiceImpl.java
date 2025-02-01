@@ -4,10 +4,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import pyororin.cryptcat.config.OrderStatus;
+import pyororin.cryptcat.controller.model.OrderRequest;
 import pyororin.cryptcat.repository.CoinCheckRepository;
 import pyororin.cryptcat.repository.FirestoreRepository;
 import pyororin.cryptcat.repository.model.CoinCheckRequest;
 import pyororin.cryptcat.repository.model.Pair;
+import pyororin.cryptcat.service.TradeService;
+import pyororin.cryptcat.service.impl.OrderTransactionService;
 
 import java.math.RoundingMode;
 import java.time.Clock;
@@ -22,6 +25,8 @@ public class TradeBatchServiceImpl {
     private final Clock clock;
     private final CoinCheckRepository repository;
     private final FirestoreRepository firestore;
+    private final OrderTransactionService orderTransactionService;
+    private final TradeService tradeAllInSellServiceV2Impl;
 
     public void balance() {
         var ticker = repository.retrieveTicker(CoinCheckRequest.builder().pair(Pair.BTC_JPY).build());
@@ -65,5 +70,18 @@ public class TradeBatchServiceImpl {
                 firestore.remove(documentId);
             }
         });
+    }
+
+    public void retrySell() {
+        var beforeBuyOrder = orderTransactionService.get("All-In-Sell");
+        if (beforeBuyOrder.getSkipCount() >= 1) {
+            var ticker = repository.retrieveTicker(CoinCheckRequest.builder().pair(Pair.BTC_JPY).build());
+            if (beforeBuyOrder.getPrice() <= ticker.getLast().longValue()) {
+                log.info("{} {} {}", value("kind", "buy-allin-skip-for-sell"), value("transaction", beforeBuyOrder),
+                        value("reason", String.format("%d <= %d", beforeBuyOrder.getPrice(), ticker.getLast().longValue())));
+                tradeAllInSellServiceV2Impl.order(Pair.BTC_JPY,
+                        OrderRequest.builder().group("RetrySell").build());
+            }
+        }
     }
 }

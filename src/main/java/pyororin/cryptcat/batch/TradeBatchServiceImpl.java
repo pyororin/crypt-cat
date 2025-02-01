@@ -77,7 +77,7 @@ public class TradeBatchServiceImpl {
         if (beforeBuyOrder.getSkipCount() >= 1) {
             var ticker = repository.retrieveTicker(CoinCheckRequest.builder().pair(Pair.BTC_JPY).build());
             if (beforeBuyOrder.getPrice() <= ticker.getLast().longValue()) {
-                log.info("{} {} {}", value("kind", "buy-allin-skip-for-sell"), value("transaction", beforeBuyOrder),
+                log.info("{} {} {}", value("kind", "retry-sell"), value("transaction", beforeBuyOrder),
                         value("reason", String.format("%d <= %d", beforeBuyOrder.getPrice(), ticker.getLast().longValue())));
                 tradeAllInSellServiceV2Impl.order(Pair.BTC_JPY,
                         OrderRequest.builder().group("RetrySell").build());

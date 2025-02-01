@@ -20,6 +20,10 @@ public class SkipFirestoreRepositoryImpl implements FirestoreRepository {
     }
 
     @Override
+    public void addSkipCount(String group) {
+    }
+
+    @Override
     public OrderTransaction getByGroup(String group) {
         return OrderTransaction.builder().build();
     }

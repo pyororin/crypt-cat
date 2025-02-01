@@ -17,6 +17,8 @@ public class OrderTransaction {
     private String createdAt;
     private OrderType orderType;
     private OrderStatus orderStatus;
+    private Long price;
+    private Long skipCount;
 
     public boolean isSell() {
         return OrderType.SELL == this.orderType;
@@ -26,9 +28,9 @@ public class OrderTransaction {
         return OrderType.BUY == this.orderType;
     }
 
-    public boolean isOrdered() {
-        return OrderStatus.ORDERED == this.orderStatus;
-    }
+//    public boolean isOrdered() {
+//        return OrderStatus.ORDERED == this.orderStatus;
+//    }
 
     public boolean isCancel() {
         return OrderStatus.CANCEL == this.orderStatus;
@@ -46,5 +48,10 @@ public class OrderTransaction {
 
     public boolean isCreatedAtMoreThanMinutesAgo(int minutes) {
         return Duration.between(Instant.from(DateTimeFormatter.ISO_DATE_TIME.parse(this.createdAt)), Instant.now()).toMinutes() > minutes;
+    }
+
+    public OrderTransaction addSkipCount() {
+        this.skipCount++;
+        return this;
     }
 }

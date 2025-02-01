@@ -8,6 +8,8 @@ import java.util.concurrent.ExecutionException;
 public interface FirestoreRepository {
     void set(String group, OrderTransaction orderTransaction);
 
+    void addSkipCount(String group) throws ExecutionException, InterruptedException;
+
     OrderTransaction getByGroup(String group) throws ExecutionException, InterruptedException;
 
     Map<String, OrderTransaction> getAll() throws ExecutionException, InterruptedException;

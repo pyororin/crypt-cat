@@ -31,8 +31,16 @@ public class FirestoreRepositoryImpl implements FirestoreRepository {
         record.put("createdAt", orderTransaction.getCreatedAt());
         record.put("orderType", orderTransaction.getOrderType());
         record.put("orderStatus", orderTransaction.getOrderStatus());
+        record.put("price", orderTransaction.getPrice());
+        record.put("skipCount", orderTransaction.getSkipCount());
         var result = database.collection("order-request").document(group).set(record);
         log.info("{} {}", value("kind", "firestore-update"), value("result", result.toString()));
+    }
+
+    public void addSkipCount(String group) throws ExecutionException, InterruptedException {
+        var transaction = getByGroup(group).addSkipCount();
+        set(group, transaction);
+        log.info("{} {}", value("kind", "firestore-update"), value("result", transaction.toString()));
     }
 
     public OrderTransaction getByGroup(String group) throws ExecutionException, InterruptedException {
@@ -43,7 +51,10 @@ public class FirestoreRepositoryImpl implements FirestoreRepository {
                     .orderId(snapshot.getLong("orderId"))
                     .createdAt(snapshot.getString("createdAt"))
                     .orderType(OrderType.valueOf(snapshot.getString("orderType")))
-                    .orderStatus(OrderStatus.valueOf(snapshot.getString("orderStatus"))).build();
+                    .orderStatus(OrderStatus.valueOf(snapshot.getString("orderStatus")))
+                    .price(snapshot.getLong("price"))
+                    .skipCount(snapshot.getLong("skipCount"))
+                    .build();
         } else {
             return OrderTransaction.builder().build();
         }
@@ -51,13 +62,14 @@ public class FirestoreRepositoryImpl implements FirestoreRepository {
 
     public Map<String, OrderTransaction> getAll() throws ExecutionException, InterruptedException {
         var documents = database.collection("order-request").get().get().getDocuments();
-
         return documents.stream()
                 .collect(Collectors.toMap(DocumentSnapshot::getId, document ->
                         OrderTransaction.builder().orderId(document.getLong("orderId"))
                                 .createdAt(document.getString("createdAt"))
                                 .orderType(OrderType.valueOf(document.getString("orderType")))
                                 .orderStatus(OrderStatus.valueOf(document.getString("orderStatus")))
+                                .price(document.getLong("price"))
+                                .skipCount(document.getLong("skipCount"))
                                 .build()));
     }
 

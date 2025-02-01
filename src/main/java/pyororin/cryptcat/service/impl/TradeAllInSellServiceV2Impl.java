@@ -68,14 +68,16 @@ public class TradeAllInSellServiceV2Impl implements TradeService {
             // 売却出来ない場合は見送り
             if (btc.doubleValue() <= 0.001) {
                 log.info("{} {} {} {}", value("kind", "order-allin-v2"), value("trace-id", uuid),
-                        value("jpy", btc), value("action", "order-skip"));
+                        value("reason", String.format("%f <= 0.001 btc", btc)), value("action", "sell-skip"));
+                orderTransactionService.addSkipCount("All-In-Sell");
                 isOrderSkipped.set(true);
                 return;
             }
             // 前回購入時点よりRateが低い場合は見送り
             if (sellRate.longValue() <= beforeRate) {
-                log.info("{} {} {} {} {}", value("kind", "order-allin-v2"), value("trace-id", uuid),
-                        value("sell-rate", sellRate.longValue()), value("before-rate", beforeRate), value("action", "sell-skip"));
+                log.info("{} {} {} {}", value("kind", "order-allin-v2"), value("trace-id", uuid),
+                        value("reason", String.format("%d <= %d", sellRate.longValue(), beforeRate)), value("action", "sell-skip"));
+                orderTransactionService.addSkipCount("All-In-Sell");
                 isOrderSkipped.set(true);
                 return;
             }
@@ -96,12 +98,14 @@ public class TradeAllInSellServiceV2Impl implements TradeService {
             }
 
             orderTransactionService.set("All-In-Sell", OrderTransaction.builder()
-                    .orderId(new BigDecimal(response.getRate()).longValue())
+                    .orderId(response.getId())
                     .orderStatus(OrderStatus.ORDERED)
                     .createdAt(Objects.isNull(response.getCreatedAt())
                             ? DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(ZoneId.from(ZoneOffset.UTC)).format(clock.instant())
                             : response.getCreatedAt())
                     .orderType(OrderType.SELL)
+                    .price(new BigDecimal(response.getRate()).longValue())
+                    .skipCount(0L)
                     .build());
             if (firstOrderRate.get() == 0) { firstOrderRate.set(sellRate.longValue()); }
             lastOrderRate.set(sellRate.longValue());

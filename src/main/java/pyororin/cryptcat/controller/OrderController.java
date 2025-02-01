@@ -105,6 +105,12 @@ public class OrderController {
         return ResponseEntity.ok("OK");
     }
 
+    @PostMapping("/retry/sell")
+    public ResponseEntity<String> retryCell() {
+        tradeBatchServiceImpl.retrySell();
+        return ResponseEntity.ok("OK");
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleException(Exception ex) {
         log.error("{} {} {}", value("kind", "exception"),

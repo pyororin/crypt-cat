@@ -80,7 +80,7 @@ public class TradeBatchServiceImpl {
         var executor = Executors.newSingleThreadScheduledExecutor();
         executor.scheduleWithFixedDelay(() -> {
             var beforeBuyOrder = orderTransactionService.get("All-In-Sell");
-            log.info("{} {}", value("kind", "retry-sell"), value("retry-count", retryCount.get()));
+            log.debug("{} {}", value("kind", "retry-sell"), value("retry-count", retryCount.get()));
             if (beforeBuyOrder.getSkipCount() >= 1) {
                 var ticker = repository.retrieveTicker(CoinCheckRequest.builder().pair(Pair.BTC_JPY).build());
                 if (beforeBuyOrder.getPrice() <= ticker.getLast().longValue()) {

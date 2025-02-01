@@ -15,6 +15,9 @@ import pyororin.cryptcat.service.impl.OrderTransactionService;
 import java.math.RoundingMode;
 import java.time.Clock;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static net.logstash.logback.argument.StructuredArguments.value;
 
@@ -73,15 +76,24 @@ public class TradeBatchServiceImpl {
     }
 
     public void retrySell() {
-        var beforeBuyOrder = orderTransactionService.get("All-In-Sell");
-        if (beforeBuyOrder.getSkipCount() >= 1) {
-            var ticker = repository.retrieveTicker(CoinCheckRequest.builder().pair(Pair.BTC_JPY).build());
-            if (beforeBuyOrder.getPrice() <= ticker.getLast().longValue()) {
-                log.info("{} {} {}", value("kind", "retry-sell"), value("transaction", beforeBuyOrder),
-                        value("reason", String.format("%d <= %d", beforeBuyOrder.getPrice(), ticker.getLast().longValue())));
-                tradeAllInSellServiceV2Impl.order(Pair.BTC_JPY,
-                        OrderRequest.builder().group("RetrySell").build());
+        var retryCount = new AtomicLong(0);
+        var executor = Executors.newSingleThreadScheduledExecutor();
+        executor.scheduleWithFixedDelay(() -> {
+            var beforeBuyOrder = orderTransactionService.get("All-In-Sell");
+            log.info("{} {}", value("kind", "retry-sell"), value("retry-count", retryCount.get()));
+            if (beforeBuyOrder.getSkipCount() >= 1) {
+                var ticker = repository.retrieveTicker(CoinCheckRequest.builder().pair(Pair.BTC_JPY).build());
+                if (beforeBuyOrder.getPrice() <= ticker.getLast().longValue()) {
+                    log.info("{} {} {}", value("kind", "retry-sell"), value("transaction", beforeBuyOrder),
+                            value("reason", String.format("%d <= %d", beforeBuyOrder.getPrice(), ticker.getLast().longValue())));
+                    tradeAllInSellServiceV2Impl.order(Pair.BTC_JPY,
+                            OrderRequest.builder().group("RetrySell").build());
+                }
             }
-        }
+            if (retryCount.addAndGet(1) >= 60) {
+                executor.shutdown();
+                log.info("{} {}", value("kind", "retry-sell"), value("message", "60min shutdown"));
+            }
+        }, 0, 60, TimeUnit.SECONDS);
     }
 }

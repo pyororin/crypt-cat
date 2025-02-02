@@ -62,12 +62,13 @@ public class TradeAllInBuyServiceV2Impl implements TradeService {
                     value("action", "attempt-buy"), value("retry", i));
             var jpy = repository.retrieveBalance().getJpy().subtract(BigDecimal.valueOf(7777));
             var buyRate = tradeRateLogicService.getFairBuyRate(pair);
+            var amount = jpy.divide(buyRate, 9, RoundingMode.DOWN);
 //            var beforeRate = Optional.of(orderTransactionService.get("All-In-Sell").getOrderId());
 
             // 購入出来ない場合は見送り
-            if (jpy.longValue() <= 0) {
+            if (amount.longValue() <= 0.001) {
                 log.info("{} {} {} {}", value("kind", "order-allin-v2"), value("trace-id", uuid),
-                        value("reason", String.format("%f <= 0 yen", jpy)), value("action", "sell-skip"));
+                        value("reason", String.format("%f <= 0.001 BTC", amount)), value("action", "sell-skip"));
                 orderTransactionService.addSkipCount("All-In-Buy");
                 isOrderSkipped.set(true);
                 return;
@@ -81,7 +82,6 @@ public class TradeAllInBuyServiceV2Impl implements TradeService {
 //                return;
 //            }
 
-            var amount = jpy.divide(buyRate, 9, RoundingMode.DOWN);
             var response = repository.exchangeBuyLimit(CoinCheckRequest.builder()
                     .pair(pair)
                     .amount(amount)
